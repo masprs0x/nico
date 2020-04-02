@@ -1,11 +1,12 @@
 {
   "name": "@blastz/nico",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "wrap koa with handy way",
   "main": "./lib/index.js",
   "scripts": {
     "tsc": "tsc",
-    "tsc-watch": "tsc -w"
+    "tsc-watch": "tsc -w",
+    "push": "npm run tsc && npm publish --access public --registry=https://registry.npmjs.org"
   },
   "keywords": [
     "node",
