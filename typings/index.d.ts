@@ -7,7 +7,9 @@ import { DB } from '../src/utils/db';
 import Redis from 'ioredis';
 
 declare class Application extends Koa {
-  db: DB;
+  Joi: Joi.Root;
+  app?: Application;
+  db?: DB;
 }
 
 declare namespace Application {

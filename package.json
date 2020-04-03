@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "wrap koa with handy way",
   "main": "./lib/index.js",
   "scripts": {
