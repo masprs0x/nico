@@ -5,7 +5,6 @@ import { DB } from './utils/db';
 declare class Nico {
     Joi: Joi.Root;
     db?: DB;
-    app?: Application;
     init(inputConfig?: Partial<Application.Config>): Promise<Application>;
 }
 declare const _default: Nico;

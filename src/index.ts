@@ -2,6 +2,7 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
+import Joi from '@hapi/joi';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
@@ -10,25 +11,37 @@ import defaultConfig from './config';
 import customHandler from './middleware/custom-handler';
 import cors from './middleware/cors';
 import { mergeDeep } from './utils/utility';
-import Application from '../typings/app';
-import db from './middleware/db';
+import Application from '../typings';
+import { DB } from './utils/db';
 
-export = (inputConfig: Partial<Application.Config> = {}) => {
-  const config: Application.Config = mergeDeep(defaultConfig, inputConfig);
+class Nico {
+  Joi: Joi.Root = Joi;
 
-  const app = new Koa() as Application;
+  db?: DB;
+  app?: Application;
 
-  app.use(responses(config.responses));
-  app.use(errorHandler());
-  app.use(cors(config));
-  app.use(serve(path.resolve(process.cwd(), './assets'), config.serve));
-  app.use(customHandler(config));
-  app.use(db(app, config.datastores));
+  async init(inputConfig: Partial<Application.Config> = {}) {
+    const config: Application.Config = mergeDeep(defaultConfig, inputConfig);
 
-  const router = new Router<Application.State, Application.Custom>();
+    const app = new Koa() as Application;
 
-  app.use(routes(router, config));
-  app.use(router.routes()).use(router.allowedMethods());
+    app.use(responses(config.responses));
+    app.use(errorHandler());
+    app.use(cors(config));
+    app.use(serve(path.resolve(process.cwd(), './assets'), config.serve));
+    app.use(customHandler(config));
 
-  return app;
-};
+    this.db = new DB(config.datastores);
+
+    const router = new Router<Application.State, Application.Custom>();
+
+    app.use(routes(router, config));
+    app.use(router.routes()).use(router.allowedMethods());
+
+    this.app = app;
+
+    return app;
+  }
+}
+
+export = new Nico();

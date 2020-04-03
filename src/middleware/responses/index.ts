@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa';
-import Application from '../../../typings/app';
+import Application from '../../../typings';
 
 export = (responses: Application.ConfigResponses) => {
   return async (ctx: Context, next: Next) => {

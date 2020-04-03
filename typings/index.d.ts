@@ -13,7 +13,8 @@ declare class Application extends Koa {
 declare namespace Application {
   type ConfigDatastores = {
     default?: {
-      url?: string;
+      type: 'mongo';
+      url: string;
     };
     cache?: {
       url: string;

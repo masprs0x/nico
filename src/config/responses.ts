@@ -1,4 +1,4 @@
-import Application from '../../typings/app';
+import Application from '../../typings';
 
 const config: Application.ConfigResponses = {};
 
