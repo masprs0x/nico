@@ -1,3 +1,2 @@
-import Application from '../../typings';
-declare const config: Application.ConfigRoutes;
+declare const config: {};
 export = config;

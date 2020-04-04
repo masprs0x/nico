@@ -1,6 +1,6 @@
-import serve from 'koa-static';
+import { ConfigServe } from '../../typings';
 
-const config: serve.Options = {
+const config: ConfigServe = {
   maxAge: 1 * 24 * 3600 * 1000
 };
 

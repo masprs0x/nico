@@ -1,9 +1,9 @@
 import { Context, Next } from 'koa';
-import Application from '../../../typings';
+import { ConfigCustom } from '../../../typings';
 
-export = (config: Application.Config) => {
+export = (custom: ConfigCustom) => {
   return async (ctx: Context, next: Next) => {
-    ctx.state.custom = config.custom;
+    ctx.state.custom = custom;
 
     await next();
   };

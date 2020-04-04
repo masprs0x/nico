@@ -1,6 +1,6 @@
-import Application from '../../typings';
+import { ConfigSecurity } from '../../typings';
 
-const config: Application.ConfigSecurity = {
+const config: ConfigSecurity = {
   cors: {
     allowOrigins: ['http://localhost', 'http://127.0.0.1'],
     allowCredentials: true

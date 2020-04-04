@@ -1,10 +1,10 @@
 import { Context, Next } from 'koa';
-import Application from '../../../typings';
+import { ConfigSecurity } from '../../../typings';
 
-export = (config: Application.Config) => {
+export = (config: ConfigSecurity) => {
   return async (ctx: Context, next: Next) => {
     await next();
-    const allowedOrigin = config.security.cors.allowOrigins;
+    const allowedOrigin = config.cors.allowOrigins;
     const origin = ctx.request.headers.origin;
 
     if (origin) {
@@ -14,7 +14,7 @@ export = (config: Application.Config) => {
       ctx.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE,PATCH');
       ctx.set('Access-Control-Allow-Headers', 'Origin, Content-Type, Method');
 
-      if (config.security.cors.allowCredentials === true) {
+      if (config.cors.allowCredentials === true) {
         ctx.set('Access-Control-Allow-Credentials', 'true');
       }
     }

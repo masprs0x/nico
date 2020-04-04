@@ -1,4 +1,4 @@
 import { Context, Next } from 'koa';
-import Application from '../../../typings';
-declare const _default: (config: Application.Config) => (ctx: Context, next: Next) => Promise<void>;
+import { ConfigCustom } from '../../../typings';
+declare const _default: (custom: ConfigCustom) => (ctx: Context, next: Next) => Promise<void>;
 export = _default;

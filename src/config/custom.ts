@@ -1,7 +1,5 @@
-import Application from '../../typings';
+import { ConfigCustom } from '../../typings';
 
-const config: Application.ConfigCustom = {
-  APP_NAME: 'nico-nico-ni'
-};
+const config: ConfigCustom = {};
 
 export = config;

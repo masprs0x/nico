@@ -3,27 +3,8 @@ import koaBody from 'koa-body';
 import serve from 'koa-static';
 import Joi from '@hapi/joi';
 
-import { DB } from '../src/utils/db';
-import Redis from 'ioredis';
-
-declare class Application extends Koa {
-  Joi: Joi.Root;
-  app?: Application;
-  db?: DB;
-}
-
 declare namespace Application {
-  type ConfigDatastores = {
-    default?: {
-      type: 'mongo';
-      url: string;
-    };
-    cache?: {
-      url: string;
-    };
-  };
-
-  type ConfigRoutes = {
+  type ConfigRoutes<State, Custom> = {
     [method_route: string]: {
       controller: Koa.Middleware<State, Custom>;
       policies?: Koa.Middleware<State, Custom>[] | boolean;
@@ -37,7 +18,7 @@ declare namespace Application {
   };
 
   type ConfigCustom = {
-    APP_NAME: string;
+    [key: string]: any;
   };
 
   type ConfigSecurity = {
@@ -48,34 +29,30 @@ declare namespace Application {
   };
 
   type ConfigResponses = {
-    [key: string]: Koa.Middleware;
+    [key: string]: (this: Koa.Context, ...args: any) => void;
   };
 
-  type Config = {
-    datastores: ConfigDatastores;
-    routes: ConfigRoutes;
+  interface ConfigServe extends serve.Options {}
+
+  type Config<State, Custom> = {
+    routes: ConfigRoutes<State, Custom>;
     custom: ConfigCustom;
     security: ConfigSecurity;
-    serve: serve.Options;
+    serve: ConfigServe;
     responses: ConfigResponses;
   };
 
   type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
 
-  interface State extends Koa.DefaultState {
-    custom: ConfigCustom;
-    query?: object;
-    params?: object;
-    body?: object;
+  interface DefaultState extends Koa.DefaultState {
+    query?: any;
+    params?: any;
+    body?: any;
   }
 
-  interface Custom extends Koa.DefaultContext {
-    redis?: Redis.Redis;
-  }
-
-  interface Context extends Koa.ParameterizedContext<State, Custom> {}
-
-  interface Next extends Koa.Next {}
+  type Context<State extends DefaultState = Koa.DefaultState, Custom = Koa.DefaultContext> = Koa.ParameterizedContext<State, Custom>;
+  type Next = Koa.Next;
+  type Middleware<State = Koa.DefaultState, Custom = Koa.DefaultContext> = Koa.Middleware<State, Custom>;
 }
 
 export = Application;

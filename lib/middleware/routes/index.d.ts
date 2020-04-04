@@ -1,5 +1,6 @@
 /// <reference types="koa__router" />
 import Router from '@koa/router';
-import Application from '../../../typings';
-declare const _default: (router: Router<Application.State, Application.Custom>, config: any) => (ctx: Application.Context, next: Application.Next) => Promise<void>;
+import { Context, Next } from 'koa';
+import { ConfigRoutes } from '../../../typings';
+declare const _default: <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom>) => (ctx: Context, next: Next) => Promise<void>;
 export = _default;

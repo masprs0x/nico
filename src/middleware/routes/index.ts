@@ -1,19 +1,17 @@
 import Router from '@koa/router';
 import KoaBody from 'koa-body';
-import { Middleware } from 'koa';
+import { Middleware, Context, Next } from 'koa';
 import debug from 'debug';
-
-import Application, { State, Custom, Context, Next } from '../../../typings';
+import { HttpMethod, ConfigRoutes } from '../../../typings';
 
 const log = debug('nico:route');
 
-export = (router: Router<State, Custom>, config: any) => {
+export = function <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom>) {
   const prefix = '/api/v1';
-  const { routes: routerMap }: { routes: Application.ConfigRoutes } = config;
 
   router.prefix(prefix);
 
-  Object.entries(routerMap).map(([key, value]) => {
+  Object.entries(config).map(([key, value]) => {
     const { controller, policies = true, bodyParser = false, validate = {} } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
@@ -45,9 +43,10 @@ export = (router: Router<State, Custom>, config: any) => {
       }
     }
 
-    Object.keys(validate).map(key => {
+    Object.keys(validate).map((key) => {
       const middleware = async (ctx: Context, next: Next) => {
         let value = {};
+
         if (key === 'params') {
           value = await validate[key]?.validateAsync(ctx.params);
           ctx.state.params = value;
@@ -71,14 +70,14 @@ export = (router: Router<State, Custom>, config: any) => {
     middlewares.push(async (ctx: Context, next: Next) => {
       const stateKeys = ['params', 'query', 'body'];
       const state = ctx.state as any;
-      stateKeys.map(key => {
+      stateKeys.map((key) => {
         state[key] && log.extend(key)(state[key]);
       });
 
       await next();
     });
 
-    router[method as Application.HttpMethod](route, ...middlewares, controller);
+    router[method as HttpMethod](route, ...middlewares, controller);
   });
 
   return async (ctx: Context, next: Next) => {

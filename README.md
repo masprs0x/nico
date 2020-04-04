@@ -1,6 +1,8 @@
 # Nico
 
-Wrap koa for better usage, learn how to use it in [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate);
+**This module is sill in building, everyting maybe change**.
+
+Wrap up koa for better usage, learn how to use it in [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate);
 
 ## Installation
 
@@ -10,7 +12,7 @@ npm install @blastz/nico
 
 ## API
 
-### Nico.init(config: Partial<Application.Config>)
+### init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {})
 
 Get koa application by init nico.
 
@@ -18,15 +20,6 @@ Application.Config
 
 ```ts
 type Config = {
-  datastores: {
-    default?: {
-      type: 'mongo';
-      url: string;
-    };
-    cache?: {
-      url: string;
-    };
-  };
   routes: {
     [method_route: string]: {
       controller: Koa.Middleware<State, Custom>;
@@ -40,7 +33,7 @@ type Config = {
     };
   };
   custom: {
-    APP_NAME: string;
+    [key: string]: any;
   };
   security: {
     cors: {
@@ -50,15 +43,7 @@ type Config = {
   };
   serve: serve.Options;
   responses: {
-    [key: string]: Koa.Middleware;
+    [key: string]: (this: Koa.Context, ...args: any) => void;
   };
 };
 ```
-
-### Nico.db.connect()
-
-Connect default mongodb when `config.datastores.default` is provided.
-
-### Nico.db.disconnect()
-
-Disconnect default database.

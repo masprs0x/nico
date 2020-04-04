@@ -1,3 +1,3 @@
-import Application from '../../typings';
-declare const config: Application.ConfigSecurity;
+import { ConfigSecurity } from '../../typings';
+declare const config: ConfigSecurity;
 export = config;

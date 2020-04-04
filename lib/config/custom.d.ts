@@ -1,3 +1,3 @@
-import Application from '../../typings';
-declare const config: Application.ConfigCustom;
+import { ConfigCustom } from '../../typings';
+declare const config: ConfigCustom;
 export = config;

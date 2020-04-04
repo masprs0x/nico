@@ -1,46 +1,41 @@
-import Redis from 'ioredis';
-import mongoose from 'mongoose';
+// import Redis from 'ioredis';
+// import mongoose from 'mongoose';
+// import { ConfigDatastores } from '../../typings';
 
-import Application from '../../typings';
+//  class DB {
+//   config?: ConfigDatastores;
 
-export class DB {
-  default?: typeof mongoose;
-  cache?: Redis.Redis;
-  config?: Application.ConfigDatastores;
+//   constructor(config: ConfigDatastores) {
+//     this.config = config;
+//   }
 
-  constructor(config: Application.ConfigDatastores) {
-    this.config = config;
-  }
+//   async connect() {
+//     if (this.default.type === 'mongo' && this.default.url) {
+//       this.defaultDB = await mongoose.connect(this.config.default.url, {
+//         useNewUrlParser: true,
+//         useUnifiedTopology: true,
+//         useCreateIndex: true,
+//         useFindAndModify: false
+//       });
+//     }
 
-  async connect() {
-    if (this.config?.default?.type === 'mongo' && this.config.default.url) {
-      const defaultDB = await mongoose.connect(this.config.default.url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useCreateIndex: true,
-        useFindAndModify: false
-      });
+//     if (this.config?.cache) {
+//       const redis = new Redis(this.config.cache.url);
+//       this.cache = redis;
+//     }
+//   }
 
-      this.default = defaultDB;
-    }
+//   async disconnect() {
+//     if (this.default) {
+//       await Promise.all(
+//         this.default.connections.map(async (connection) => {
+//           await connection.close();
+//         })
+//       );
+//     }
 
-    if (this.config?.cache) {
-      const redis = new Redis(this.config.cache.url);
-      this.cache = redis;
-    }
-  }
-
-  async disconnect() {
-    if (this.default) {
-      await Promise.all(
-        this.default.connections.map(async connection => {
-          await connection.close();
-        })
-      );
-    }
-
-    if (this.cache) {
-      this.cache.disconnect();
-    }
-  }
-}
+//     if (this.cache) {
+//       this.cache.disconnect();
+//     }
+//   }
+// }

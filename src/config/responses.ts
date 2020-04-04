@@ -1,5 +1,5 @@
-import Application from '../../typings';
+import { ConfigResponses } from '../../typings';
 
-const config: Application.ConfigResponses = {};
+const config: ConfigResponses = {};
 
 export = config;

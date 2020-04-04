@@ -1,3 +1,3 @@
-import serve from 'koa-static';
-declare const config: serve.Options;
+import { ConfigServe } from '../../typings';
+declare const config: ConfigServe;
 export = config;

@@ -1,5 +1,5 @@
-import Application from '../../typings';
+// import Application from '../../typings';
 
-const config: Application.ConfigDatastores = {};
+// const config: Application.ConfigDatastores = {};
 
-export = config;
+// export = config;

@@ -1,12 +1,8 @@
-/// <reference types="hapi__joi" />
-import Joi from '@hapi/joi';
-import Application from '../typings';
-import { DB } from './utils/db';
+import Koa from 'koa';
+import { Config } from '../typings';
 declare class Nico {
-    Joi: Joi.Root;
-    db?: DB;
-    app?: Application;
-    init(inputConfig?: Partial<Application.Config>): Promise<Application>;
+    app: Koa<Koa.DefaultState, Koa.DefaultContext>;
+    init<State, Custom>(inputConfig?: Partial<Config<State, Custom>>): Promise<Koa<Koa.DefaultState, Koa.DefaultContext>>;
 }
 declare const _default: Nico;
 export = _default;

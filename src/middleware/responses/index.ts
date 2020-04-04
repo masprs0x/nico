@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa';
-import Application from '../../../typings';
+import { ConfigResponses } from '../../../typings';
 
-export = (responses: Application.ConfigResponses) => {
+export = (responses: ConfigResponses) => {
   return async (ctx: Context, next: Next) => {
     Object.entries(responses).map(([key, value]) => {
       ctx[key] = value;
