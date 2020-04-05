@@ -40,6 +40,7 @@ declare namespace Application {
     security: ConfigSecurity;
     serve: ConfigServe;
     responses: ConfigResponses;
+    routerPrefix?: string;
   };
 
   type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';

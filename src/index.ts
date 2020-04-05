@@ -16,7 +16,7 @@ class Nico {
   app = new Koa();
 
   async init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {}) {
-    const config = deepmerge(defaultConfig, inputConfig);
+    const config: Config<State, Custom> = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
     app.use(responses(config.responses));
@@ -27,7 +27,7 @@ class Nico {
 
     const router = new Router();
 
-    app.use(routes(router, config.routes));
+    app.use(routes(router, config.routes, config.routerPrefix));
     app.use(router.routes()).use(router.allowedMethods());
 
     return app;

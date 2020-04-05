@@ -53,9 +53,9 @@ beforeAll(async () => {
   });
 });
 
-test('simple test', async () => {
-  const response = await request(nico.app.callback()).get('/api/v1/nico');
-  const response2 = await request(nico.app.callback()).post('/api/v1/nico').send({
+test('Basic test', async () => {
+  const response = await request(nico.app.callback()).get('/nico');
+  const response2 = await request(nico.app.callback()).post('/nico').send({
     name: 'nico'
   });
   expect(response.body.data.APP_NAME).toEqual('nico');

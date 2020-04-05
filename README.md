@@ -45,5 +45,6 @@ type Config = {
   responses: {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
+  routerPrefix?: string;
 };
 ```
