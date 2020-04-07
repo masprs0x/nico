@@ -1,47 +1,22 @@
 import request from 'supertest';
+import mongoose from 'mongoose';
 
-import { Context, DefaultState } from '../../typings';
 import nico from '../index';
 import Joi from '../utils/joi';
-
-interface State extends DefaultState {
-  custom: {
-    APP_NAME: string;
-  };
-}
-
-type Custom = {
-  ok: typeof ok;
-};
-
-const ok = function (this: Context, data?: any, message?: string, success = true) {
-  this.body = {
-    success,
-    data,
-    message
-  };
-};
+import Mongo from '../utils/mongo';
 
 beforeAll(async () => {
   await nico.init({
-    custom: {
-      APP_NAME: 'nico'
-    },
     responses: {
-      ok
+      ok: require('./api/responses/ok')
     },
     routes: {
-      'GET /nico': {
-        controller: (ctx: Context<State, Custom>) => {
-          return ctx.ok(ctx.state.custom);
-        },
+      'GET /user': {
+        controller: require('./api/controllers/get'),
         policies: true
       },
-      'POST /nico': {
-        controller: (ctx: Context<State, Custom>) => {
-          const body = ctx.state.body;
-          return ctx.ok(body.name);
-        },
+      'POST /user': {
+        controller: require('./api/controllers/create'),
         bodyParser: true,
         validate: {
           body: Joi.object({
@@ -51,13 +26,19 @@ beforeAll(async () => {
       }
     }
   });
+
+  await Mongo.connect(mongoose, 'mongodb://root:admin123@localhost:27017/test?authSource=admin');
+  await mongoose.connection.db.dropDatabase();
+});
+
+afterAll(async () => {
+  await Mongo.disconnect(mongoose);
 });
 
 test('Basic test', async () => {
-  const response = await request(nico.app.callback()).get('/nico');
-  const response2 = await request(nico.app.callback()).post('/nico').send({
-    name: 'nico'
-  });
-  expect(response.body.data.APP_NAME).toEqual('nico');
-  expect(response2.body.data).toEqual('nico');
+  const createUser = await request(nico.app.callback()).post('/user').send({ name: 'nico nico ni' });
+  const getUsers = await request(nico.app.callback()).get('/user');
+
+  expect(createUser.body.data.name).toEqual('nico nico ni');
+  expect(getUsers.body.data[0].name).toEqual('nico nico ni');
 });

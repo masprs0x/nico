@@ -12,7 +12,7 @@ npm install @blastz/nico
 
 ## API
 
-### init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {})
+### Nico.init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {})
 
 Get koa application by init nico.
 
@@ -48,3 +48,11 @@ type Config = {
   routerPrefix?: string;
 };
 ```
+
+### Utility.Mongo.connect(mongoose: typeof Mongoose, url: string)
+
+Connect mongodb
+
+### Utility.Mongo.disconnect(mongoose: typeof Mongoose)
+
+Disconnect mongodb
