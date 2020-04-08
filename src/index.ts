@@ -19,8 +19,8 @@ class Nico {
     const app = this.app;
 
     app.use(responses(config.responses));
-    app.use(errorHandler());
     app.use(cors(config.security));
+    app.use(errorHandler());
     app.use(customHandler(config.custom));
 
     const serveRouter = new Router();

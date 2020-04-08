@@ -7,7 +7,7 @@ export = (config: ConfigSecurity) => {
     const allowedOrigin = config.cors.allowOrigins;
     const origin = ctx.request.headers.origin;
 
-    if (origin) {
+    if (origin && Array.isArray(allowedOrigin)) {
       if (allowedOrigin.indexOf(origin) > -1) {
         ctx.set('Access-Control-Allow-Origin', origin);
       }

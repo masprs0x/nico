@@ -1,8 +1,8 @@
 {
   "name": "@blastz/nico",
-  "version": "0.6.9",
-  "description": "wrap koa with handy way",
-  "main": "./lib/index.js",
+  "version": "0.6.11",
+  "description": "wrap up koa with handy way",
+  "main": "lib/index.js",
   "scripts": {
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
