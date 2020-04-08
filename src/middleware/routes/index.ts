@@ -4,9 +4,9 @@ import { Middleware, Context, Next } from 'koa';
 import debug from 'debug';
 import { HttpMethod, ConfigRoutes } from '../../../typings';
 
-const log = debug('nico:route');
+const log = debug('nico:api');
 
-export = function <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom>, routerPrifix?: string) {
+export = function <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom> = {}, routerPrifix?: string) {
   const prefix = routerPrifix ?? '';
 
   router.prefix(prefix);
@@ -62,7 +62,7 @@ export = function <State, Custom>(router: Router<State, Custom>, config: ConfigR
     });
 
     middlewares.unshift(async (ctx: Context, next: Next) => {
-      log(ctx.request.method + ' ' + ctx.request.url.slice(prefix.length));
+      log(ctx.method + ' ' + ctx.path.slice(prefix.length));
 
       await next();
     });

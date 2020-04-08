@@ -32,7 +32,10 @@ declare namespace Application {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
 
-  interface ConfigServe extends serve.Options {}
+  interface ConfigServe {
+    root?: string;
+    opts?: serve.Options;
+  }
 
   type Config<State, Custom> = {
     routes: ConfigRoutes<State, Custom>;

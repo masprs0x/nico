@@ -11,6 +11,8 @@ dist
 
 # Local files
 assets
+lib
+app.js
 
 # Miscellaneous
 *~

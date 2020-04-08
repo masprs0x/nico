@@ -1,7 +1,5 @@
 import Koa from 'koa';
 import Router from '@koa/router';
-import serve from 'koa-static';
-import path from 'path';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
@@ -11,6 +9,7 @@ import customHandler from './middleware/custom-handler';
 import cors from './middleware/cors';
 import { deepmerge } from './utils/utility';
 import { Config } from '../typings';
+import serve from './middleware/serve';
 
 class Nico {
   app = new Koa();
@@ -22,12 +21,15 @@ class Nico {
     app.use(responses(config.responses));
     app.use(errorHandler());
     app.use(cors(config.security));
-    app.use(serve(path.resolve(process.cwd(), './assets'), config.serve));
     app.use(customHandler(config.custom));
 
-    const router = new Router();
+    const serveRouter = new Router();
+    app.use(serve(serveRouter, config.serve));
 
+    const router = new Router();
     app.use(routes(router, config.routes, config.routerPrefix));
+
+    app.use(serveRouter.routes()).use(serveRouter.allowedMethods());
     app.use(router.routes()).use(router.allowedMethods());
 
     return app;
