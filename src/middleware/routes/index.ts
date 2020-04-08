@@ -61,21 +61,31 @@ export = function <State, Custom>(router: Router<State, Custom>, config: ConfigR
       middlewares.push(middleware);
     });
 
-    middlewares.unshift(async (ctx: Context, next: Next) => {
-      log(ctx.method + ' ' + ctx.path.slice(prefix.length));
+    if (process.env.NODE_ENV === 'development') {
+      middlewares.unshift(async (ctx: Context, next: Next) => {
+        const path = ctx.path.slice(prefix.length);
+        const start = process.hrtime();
+        log(ctx.method + ' ' + path);
 
-      await next();
-    });
-
-    middlewares.push(async (ctx: Context, next: Next) => {
-      const stateKeys = ['params', 'query', 'body'];
-      const state = ctx.state as any;
-      stateKeys.map((key) => {
-        state[key] && log.extend(key)(state[key]);
+        await next();
+        const end = process.hrtime(start);
+        const time = end[0] * 1000 + end[1] / 1000000;
+        log.extend('time')(`+${time}ms`);
+        if (time > 2000) {
+          log.extend('performance')('execute too long');
+        }
       });
 
-      await next();
-    });
+      middlewares.push(async (ctx: Context, next: Next) => {
+        const stateKeys = ['params', 'query', 'body'];
+        const state = ctx.state as any;
+        stateKeys.map((key) => {
+          state[key] && log.extend(key)(state[key]);
+        });
+
+        await next();
+      });
+    }
 
     router[method as HttpMethod](route, ...middlewares, controller);
   });
