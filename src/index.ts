@@ -14,8 +14,8 @@ import serve from './middleware/serve';
 class Nico {
   app = new Koa();
 
-  async init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {}) {
-    const config: Config<State, Custom> = deepmerge(defaultConfig, inputConfig);
+  async init<State, Custom>(inputConfig: Config<State, Custom> = {}) {
+    const config = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
     app.use(responses(config.responses));

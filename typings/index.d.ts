@@ -38,11 +38,11 @@ declare namespace Application {
   }
 
   type Config<State, Custom> = {
-    routes: ConfigRoutes<State, Custom>;
-    custom: ConfigCustom;
-    security: ConfigSecurity;
-    serve: ConfigServe;
-    responses: ConfigResponses;
+    routes?: ConfigRoutes<State, Custom>;
+    custom?: ConfigCustom;
+    security?: ConfigSecurity;
+    serve?: ConfigServe;
+    responses?: ConfigResponses;
     routerPrefix?: string;
   };
 
@@ -52,6 +52,10 @@ declare namespace Application {
     query?: any;
     params?: any;
     body?: any;
+  }
+
+  interface DefaultCustom extends Koa.DefaultContext {
+    ok: (this: Context, data: any, message: string, success: boolean) => void;
   }
 
   type Context<State extends DefaultState = Koa.DefaultState, Custom = Koa.DefaultContext> = Koa.ParameterizedContext<State, Custom>;

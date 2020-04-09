@@ -12,15 +12,15 @@ npm install @blastz/nico
 
 ## API
 
-### Nico.init<State, Custom>(inputConfig: Partial<Config<State, Custom>> = {})
+### Nico.init<State, Custom>(inputConfig: Config<State, Custom>)
 
-Get koa application by init nico.
+Get koa application.
 
 Application.Config
 
 ```ts
 type Config = {
-  routes: {
+  routes?: {
     [method_route: string]: {
       controller: Koa.Middleware<State, Custom>;
       policies?: Koa.Middleware<State, Custom>[] | boolean;
@@ -32,17 +32,20 @@ type Config = {
       };
     };
   };
-  custom: {
+  custom?: {
     [key: string]: any;
   };
-  security: {
+  security?: {
     cors: {
       allowOrigins: string[];
       allowCredentials?: boolean;
     };
   };
-  serve: serve.Options;
-  responses: {
+  serve?: {
+    root?: string;
+    opts?: serve.Options;
+  };
+  responses?: {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
   routerPrefix?: string;

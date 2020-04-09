@@ -1,8 +1,12 @@
 {
   "name": "@blastz/nico",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "description": "wrap up koa with handy way",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blastZ/nico.git"
+  },
   "scripts": {
     "tsc": "tsc",
     "tsc-watch": "tsc -w",

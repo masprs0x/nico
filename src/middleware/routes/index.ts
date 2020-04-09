@@ -6,7 +6,7 @@ import { HttpMethod, ConfigRoutes } from '../../../typings';
 
 const log = debug('nico:api');
 
-export = function <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom> = {}, routerPrifix?: string) {
+export = function <State, Custom>(router: Router<State, Custom>, config: ConfigRoutes<State, Custom>, routerPrifix?: string) {
   const prefix = routerPrifix ?? '';
 
   router.prefix(prefix);
