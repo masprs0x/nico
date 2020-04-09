@@ -7,9 +7,6 @@ import Mongo from '../utils/mongo';
 
 beforeAll(async () => {
   await nico.init({
-    responses: {
-      ok: require('./api/responses/ok')
-    },
     routes: {
       'GET /user': {
         controller: require('./api/controllers/get'),

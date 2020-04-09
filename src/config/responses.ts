@@ -1,14 +1,7 @@
 import { ConfigResponses } from '../../typings';
-import { Context } from 'koa';
 
 const config: ConfigResponses = {
-  ok: function (this: Context, data: any, message: string, success: boolean) {
-    this.body = {
-      success,
-      data,
-      message
-    };
-  }
+  ok: require('../api/responses/ok')
 };
 
 export = config;

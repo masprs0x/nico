@@ -55,12 +55,15 @@ declare namespace Application {
   }
 
   interface DefaultCustom extends Koa.DefaultContext {
-    ok: (this: Context, data: any, message: string, success: boolean) => void;
+    ok: (this: Context, data?: any, message?: string, success?: boolean) => void;
   }
 
-  type Context<State extends DefaultState = Koa.DefaultState, Custom = Koa.DefaultContext> = Koa.ParameterizedContext<State, Custom>;
+  type Context<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.ParameterizedContext<
+    State,
+    Custom
+  >;
   type Next = Koa.Next;
-  type Middleware<State = Koa.DefaultState, Custom = Koa.DefaultContext> = Koa.Middleware<State, Custom>;
+  type Middleware<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.Middleware<State, Custom>;
 }
 
 export = Application;
