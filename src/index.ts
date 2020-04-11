@@ -1,5 +1,6 @@
 import Koa from 'koa';
 import Router from '@koa/router';
+import debug from 'debug';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
@@ -13,8 +14,9 @@ import serve from './middleware/serve';
 
 class Nico {
   app = new Koa();
+  log = debug('nico');
 
-  async init<State, Custom>(inputConfig: Config<State, Custom> = {}) {
+  init<State, Custom>(inputConfig: Config<State, Custom> = {}) {
     const config = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
@@ -33,6 +35,23 @@ class Nico {
     app.use(router.routes()).use(router.allowedMethods());
 
     return app;
+  }
+
+  start(port = 1314, messageOrListener?: string | (() => void)) {
+    let listener = () => {
+      const log = this.log.extend('start');
+      if (typeof messageOrListener === 'string') {
+        log(messageOrListener);
+      } else {
+        log('app is on ' + port);
+      }
+    };
+
+    if (typeof messageOrListener === 'function') {
+      listener = messageOrListener;
+    }
+
+    this.app.listen(port, listener);
   }
 }
 

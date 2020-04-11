@@ -12,7 +12,7 @@ npm install @blastz/nico
 
 ## API
 
-### Nico.init<State, Custom>(inputConfig: Config<State, Custom>)
+### Nico.init(inputConfig: Config): Koa
 
 Get koa application.
 
@@ -51,6 +51,10 @@ type Config = {
   routerPrefix?: string;
 };
 ```
+
+### Nico.start(port?: number, messageOrListener?: string | (() => void)): void
+
+Start koa server
 
 ### Utility.Mongo.connect(mongoose: typeof Mongoose, url: string)
 

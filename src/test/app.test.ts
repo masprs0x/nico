@@ -6,7 +6,7 @@ import Joi from '../utils/joi';
 import Mongo from '../utils/mongo';
 
 beforeAll(async () => {
-  await nico.init({
+  nico.init({
     routes: {
       'GET /user': {
         controller: require('./api/controllers/get'),
