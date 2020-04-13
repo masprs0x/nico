@@ -36,10 +36,13 @@ type Config = {
     [key: string]: any;
   };
   security?: {
-    cors: {
-      allowOrigins: string[];
+    cors?: {
+      allowOrigins: string[] | string;
+      allowMethods?: string[] | string;
+      allowHeaders?: string[] | string;
       allowCredentials?: boolean;
     };
+    xframes?: 'DENY' | 'SAMEORIGIN';
   };
   serve?: {
     root?: string;
