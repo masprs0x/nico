@@ -1,22 +1,40 @@
 import { Context, Next } from 'koa';
-import { ConfigSecurity } from '../../../typings';
+import { CorsOptions } from '../../../typings';
 
-export = (config: ConfigSecurity) => {
+export = (config: CorsOptions) => {
+  const options = {
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
+    allowHeaders: 'Origin, Content-Type, Method',
+    ...config
+  };
+
+  if (Array.isArray(options.allowMethods)) {
+    options.allowMethods = options.allowMethods.join(',');
+  }
+
+  if (Array.isArray(options.allowHeaders)) {
+    options.allowHeaders = options.allowHeaders.join(',');
+  }
+
   return async (ctx: Context, next: Next) => {
     await next();
-    const allowedOrigin = config.cors.allowOrigins;
+
+    const allowedOrigin = options.allowOrigins;
     const origin = ctx.request.headers.origin;
 
-    if (origin && Array.isArray(allowedOrigin)) {
-      if (allowedOrigin.indexOf(origin) > -1) {
+    if (Array.isArray(allowedOrigin)) {
+      if (origin && allowedOrigin.indexOf(origin) > -1) {
         ctx.set('Access-Control-Allow-Origin', origin);
       }
-      ctx.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE,PATCH');
-      ctx.set('Access-Control-Allow-Headers', 'Origin, Content-Type, Method');
+    } else {
+      ctx.set('Access-Control-Allow-Origin', allowedOrigin);
+    }
 
-      if (config.cors.allowCredentials === true) {
-        ctx.set('Access-Control-Allow-Credentials', 'true');
-      }
+    ctx.set('Access-Control-Allow-Methods', options.allowMethods);
+    ctx.set('Access-Control-Allow-Headers', options.allowHeaders);
+
+    if (options.allowCredentials === true) {
+      ctx.set('Access-Control-Allow-Credentials', 'true');
     }
   };
 };

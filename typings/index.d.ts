@@ -21,11 +21,18 @@ declare namespace Application {
     [key: string]: any;
   };
 
+  type CorsOptions = {
+    allowOrigins: string[] | string;
+    allowMethods?: string[] | string;
+    allowHeaders?: string[] | string;
+    allowCredentials?: boolean;
+  };
+
+  type XFrameOptions = 'DENY' | 'SAMEORIGIN';
+
   type ConfigSecurity = {
-    cors: {
-      allowOrigins: string[];
-      allowCredentials?: boolean;
-    };
+    cors?: CorsOptions;
+    xframes?: XFrameOptions;
   };
 
   type ConfigResponses = {

@@ -8,6 +8,7 @@ import responses from './middleware/responses';
 import defaultConfig from './config';
 import customHandler from './middleware/custom-handler';
 import cors from './middleware/cors';
+import xframes from './middleware/xframes';
 import { deepmerge } from './utils/utility';
 import { Config } from '../typings';
 import serve from './middleware/serve';
@@ -21,7 +22,8 @@ class Nico {
     const app = this.app;
 
     app.use(responses(config.responses));
-    app.use(cors(config.security));
+    app.use(cors(config.security.cors));
+    app.use(xframes(config.security.xframes));
     app.use(errorHandler());
     app.use(customHandler(config.custom));
 
