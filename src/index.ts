@@ -7,8 +7,6 @@ import errorHandler from './middleware/error-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
 import customHandler from './middleware/custom-handler';
-import cors from './middleware/cors';
-import xframes from './middleware/xframes';
 import { deepmerge } from './utils/utility';
 import { Config } from '../typings';
 import serve from './middleware/serve';
@@ -21,17 +19,15 @@ class Nico {
     const config = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
-    app.use(responses(config.responses));
-    app.use(cors(config.security.cors));
-    app.use(xframes(config.security.xframes));
     app.use(errorHandler());
+    app.use(responses(config.responses));
     app.use(customHandler(config.custom));
 
     const serveRouter = new Router();
     app.use(serve(serveRouter, config.serve));
 
     const router = new Router();
-    app.use(routes(router, config.routes, config.routerPrefix));
+    app.use(routes(router, config));
 
     app.use(serveRouter.routes()).use(serveRouter.allowedMethods());
     app.use(router.routes()).use(router.allowedMethods());

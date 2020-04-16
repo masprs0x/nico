@@ -14,6 +14,8 @@ declare namespace Application {
         query?: Joi.ObjectSchema;
         body?: Joi.ObjectSchema;
       };
+      cors?: CorsOptions;
+      xframes?: XFrameOptions | true;
     };
   };
 
@@ -31,7 +33,7 @@ declare namespace Application {
   type XFrameOptions = 'DENY' | 'SAMEORIGIN';
 
   type ConfigSecurity = {
-    cors?: CorsOptions;
+    cors?: { allRoutes?: boolean } & CorsOptions;
     xframes?: XFrameOptions;
   };
 

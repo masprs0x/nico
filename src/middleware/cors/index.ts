@@ -1,8 +1,10 @@
 import { Context, Next } from 'koa';
 import { CorsOptions } from '../../../typings';
 
-export = (config: CorsOptions) => {
+export = (config?: CorsOptions) => {
   const options = {
+    allowOrigins: ['http://127.0.0.1'],
+    allowCredentials: false,
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     allowHeaders: 'Origin, Content-Type, Method',
     ...config

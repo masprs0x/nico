@@ -10,7 +10,9 @@ export = () => {
     } catch (err) {
       log(err);
 
-      return ctx.ok(undefined, err.message, false);
+      ctx.status = 500;
+      ctx.body = 'Server Error';
+      return;
     }
   };
 };
