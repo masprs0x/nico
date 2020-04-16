@@ -59,10 +59,6 @@ type Config = {
 
 Start koa server
 
-### Utility.Mongo.connect(mongoose: typeof Mongoose, url: string)
+## Utility
 
-Connect mongodb
-
-### Utility.Mongo.disconnect(mongoose: typeof Mongoose)
-
-Disconnect mongodb
+check utility in [nico-utility](https://github.com/blastZ/nico-utility).
