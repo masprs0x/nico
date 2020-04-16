@@ -30,6 +30,8 @@ type Config = {
         query?: Joi.ObjectSchema;
         body?: Joi.ObjectSchema;
       };
+      cors?: CorsOptions;
+      xframes?: XFrameOptions | true;
     };
   };
   custom?: {
@@ -38,11 +40,12 @@ type Config = {
   security?: {
     cors?: {
       allowOrigins: string[] | string;
+      allRoutes?: boolean;
       allowMethods?: string[] | string;
       allowHeaders?: string[] | string;
       allowCredentials?: boolean;
     };
-    xframes?: 'DENY' | 'SAMEORIGIN';
+    xframes?: XFrameOptions;
   };
   serve?: {
     root?: string;
