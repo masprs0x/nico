@@ -22,19 +22,18 @@
   "author": "blastz",
   "license": "ISC",
   "dependencies": {
-    "@hapi/joi": "^17.1.1",
     "@koa/router": "^8.0.8",
+    "@types/hapi__joi": "^16.0.12",
     "@types/koa": "^2.11.3",
     "@types/koa-static": "^4.0.1",
     "@types/koa__router": "^8.0.2",
-    "@types/mongoose": "^5.7.8",
-    "@types/hapi__joi": "^16.0.12",
     "debug": "^4.1.1",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-static": "^5.0.0"
   },
   "devDependencies": {
+    "@blastz/nico-utility": "^0.1.1",
     "@types/debug": "^4.1.5",
     "@types/jest": "^25.1.5",
     "@types/supertest": "^2.0.8",

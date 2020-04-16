@@ -2,8 +2,8 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 
 import nico from '../index';
-import Joi from '../utils/joi';
-import Mongo from '../utils/mongo';
+import Joi from '@blastz/nico-utility/joi';
+import Mongo from '@blastz/nico-utility/mongo';
 
 beforeAll(async () => {
   nico.init({
@@ -32,7 +32,7 @@ afterAll(async () => {
   await Mongo.disconnect(mongoose);
 });
 
-test('Basic test', async () => {
+test('Simple test', async () => {
   const createUser = await request(nico.app.callback()).post('/user').send({ name: 'nico nico ni' });
   const getUsers = await request(nico.app.callback()).get('/user');
 
