@@ -26,23 +26,6 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
 
     let middlewares: Middleware<State, Custom>[] = [];
 
-    /** Debug Method Middleware */
-    if (process.env.NODE_ENV === 'development') {
-      middlewares.push(async (ctx: Context, next: Next) => {
-        const path = ctx.path;
-        const start = process.hrtime();
-        log(ctx.method + ' ' + path);
-
-        await next();
-        const end = process.hrtime(start);
-        const time = end[0] * 1000 + end[1] / 1000000;
-        log.extend('time')(`+${time}ms`);
-        if (time > 2000) {
-          log.extend('performance')('execute too long');
-        }
-      });
-    }
-
     /** Cors Middleware */
     if (corsOptions) {
       middlewares.push(cors(corsOptions));
@@ -52,10 +35,38 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
       }
     }
 
-    /** Route Error Handler Middleware */
+    /** Route Error Handler And Debug Middleware */
     middlewares.push(async (ctx: Context, next: Next) => {
       try {
+        const isDev = process.env.NODE_ENV === 'development';
+        let start: [number, number] = [0, 0];
+
+        if (isDev) {
+          start = process.hrtime();
+        }
+
         await next();
+
+        if (isDev) {
+          // log method + path
+          const path = ctx.path;
+          log(ctx.method + ' ' + path);
+
+          // log payload
+          const stateKeys = ['params', 'query', 'body'];
+          const state = ctx.state as any;
+          stateKeys.map((key) => {
+            state[key] && log.extend(key)(state[key]);
+          });
+
+          // log execute time
+          const end = process.hrtime(start);
+          const time = end[0] * 1000 + end[1] / 1000000;
+          log.extend('time')(`+${time}ms`);
+          if (time > 2000) {
+            log.extend('performance')('execute too long');
+          }
+        }
       } catch (err) {
         log.extend('err')(err);
 
@@ -112,19 +123,6 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
 
       middlewares.push(middleware);
     });
-
-    /** Debug Payload Middleware */
-    if (process.env.NODE_ENV === 'development') {
-      middlewares.push(async (ctx: Context, next: Next) => {
-        const stateKeys = ['params', 'query', 'body'];
-        const state = ctx.state as any;
-        stateKeys.map((key) => {
-          state[key] && log.extend(key)(state[key]);
-        });
-
-        await next();
-      });
-    }
 
     router[method as HttpMethod](route, ...middlewares, controller);
   });
