@@ -6,6 +6,7 @@ import debug from 'debug';
 import cors from '../cors';
 import xframes from '../xframes';
 import { HttpMethod, ConfigRoutes, Config, ConfigSecurity } from '../../../typings';
+import csp from '../csp';
 
 const log = debug('nico:api');
 
@@ -14,7 +15,15 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
   const configSecurity = config.security as ConfigSecurity;
 
   Object.entries(configRoutes).map(([key, value]) => {
-    const { controller, policies = true, bodyParser = false, validate = {}, cors: corsOptions, xframes: xframesOptions } = value;
+    const {
+      controller,
+      policies = true,
+      bodyParser = false,
+      validate = {},
+      cors: corsOptions,
+      xframes: xframesOptions,
+      csp: cspOptions
+    } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
     const testMethod = /^(get|post|delete|put|patch)$/;
@@ -73,6 +82,15 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
         return ctx.ok(undefined, err.message, false);
       }
     });
+
+    /** CSP Middleware */
+    if (cspOptions) {
+      if (typeof cspOptions === 'boolean' && cspOptions === true) {
+        middlewares.push(csp(configSecurity.csp || { policy: {} }));
+      } else {
+        middlewares.push(csp(cspOptions));
+      }
+    }
 
     /** Xframes Middleware */
     if (xframesOptions) {

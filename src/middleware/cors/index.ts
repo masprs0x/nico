@@ -19,8 +19,6 @@ export = (config?: CorsOptions) => {
   }
 
   return async (ctx: Context, next: Next) => {
-    await next();
-
     const allowedOrigin = options.allowOrigins;
     const origin = ctx.request.headers.origin;
 
@@ -38,5 +36,7 @@ export = (config?: CorsOptions) => {
     if (options.allowCredentials === true) {
       ctx.set('Access-Control-Allow-Credentials', 'true');
     }
+
+    await next();
   };
 };

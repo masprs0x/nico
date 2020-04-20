@@ -32,6 +32,7 @@ type Config = {
       };
       cors?: CorsOptions;
       xframes?: XFrameOptions | true;
+      csp?: CSPOptions | true;
     };
   };
   custom?: {
@@ -46,6 +47,7 @@ type Config = {
       allowCredentials?: boolean;
     };
     xframes?: XFrameOptions;
+    csp?: CSPOptions;
   };
   serve?: {
     root?: string;

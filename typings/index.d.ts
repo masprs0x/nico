@@ -16,6 +16,7 @@ declare namespace Application {
       };
       cors?: CorsOptions;
       xframes?: XFrameOptions | true;
+      csp?: CSPOptions | true;
     };
   };
 
@@ -30,11 +31,18 @@ declare namespace Application {
     allowCredentials?: boolean;
   };
 
+  type CSPOptions = {
+    policy: { [key: string]: string };
+    reportOnly?: boolean;
+    reportUri?: string;
+  };
+
   type XFrameOptions = 'DENY' | 'SAMEORIGIN';
 
   type ConfigSecurity = {
     cors?: { allRoutes?: boolean } & CorsOptions;
     xframes?: XFrameOptions;
+    csp?: CSPOptions;
   };
 
   type ConfigResponses = {
@@ -52,7 +60,6 @@ declare namespace Application {
     security?: ConfigSecurity;
     serve?: ConfigServe;
     responses?: ConfigResponses;
-    routerPrefix?: string;
   };
 
   type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
