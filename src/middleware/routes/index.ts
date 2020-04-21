@@ -26,7 +26,7 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
     } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
-    const testMethod = /^(get|post|delete|put|patch)$/;
+    const testMethod = /^(get|post|delete|put|patch|all)$/;
 
     if (!testMethod.test(method)) {
       console.error('E_ROUTES_INVALID_HTTP_METHOD: ', key);
@@ -60,6 +60,9 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
           // log method + path
           const path = ctx.path;
           log(ctx.method + ' ' + path);
+
+          // log controller
+          log.extend('controller')(controller.name);
 
           // log payload
           const stateKeys = ['params', 'query', 'body'];
