@@ -49,6 +49,13 @@ declare namespace Application {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
 
+  type ConfigView = {
+    autoRender: boolean;
+    map: {
+      [extname: string]: 'ejs' | 'pug' | 'react' | 'nunjucks';
+    };
+  };
+
   interface ConfigServe {
     root?: string;
     opts?: serve.Options;
@@ -60,6 +67,7 @@ declare namespace Application {
     security?: ConfigSecurity;
     serve?: ConfigServe;
     responses?: ConfigResponses;
+    views?: ConfigView;
   };
 
   type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
@@ -72,6 +80,7 @@ declare namespace Application {
 
   interface DefaultCustom extends Koa.DefaultContext {
     ok: (this: Context, data?: any, message?: string, success?: boolean) => void;
+    render?: (filePath: string) => void;
   }
 
   type Context<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.ParameterizedContext<
