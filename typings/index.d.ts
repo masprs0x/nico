@@ -72,6 +72,7 @@ declare namespace Application {
 
   interface DefaultCustom extends Koa.DefaultContext {
     ok: (this: Context, data?: any, message?: string, success?: boolean) => void;
+    custom: ConfigCustom;
   }
 
   type Context<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.ParameterizedContext<

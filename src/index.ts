@@ -6,7 +6,7 @@ import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
-import customHandler from './middleware/custom-handler';
+import custom from './middleware/custom';
 import { deepmerge } from './utils/utility';
 import { Config } from '../typings';
 import serve from './middleware/serve';
@@ -20,8 +20,8 @@ class Nico {
     const app = this.app;
 
     app.use(errorHandler());
+    app.use(custom(config.custom));
     app.use(responses(config.responses));
-    app.use(customHandler(config.custom));
 
     const serveRouter = new Router();
     app.use(serve(serveRouter, config.serve));
