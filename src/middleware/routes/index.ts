@@ -1,18 +1,21 @@
 import Router from '@koa/router';
 import KoaBody from 'koa-body';
 import { Middleware, Context, Next } from 'koa';
-import debug from 'debug';
 
 import cors from '../cors';
 import xframes from '../xframes';
 import { HttpMethod, ConfigRoutes, Config, ConfigSecurity } from '../../../typings';
 import csp from '../csp';
-
-const log = debug('nico:api');
+import log from '../log';
+import { deepmerge } from '../../utils/utility';
 
 export = function <State, Custom>(router: Router<State, Custom>, config: Config<State, Custom>) {
   const configRoutes = config.routes as ConfigRoutes<State, Custom>;
   const configSecurity = config.security as ConfigSecurity;
+
+  const defaultCorsMiddleware = cors(configSecurity.cors, false);
+
+  const testMethod = /^(get|post|delete|put|patch|all)$/;
 
   Object.entries(configRoutes).map(([key, value]) => {
     const {
@@ -26,7 +29,6 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
     } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
-    const testMethod = /^(get|post|delete|put|patch|all)$/;
 
     if (!testMethod.test(method)) {
       console.error('E_ROUTES_INVALID_HTTP_METHOD: ', key);
@@ -36,55 +38,17 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
     let middlewares: Middleware<State, Custom>[] = [];
 
     /** Cors Middleware */
-    if (corsOptions) {
-      middlewares.push(cors(corsOptions));
-    } else {
-      if (configSecurity.cors?.allRoutes) {
-        middlewares.push(cors(configSecurity.cors));
+    if (corsOptions || typeof corsOptions === 'boolean') {
+      if (typeof corsOptions === 'boolean' && corsOptions) {
+        middlewares.push(defaultCorsMiddleware);
+      } else {
+        const corsConfig = deepmerge(configSecurity.cors, corsOptions);
+        middlewares.push(cors(corsConfig, false));
       }
     }
 
     /** Route Error Handler And Debug Middleware */
-    middlewares.push(async (ctx: Context, next: Next) => {
-      try {
-        const isDev = process.env.NODE_ENV === 'development';
-        let start: [number, number] = [0, 0];
-
-        if (isDev) {
-          start = process.hrtime();
-        }
-
-        await next();
-
-        if (isDev) {
-          // log method + path
-          const path = ctx.path;
-          log(ctx.method + ' ' + path);
-
-          // log controller
-          log.extend('controller')(controller.name);
-
-          // log payload
-          const stateKeys = ['params', 'query', 'body'];
-          const state = ctx.state as any;
-          stateKeys.map((key) => {
-            state[key] && log.extend(key)(state[key]);
-          });
-
-          // log execute time
-          const end = process.hrtime(start);
-          const time = end[0] * 1000 + end[1] / 1000000;
-          log.extend('time')(`+${time}ms`);
-          if (time > 2000) {
-            log.extend('performance')('execute too long');
-          }
-        }
-      } catch (err) {
-        log.extend('err')(err);
-
-        return ctx.ok(undefined, err.message, false);
-      }
-    });
+    middlewares.push(log(controller.name));
 
     /** CSP Middleware */
     if (cspOptions) {

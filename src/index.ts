@@ -10,6 +10,7 @@ import custom from './middleware/custom';
 import { deepmerge } from './utils/utility';
 import { Config } from '../typings';
 import serve from './middleware/serve';
+import cors from './middleware/cors';
 
 class Nico {
   app = new Koa();
@@ -20,6 +21,7 @@ class Nico {
     const app = this.app;
 
     app.use(errorHandler());
+    app.use(cors(config.security.cors));
     app.use(custom(config.custom));
     app.use(responses(config.responses));
 

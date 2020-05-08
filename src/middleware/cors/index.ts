@@ -1,8 +1,9 @@
 import { Context, Next } from 'koa';
+
 import { CorsOptions } from '../../../typings';
 
-export = (config?: CorsOptions) => {
-  const options = {
+export = (config?: CorsOptions, global = true) => {
+  const options: CorsOptions = {
     allowOrigins: ['http://127.0.0.1'],
     allowCredentials: false,
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
@@ -18,25 +19,50 @@ export = (config?: CorsOptions) => {
     options.allowHeaders = options.allowHeaders.join(',');
   }
 
+  const allowedOrigin = options.allowOrigins;
+  const allRoutes = options.allRoutes;
+
   return async (ctx: Context, next: Next) => {
-    const allowedOrigin = options.allowOrigins;
-    const origin = ctx.request.headers.origin;
+    const requestOrigin = ctx.request.headers.origin;
+    const method = ctx.method;
+    let origin = '';
 
-    if (Array.isArray(allowedOrigin)) {
-      if (origin && allowedOrigin.indexOf(origin) > -1) {
-        ctx.set('Access-Control-Allow-Origin', origin);
+    if (((global && allRoutes) || !global) && method !== 'OPTIONS') {
+      if (options.allowCredentials === true) {
+        ctx.set('Access-Control-Allow-Credentials', 'true');
       }
+
+      if (Array.isArray(allowedOrigin)) {
+        if (requestOrigin && allowedOrigin.indexOf(requestOrigin) > -1) {
+          origin = requestOrigin;
+        }
+      } else {
+        origin = allowedOrigin;
+      }
+
+      origin ? ctx.set('Access-Control-Allow-Origin', origin) : ctx.remove('Access-Control-Allow-Origin');
+
+      await next();
     } else {
-      ctx.set('Access-Control-Allow-Origin', allowedOrigin);
+      if (!ctx.get('Access-Control-Request-Method')) {
+        return await next();
+      }
+
+      if (options.allowCredentials === true) {
+        ctx.set('Access-Control-Allow-Credentials', 'true');
+      }
+
+      ctx.set('Access-Control-Allow-Origin', requestOrigin);
+
+      options.allowMethods && ctx.set('Access-Control-Allow-Methods', options.allowMethods);
+
+      let allowHeaders = options.allowHeaders;
+      if (!allowHeaders) {
+        allowHeaders = ctx.get('Access-Control-Request-Headers');
+      }
+      allowHeaders && ctx.set('Access-Control-Allow-Headers', allowHeaders);
+
+      ctx.status = 204;
     }
-
-    ctx.set('Access-Control-Allow-Methods', options.allowMethods);
-    ctx.set('Access-Control-Allow-Headers', options.allowHeaders);
-
-    if (options.allowCredentials === true) {
-      ctx.set('Access-Control-Allow-Credentials', 'true');
-    }
-
-    await next();
   };
 };

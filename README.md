@@ -1,6 +1,6 @@
 # Nico
 
-**This module is sill in building, everyting maybe change**.
+**This package is still in development, don't use in production enviroment.**
 
 Wrap up koa for better usage, learn how to use it in [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate);
 
@@ -30,7 +30,7 @@ type Config = {
         query?: Joi.ObjectSchema;
         body?: Joi.ObjectSchema;
       };
-      cors?: CorsOptions;
+      cors?: CorsOptions | true;
       xframes?: XFrameOptions | true;
       csp?: CSPOptions | true;
     };
@@ -56,7 +56,6 @@ type Config = {
   responses?: {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
-  routerPrefix?: string;
 };
 ```
 
