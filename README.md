@@ -1,6 +1,6 @@
 # Nico
 
-**This package is still in development, don't use in production enviroment.**
+**This package is still in development, don't use this in production enviroment.**
 
 Wrap up koa for better usage, learn how to use it in [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate);
 
@@ -30,7 +30,7 @@ type Config = {
         query?: Joi.ObjectSchema;
         body?: Joi.ObjectSchema;
       };
-      cors?: CorsOptions | true;
+      cors?: CorsOptions | boolean;
       xframes?: XFrameOptions | true;
       csp?: CSPOptions | true;
     };

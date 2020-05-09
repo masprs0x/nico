@@ -3,32 +3,32 @@ import KoaBody from 'koa-body';
 import { Middleware, Context, Next } from 'koa';
 
 import cors from '../cors';
+import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import { HttpMethod, ConfigRoutes, Config, ConfigSecurity } from '../../../typings';
 import csp from '../csp';
 import log from '../log';
-import { deepmerge } from '../../utils/utility';
 
 export = function <State, Custom>(router: Router<State, Custom>, config: Config<State, Custom>) {
   const configRoutes = config.routes as ConfigRoutes<State, Custom>;
   const configSecurity = config.security as ConfigSecurity;
 
   const defaultCorsMiddleware = cors(configSecurity.cors, false);
+  const removeCorsMiddleware = removeCors();
 
-  const testMethod = /^(get|post|delete|put|patch|all)$/;
+  const testMethod = /^(get|post|delete|put|patch|options|all)$/;
 
   Object.entries(configRoutes).map(([key, value]) => {
-    const {
-      controller,
-      policies = true,
-      bodyParser = false,
-      validate = {},
-      cors: corsOptions,
-      xframes: xframesOptions,
-      csp: cspOptions
-    } = value;
+    const { policies = true, bodyParser = false, validate = {}, cors: corsOptions, xframes: xframesOptions, csp: cspOptions } = value;
+    let { controller } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
+
+    if (!controller) {
+      controller = async function defaultController(ctx, next) {
+        await next();
+      };
+    }
 
     if (!testMethod.test(method)) {
       console.error('E_ROUTES_INVALID_HTTP_METHOD: ', key);
@@ -39,10 +39,17 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
 
     /** Cors Middleware */
     if (corsOptions || typeof corsOptions === 'boolean') {
-      if (typeof corsOptions === 'boolean' && corsOptions) {
-        middlewares.push(defaultCorsMiddleware);
+      if (typeof corsOptions === 'boolean') {
+        if (corsOptions) {
+          middlewares.push(defaultCorsMiddleware);
+        } else {
+          middlewares.push(removeCorsMiddleware);
+        }
       } else {
-        const corsConfig = deepmerge(configSecurity.cors, corsOptions);
+        const corsConfig = {
+          ...configSecurity.cors,
+          ...corsOptions
+        };
         middlewares.push(cors(corsConfig, false));
       }
     }

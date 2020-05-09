@@ -14,7 +14,7 @@ declare namespace Application {
         query?: Joi.ObjectSchema;
         body?: Joi.ObjectSchema;
       };
-      cors?: CorsOptions | true;
+      cors?: CorsOptions | boolean;
       xframes?: XFrameOptions | true;
       csp?: CSPOptions | true;
     };
@@ -29,6 +29,7 @@ declare namespace Application {
     allowMethods?: string[] | string;
     allowHeaders?: string[] | string;
     allowCredentials?: boolean;
+    maxAge?: number;
   };
 
   type CSPOptions = {

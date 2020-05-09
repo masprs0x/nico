@@ -8,8 +8,11 @@ export = (config?: CorsOptions, global = true) => {
     allowCredentials: false,
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     allowHeaders: 'Origin, Content-Type, Method',
+    maxAge: 60,
     ...config
   };
+
+  options.maxAge = Number(options.maxAge);
 
   if (Array.isArray(options.allowMethods)) {
     options.allowMethods = options.allowMethods.join(',');
@@ -22,25 +25,35 @@ export = (config?: CorsOptions, global = true) => {
   const allowedOrigin = options.allowOrigins;
   const allRoutes = options.allRoutes;
 
+  const getOrigin = (requestOrigin: string) => {
+    let origin = '';
+
+    if (Array.isArray(allowedOrigin)) {
+      if (requestOrigin && allowedOrigin.indexOf(requestOrigin) > -1) {
+        origin = requestOrigin;
+      }
+    } else {
+      origin = allowedOrigin;
+    }
+
+    return origin;
+  };
+
+  const setOrigin = (ctx: Context, origin: string) => {
+    origin ? ctx.set('Access-Control-Allow-Origin', origin) : ctx.remove('Access-Control-Allow-Origin');
+  };
+
+  const setCredentials = (ctx: Context, allowCredentials?: boolean) => {
+    allowCredentials ? ctx.set('Access-Control-Allow-Credentials', 'true') : ctx.remove('Access-Control-Allow-Credentials');
+  };
+
   return async (ctx: Context, next: Next) => {
     const requestOrigin = ctx.request.headers.origin;
     const method = ctx.method;
-    let origin = '';
 
     if (((global && allRoutes) || !global) && method !== 'OPTIONS') {
-      if (options.allowCredentials === true) {
-        ctx.set('Access-Control-Allow-Credentials', 'true');
-      }
-
-      if (Array.isArray(allowedOrigin)) {
-        if (requestOrigin && allowedOrigin.indexOf(requestOrigin) > -1) {
-          origin = requestOrigin;
-        }
-      } else {
-        origin = allowedOrigin;
-      }
-
-      origin ? ctx.set('Access-Control-Allow-Origin', origin) : ctx.remove('Access-Control-Allow-Origin');
+      setCredentials(ctx, options.allowCredentials);
+      setOrigin(ctx, getOrigin(requestOrigin));
 
       await next();
     } else {
@@ -48,13 +61,16 @@ export = (config?: CorsOptions, global = true) => {
         return await next();
       }
 
-      if (options.allowCredentials === true) {
-        ctx.set('Access-Control-Allow-Credentials', 'true');
+      setCredentials(ctx, options.allowCredentials);
+
+      if (global) {
+        ctx.set('Access-Control-Allow-Origin', requestOrigin);
+      } else {
+        setOrigin(ctx, getOrigin(requestOrigin));
       }
 
-      ctx.set('Access-Control-Allow-Origin', requestOrigin);
-
       options.allowMethods && ctx.set('Access-Control-Allow-Methods', options.allowMethods);
+      options.maxAge && !Number.isNaN(options.maxAge) && options.maxAge > 0 && ctx.set('Access-Control-Max-Age', String(options.maxAge));
 
       let allowHeaders = options.allowHeaders;
       if (!allowHeaders) {
@@ -63,6 +79,8 @@ export = (config?: CorsOptions, global = true) => {
       allowHeaders && ctx.set('Access-Control-Allow-Headers', allowHeaders);
 
       ctx.status = 204;
+
+      await next();
     }
   };
 };
