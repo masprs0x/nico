@@ -1,14 +1,43 @@
 # Nico
 
-**This package is still in development, don't use this in production enviroment.**
+**This package is still in development.**
 
-Wrap up koa for better usage, learn how to use it in [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate);
+Nico is a backend framework build on koa. It's inspired by [sails](https://github.com/balderdashy/sails). Ultimately nico is an effort to provide a more clear way to build api services.
 
 ## Installation
 
 ```bash
 npm install @blastz/nico
 ```
+
+## Hello Nico
+
+```js
+const nico = require('@blastz/nico');
+
+nico.init({
+  routes: {
+    'GET /users': {
+      controller: async (ctx) => {
+        ctx.ok({
+          users: []
+        });
+      }
+    }
+  }
+});
+
+nico.start();
+```
+
+```bash
+$ curl "http://localhost:1314/users"
+# {"success":true,"data":{"users":[]},"message":"execute success"}
+```
+
+## Getting started
+
+- [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate) - An restful api services boilerplate build on nico.
 
 ## API
 
