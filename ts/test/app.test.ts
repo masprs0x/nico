@@ -1,7 +1,7 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 
-import nico from '../index';
+import nico from '../src/index';
 import Joi from '@blastz/nico-utility/joi';
 import Mongo from '@blastz/nico-utility/mongo';
 

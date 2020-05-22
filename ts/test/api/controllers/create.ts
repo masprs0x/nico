@@ -1,5 +1,5 @@
 import { User } from '../models/User';
-import { Context } from '../../../../typings';
+import { Context } from '../../../typings';
 
 export = async (ctx: Context) => {
   const name: string = ctx.state.body.name;

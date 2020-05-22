@@ -1,4 +1,4 @@
-import { Context } from '../../../../typings';
+import { Context } from '../../../typings';
 import { User } from '../models/User';
 
 export = async (ctx: Context) => {
