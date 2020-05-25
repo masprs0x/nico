@@ -1,12 +1,14 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 
-import nico from '../src/index';
+import Nico from '../src/index';
 import Joi from '@hapi/joi';
 import Mongo from '@blastz/nico-mongo';
 
+let nico: Nico;
+
 beforeAll(async () => {
-  nico.init({
+  nico = new Nico({
     routes: {
       'GET /user': {
         controller: require('./api/controllers/get'),
