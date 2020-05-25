@@ -90,8 +90,10 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
 
     /** BodyParser Middleware */
     if (bodyParser) {
-      if (typeof bodyParser === 'boolean' && bodyParser) {
-        middlewares.push(KoaBody());
+      if (typeof bodyParser === 'boolean') {
+        if (bodyParser) {
+          middlewares.push(KoaBody());
+        }
       } else {
         middlewares.push(KoaBody({ ...bodyParser }));
       }

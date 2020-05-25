@@ -3,7 +3,6 @@ import { CSPOptions } from '../../../typings';
 
 export = (config: CSPOptions) => {
   const options: CSPOptions = {
-    policy: {},
     reportOnly: false,
     reportUri: '',
     ...config

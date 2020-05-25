@@ -55,4 +55,4 @@ class Nico {
   }
 }
 
-export = new Nico();
+export default new Nico();
