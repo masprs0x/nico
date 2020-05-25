@@ -8,8 +8,10 @@ import { ConfigServe } from '../../../typings';
 
 const log = debug('nico:serve');
 
-export = (router: Router, config: ConfigServe) => {
-  const { root, opts } = config;
+export = (router: Router, config?: ConfigServe) => {
+  const { root, opts } = config ?? {
+    root: 'assets'
+  };
 
   if (root) {
     router.get(

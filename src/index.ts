@@ -8,7 +8,7 @@ import responses from './middleware/responses';
 import defaultConfig from './config';
 import custom from './middleware/custom';
 import { deepmerge } from './utils/utility';
-import { Config } from '../typings';
+import { Config, DefaultState, DefaultCustom } from '../typings';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
 
@@ -16,12 +16,19 @@ class Nico {
   app = new Koa();
   log = debug('nico');
 
-  init<State, Custom>(inputConfig: Config<State, Custom> = {}) {
-    const config = deepmerge(defaultConfig, inputConfig);
+  init<State = DefaultState, Custom = DefaultCustom>(inputConfig: Config<State, Custom> | Config<State, Custom>[]) {
+    let config: Config<State, Custom>;
+    if (Array.isArray(inputConfig)) {
+      config = deepmerge(defaultConfig, this.mergeConfigs<State, Custom>(inputConfig));
+    } else {
+      config = deepmerge(defaultConfig, inputConfig);
+    }
+
+    //const config = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
     app.use(errorHandler());
-    app.use(cors(config.security.cors));
+    app.use(cors(config.security?.cors));
     app.use(custom(config.custom));
     app.use(responses(config.responses));
 
@@ -52,6 +59,17 @@ class Nico {
     }
 
     this.app.listen(port, listener);
+  }
+
+  mergeConfigs<State = DefaultState, Custom = DefaultCustom>(configs: Config<State, Custom>[]) {
+    if (!Array.isArray(configs)) return configs;
+
+    const config = configs.reduce((result, current, index) => {
+      if (index == 0) return current;
+      return deepmerge(result, current);
+    }, configs[0]);
+
+    return config;
   }
 }
 

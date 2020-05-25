@@ -10,12 +10,12 @@ function emptyTarget(val: any) {
   return Array.isArray(val) ? [] : {};
 }
 
-function cloneIfNecessary(value: any, optionsArgument: any): any {
+function cloneIfNecessary(value: any, optionsArgument: OptionsArgument): any {
   const clone = optionsArgument && optionsArgument.clone === true;
   return clone && isMergeableObject(value) ? deepmerge(emptyTarget(value), value, optionsArgument) : value;
 }
 
-function defaultArrayMerge(target: any, source: any, optionsArgument: any) {
+function defaultArrayMerge(target: any, source: any, optionsArgument: OptionsArgument) {
   const destination = target.slice();
   source.forEach(function (e: any, i: any) {
     if (typeof destination[i] === 'undefined') {
@@ -29,7 +29,7 @@ function defaultArrayMerge(target: any, source: any, optionsArgument: any) {
   return destination;
 }
 
-function mergeObject(target: any, source: any, optionsArgument: any) {
+function mergeObject(target: any, source: any, optionsArgument: OptionsArgument) {
   const destination: any = {};
   if (isMergeableObject(target)) {
     Object.keys(target).forEach(function (key) {
@@ -46,14 +46,19 @@ function mergeObject(target: any, source: any, optionsArgument: any) {
   return destination;
 }
 
-export function deepmerge(target: any, source: any, optionsArgument?: any) {
+export function deepmerge(target: any, source: any, optionsArgument?: OptionsArgument) {
   const array = Array.isArray(source);
   const options = optionsArgument || { arrayMerge: defaultArrayMerge };
   const arrayMerge = options.arrayMerge || defaultArrayMerge;
 
   if (array) {
-    return Array.isArray(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument);
+    return Array.isArray(target) ? arrayMerge(target, source, options) : cloneIfNecessary(source, options);
   } else {
-    return mergeObject(target, source, optionsArgument);
+    return mergeObject(target, source, options);
   }
 }
+
+type OptionsArgument = {
+  arrayMerge: Function;
+  clone?: boolean;
+};
