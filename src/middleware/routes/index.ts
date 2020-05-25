@@ -1,16 +1,19 @@
 import Router from '@koa/router';
 import KoaBody from 'koa-body';
-import { Middleware, Context, Next } from 'koa';
 
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
-import { HttpMethod, ConfigRoutes, Config, ConfigSecurity } from '../../../typings';
 import csp from '../csp';
 import log from '../log';
 
-export = function <State, Custom>(router: Router<State, Custom>, config: Config<State, Custom>) {
-  const configRoutes = config.routes as ConfigRoutes<State, Custom>;
+import { Context, Middleware, Next, HttpMethod, ConfigRoutes, Config, ConfigSecurity, DefaultState, DefaultCustom } from '../../../typings';
+
+export = function <TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
+  router: Router<TState, TCustom>,
+  config: Config<TState, TCustom>
+) {
+  const configRoutes = config.routes as ConfigRoutes<TState, TCustom>;
   const configSecurity = config.security as ConfigSecurity;
 
   const defaultCorsMiddleware = cors(configSecurity.cors, false);
@@ -35,7 +38,7 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
       return;
     }
 
-    let middlewares: Middleware<State, Custom>[] = [];
+    let middlewares: Middleware<TState, TCustom>[] = [];
 
     /** Cors Middleware */
     if (corsOptions || typeof corsOptions === 'boolean') {
@@ -101,7 +104,7 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
 
     /** Validate Middleware */
     Object.keys(validate).map((key) => {
-      const middleware = async (ctx: Context, next: Next) => {
+      const middleware = async (ctx: Context<TState, TCustom>, next: Next) => {
         let value = {};
 
         if (key === 'params') {
@@ -121,7 +124,7 @@ export = function <State, Custom>(router: Router<State, Custom>, config: Config<
     router[method as HttpMethod](route, ...middlewares, controller);
   });
 
-  return async (ctx: Context, next: Next) => {
+  return async (ctx: Context<TState, TCustom>, next: Next) => {
     await next();
   };
 };

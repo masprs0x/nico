@@ -16,15 +16,18 @@ class Nico {
   app = new Koa();
   log = debug('nico');
 
-  init<State = DefaultState, Custom = DefaultCustom>(inputConfig: Config<State, Custom> | Config<State, Custom>[]) {
-    let config: Config<State, Custom>;
+  init<
+    TState extends DefaultState = DefaultState,
+    TCustom extends DefaultCustom = DefaultCustom,
+    TConfig extends Config<TState, TCustom> = Config<TState, TCustom>
+  >(inputConfig: TConfig | TConfig[]) {
+    let config: TConfig;
     if (Array.isArray(inputConfig)) {
-      config = deepmerge(defaultConfig, this.mergeConfigs<State, Custom>(inputConfig));
+      config = deepmerge(defaultConfig, this.mergeConfigs<TConfig>(inputConfig));
     } else {
       config = deepmerge(defaultConfig, inputConfig);
     }
 
-    //const config = deepmerge(defaultConfig, inputConfig);
     const app = this.app;
 
     app.use(errorHandler());
@@ -36,7 +39,7 @@ class Nico {
     app.use(serve(serveRouter, config.serve));
 
     const router = new Router();
-    app.use(routes(router, config));
+    app.use(routes<TState, TCustom>(router, config));
 
     app.use(serveRouter.routes()).use(serveRouter.allowedMethods());
     app.use(router.routes()).use(router.allowedMethods());
@@ -61,7 +64,7 @@ class Nico {
     this.app.listen(port, listener);
   }
 
-  mergeConfigs<State = DefaultState, Custom = DefaultCustom>(configs: Config<State, Custom>[]) {
+  mergeConfigs<TConfig>(configs: TConfig[]) {
     if (!Array.isArray(configs)) return configs;
 
     const config = configs.reduce((result, current, index) => {

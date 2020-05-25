@@ -4,10 +4,10 @@ import serve from 'koa-static';
 import Joi from '@hapi/joi';
 
 declare namespace Application {
-  type ConfigRoutes<State, Custom> = {
+  type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
     [method_route: string]: {
-      controller: Koa.Middleware<State, Custom>;
-      policies?: Koa.Middleware<State, Custom>[] | boolean;
+      controller: Middleware<TState, TCustom>;
+      policies?: Middleware<TState, TCustom>[] | boolean;
       bodyParser?: boolean | koaBody.IKoaBodyOptions;
       validate?: {
         params?: Joi.ObjectSchema;
@@ -55,8 +55,8 @@ declare namespace Application {
     opts?: serve.Options;
   }
 
-  type Config<State, Custom> = {
-    routes?: ConfigRoutes<State, Custom>;
+  type Config<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+    routes?: ConfigRoutes<TState, TCustom>;
     custom?: ConfigCustom;
     security?: ConfigSecurity;
     serve?: ConfigServe;
