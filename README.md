@@ -13,9 +13,9 @@ npm install @blastz/nico
 ## Hello Nico
 
 ```js
-const nico = require('@blastz/nico');
+const Nico = require('@blastz/nico');
 
-nico.init({
+const nico = new Nico({
   routes: {
     'GET /users': {
       controller: async (ctx) => {
@@ -41,18 +41,18 @@ $ curl "http://localhost:1314/users"
 
 ## API
 
-### Nico.init(inputConfig: Config): Koa
+### new Nico(inputConfig: TConfig | TConfig[])
 
-Get koa application.
+Get nico application.
 
-Application.Config
+`TConfig` need to be extended from default `Config`:
 
 ```ts
 type Config = {
   routes?: {
     [method_route: string]: {
-      controller: Koa.Middleware<State, Custom>;
-      policies?: Koa.Middleware<State, Custom>[] | boolean;
+      controller: Middleware<TState, TCustom>;
+      policies?: Middleware<TState, TCustom>[] | boolean;
       bodyParser?: boolean | koaBody.IKoaBodyOptions;
       validate?: {
         params?: Joi.ObjectSchema;
@@ -88,9 +88,9 @@ type Config = {
 };
 ```
 
-### Nico.start(port?: number, messageOrListener?: string | (() => void)): void
+### nico.start(port?: number, messageOrListener?: string | (() => void)): void
 
-Start koa server
+Start server on 1314
 
 ## Utility
 
