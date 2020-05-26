@@ -1,4 +1,4 @@
-# Nico
+# Nico [![blastZ](https://circleci.com/gh/blastZ/nico.svg?style=svg)](https://circleci.com/gh/blastZ/nico)
 
 **This package is still in development.**
 
