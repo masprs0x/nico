@@ -32,4 +32,4 @@ lib-cov
 *.log
 *.out
 *.pid
-log
+./log
