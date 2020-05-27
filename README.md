@@ -41,14 +41,12 @@ $ curl "http://localhost:1314/users"
 
 ## API
 
-### new Nico(inputConfig: TConfig | TConfig[])
+### new Nico(inputConfig)
 
-Get nico application.
-
-`TConfig` need to be extended from default `Config`:
+Get nico application, `inputConfig` is extended from deafult config:
 
 ```ts
-type Config = {
+type Config<TState, TCustom> = {
   routes?: {
     [method_route: string]: {
       controller: Middleware<TState, TCustom>;
@@ -88,9 +86,17 @@ type Config = {
 };
 ```
 
-### nico.start(port?: number, messageOrListener?: string | (() => void)): void
+### nico.start(port, messageOrListener)
 
-Start server on 1314
+Start server on port, default is 1314. Custom callback listener is supported.
+
+### Nico.mergeConfigs(configs)
+
+Merge multiple configs.
+
+### Nico.log(extend, message)
+
+Use `debug('nico').extend(extend)(message)` to log messages.
 
 ## Utility
 

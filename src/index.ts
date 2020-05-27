@@ -13,17 +13,13 @@ import cors from './middleware/cors';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
-class Nico<
-  TState extends DefaultState = DefaultState,
-  TCustom extends DefaultCustom = DefaultCustom,
-  TConfig extends Config<TState, TCustom> = Config<TState, TCustom>
-> {
+class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> {
   app: Koa<TState, TCustom>;
 
-  constructor(inputConfig: TConfig | TConfig[]) {
-    let config: TConfig;
+  constructor(inputConfig: Config<TState, TCustom> | Config<TState, TCustom>[]) {
+    let config: Config<TState, TCustom>;
     if (Array.isArray(inputConfig)) {
-      config = deepmerge(defaultConfig, Nico.mergeConfigs<TConfig>(inputConfig));
+      config = deepmerge(defaultConfig, Nico.mergeConfigs<TState, TCustom>(inputConfig));
     } else {
       config = deepmerge(defaultConfig, inputConfig);
     }
@@ -61,7 +57,9 @@ class Nico<
     this.app.listen(port, listener);
   }
 
-  static mergeConfigs<TConfig>(configs: TConfig[]) {
+  static mergeConfigs<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
+    configs: Config<TState, TCustom>[]
+  ) {
     if (!Array.isArray(configs)) return configs;
 
     const config = configs.reduce((result, current, index) => {
