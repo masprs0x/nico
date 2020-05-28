@@ -19,7 +19,7 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
   constructor(inputConfig: Config<TState, TCustom> | Config<TState, TCustom>[]) {
     let config: Config<TState, TCustom>;
     if (Array.isArray(inputConfig)) {
-      config = deepmerge(defaultConfig, Nico.mergeConfigs<TState, TCustom>(inputConfig));
+      config = deepmerge(defaultConfig, Nico.mergeConfigs<TState, TCustom, Config<TState, TCustom>>(inputConfig));
     } else {
       config = deepmerge(defaultConfig, inputConfig);
     }
@@ -57,9 +57,11 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
     this.app.listen(port, listener);
   }
 
-  static mergeConfigs<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
-    configs: Config<TState, TCustom>[]
-  ) {
+  static mergeConfigs<
+    TState extends DefaultState = DefaultState,
+    TCustom extends DefaultCustom = DefaultCustom,
+    TConfig extends Config<TState, TCustom> = Config
+  >(configs: TConfig[]) {
     if (!Array.isArray(configs)) return configs;
 
     const config = configs.reduce((result, current, index) => {
