@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -21,7 +21,7 @@
     "framework"
   ],
   "author": "blastz",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@koa/router": "^8.0.8",
     "@types/hapi__joi": "^17.1.0",
