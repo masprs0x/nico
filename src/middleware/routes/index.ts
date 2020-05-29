@@ -105,13 +105,17 @@ export = function <TState extends DefaultState = DefaultState, TCustom extends D
     /** Validate Middleware */
     Object.keys(validate).map((key) => {
       const middleware = async (ctx: Context<TState, TCustom>, next: Next) => {
-        let value = {};
+        if (key === 'params' || key === 'query' || key === 'body') {
+          const validator = validate[key];
+          const data = key == 'params' ? ctx.params : ctx.request[key];
+          let value = {};
 
-        if (key === 'params') {
-          value = await validate[key]?.validateAsync(ctx.params);
-          ctx.state.params = value;
-        } else if (key === 'query' || key === 'body') {
-          value = await validate[key]?.validateAsync(ctx.request[key]);
+          if (typeof validator === 'function') {
+            value = await validator(data);
+          } else if (typeof validator === 'object' && validator.validateAsync) {
+            value = await validator.validateAsync(data);
+          }
+
           ctx.state[key] = value;
         }
 
