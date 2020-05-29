@@ -2,6 +2,7 @@ import Koa from 'koa';
 import koaBody from 'koa-body';
 import serve from 'koa-static';
 import Joi from '@hapi/joi';
+import Router from '@koa/router';
 
 declare namespace Application {
   type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
@@ -61,6 +62,9 @@ declare namespace Application {
     security?: ConfigSecurity;
     serve?: ConfigServe;
     responses?: ConfigResponses;
+    advancedConfigs?: {
+      routerOptions?: Router.RouterOptions;
+    };
   };
 
   type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';

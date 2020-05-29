@@ -1,5 +1,5 @@
-import { ConfigRoutes, DefaultState, DefaultCustom } from '../../typings';
+import { ConfigRoutes } from '../../typings';
 
-const config: ConfigRoutes<DefaultState, DefaultCustom> = {};
+const config: ConfigRoutes = {};
 
 export = config;

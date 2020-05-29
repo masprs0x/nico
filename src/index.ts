@@ -34,7 +34,7 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
     const serveRouter = new Router();
     this.app.use(serve(serveRouter, config.serve));
 
-    const router = new Router();
+    const router = new Router(config.advancedConfigs?.routerOptions);
     this.app.use(routes<TState, TCustom>(router, config));
 
     this.app.use(serveRouter.routes()).use(serveRouter.allowedMethods());
