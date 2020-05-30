@@ -83,6 +83,9 @@ type Config<TState, TCustom> = {
   responses?: {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
+  advancedConfigs?: {
+    routerOptions?: Router.RouterOptions;
+  };
 };
 ```
 
@@ -100,4 +103,8 @@ Use `debug('nico').extend(extend)(message)` to log messages.
 
 ## Utility
 
-check utility in [nico-utility](https://github.com/blastZ/nico-utility).
+Check utility in [nico-utility](https://github.com/blastZ/nico-utility).
+
+## License
+
+[MIT](https://github.com/blastZ/nico/blob/master/LICENSE)
