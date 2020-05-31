@@ -53,9 +53,9 @@ type Config<TState, TCustom> = {
       policies?: Middleware<TState, TCustom>[] | boolean;
       bodyParser?: boolean | koaBody.IKoaBodyOptions;
       validate?: {
-        params?: Joi.ObjectSchema;
-        query?: Joi.ObjectSchema;
-        body?: Joi.ObjectSchema;
+        params?: Joi.ObjectSchema | Validator;
+        query?: Joi.ObjectSchema | Validator;
+        body?: Joi.ObjectSchema | Validator;
       };
       cors?: CorsOptions | boolean;
       xframes?: XFrameOptions | true;

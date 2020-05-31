@@ -5,15 +5,17 @@ import Joi from '@hapi/joi';
 import Router from '@koa/router';
 
 declare namespace Application {
+  type Validator = (data: any) => { [key: string]: any };
+
   type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
     [method_route: string]: {
       controller: Middleware<TState, TCustom>;
       policies?: Middleware<TState, TCustom>[] | boolean;
       bodyParser?: boolean | koaBody.IKoaBodyOptions;
       validate?: {
-        params?: Joi.ObjectSchema;
-        query?: Joi.ObjectSchema;
-        body?: Joi.ObjectSchema;
+        params?: Joi.ObjectSchema | Validator;
+        query?: Joi.ObjectSchema | Validator;
+        body?: Joi.ObjectSchema | Validator;
       };
       cors?: CorsOptions | boolean;
       xframes?: XFrameOptions | true;
