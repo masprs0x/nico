@@ -5,9 +5,10 @@ import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
-import log from '../log';
+import logMiddleware from '../log';
 
 import { Context, Middleware, Next, HttpMethod, ConfigRoutes, Config, ConfigSecurity, DefaultState, DefaultCustom } from '../../../typings';
+import { error } from '../../utils/debug';
 
 export = function <TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
   router: Router<TState, TCustom>,
@@ -58,7 +59,7 @@ export = function <TState extends DefaultState = DefaultState, TCustom extends D
     }
 
     /** Route Error Handler And Debug Middleware */
-    middlewares.push(log(controller.name));
+    middlewares.push(logMiddleware(controller.name));
 
     /** CSP Middleware */
     if (cspOptions) {
@@ -113,7 +114,11 @@ export = function <TState extends DefaultState = DefaultState, TCustom extends D
           if (typeof validator === 'function') {
             value = await validator(data);
           } else if (typeof validator === 'object' && validator.validateAsync) {
-            value = await validator.validateAsync(data);
+            if (validator.type !== typeof data) {
+              error('validate')(`${key}'s value (${typeof data}) mismatch Joi.Schema type (${validator.type})`);
+            } else {
+              value = await validator.validateAsync(data);
+            }
           }
 
           ctx.state[key] = value;

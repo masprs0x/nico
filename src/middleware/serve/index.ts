@@ -2,11 +2,10 @@ import { Context, Next } from 'koa';
 import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
-import debug from 'debug';
+
+import { log } from '../../utils/debug';
 
 import { ConfigServe } from '../../../typings';
-
-const log = debug('nico:serve');
 
 export = (router: Router, config?: ConfigServe) => {
   const { root, opts } = config ?? {
@@ -18,7 +17,7 @@ export = (router: Router, config?: ConfigServe) => {
       `/${root}/*`,
       async (ctx, next) => {
         ctx.path = ctx.path.slice(('/' + root).length);
-        log(ctx.method + ' ' + ctx.path);
+        log('serve')(ctx.method + ' ' + ctx.path);
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

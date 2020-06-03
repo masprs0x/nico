@@ -1,14 +1,13 @@
 import { Context, Next } from 'koa';
-import debug from 'debug';
 
-const log = debug('nico:err');
+import { error } from '../../utils/debug';
 
 export = () => {
   return async (ctx: Context, next: Next) => {
     try {
       await next();
     } catch (err) {
-      log(err);
+      error('global')(err);
 
       ctx.status = 500;
       ctx.body = 'Server Error';

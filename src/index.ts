@@ -1,6 +1,5 @@
 import Koa from 'koa';
 import Router from '@koa/router';
-import debug from 'debug';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
@@ -10,6 +9,7 @@ import custom from './middleware/custom';
 import { deepmerge } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
+import { log } from './utils/debug';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
@@ -44,9 +44,9 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
   start(port = 1314, messageOrListener?: string | (() => void)) {
     let listener = () => {
       if (typeof messageOrListener === 'string') {
-        Nico.log('start', messageOrListener);
+        log('app')(messageOrListener);
       } else {
-        Nico.log('start', 'app is on ' + port);
+        log('app')('app is on ' + port);
       }
     };
 
@@ -71,11 +71,6 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
 
     return config;
   }
-
-  static log(extend: string, message: string) {
-    const log = debug('nico').extend(extend);
-    log(message);
-  }
 }
 
-export default Nico;
+export = Nico;

@@ -1,7 +1,5 @@
 import { Context, Next } from 'koa';
-import debug from 'debug';
-
-const log = debug('nico:api');
+import { log, error } from '../../utils/debug';
 
 export = (controllerName: string) => {
   const isDev = process.env.NODE_ENV === 'development';
@@ -18,29 +16,28 @@ export = (controllerName: string) => {
 
       if (isDev) {
         // log method + path
-        const path = ctx.path;
-        log(ctx.method + ' ' + path);
+        log('api:url')(ctx.method + ' ' + ctx.path);
 
         // log controller
-        log.extend('controller')(controllerName);
+        log('api:controller')(controllerName);
 
         // log payload
         const stateKeys = ['params', 'query', 'body'];
         const state = ctx.state as any;
         stateKeys.map((key) => {
-          state[key] && log.extend(key)({ ...state[key] });
+          state[key] && log(`api:${key}`)({ ...state[key] });
         });
 
         // log execute time
         const end = process.hrtime(start);
         const time = end[0] * 1000 + end[1] / 1000000;
-        log.extend('time')(`+${time}ms`);
+        log('api:time')(`+${time}ms`);
         if (time > 2000) {
-          log.extend('performance')('execute too long');
+          error('api:performance')('execute too long');
         }
       }
     } catch (err) {
-      log.extend('err')(err);
+      error('api')(err);
 
       return ctx.ok(undefined, err.message, false);
     }
