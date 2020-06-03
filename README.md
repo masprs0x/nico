@@ -14,25 +14,52 @@ npm install @blastz/nico
 
 ```js
 const Nico = require('@blastz/nico');
+const Joi = require('@hapi/joi');
 
 const nico = new Nico({
   routes: {
+    'POST /users': {
+      controller: async (ctx) => {
+        const user = await createUser({ name: ctx.state.body.name });
+        return ctx.ok(user);
+      },
+      bodyParser: true,
+      validate: {
+        body: Joi.object({
+          name: Joi.string().required().trim().min(1).max(16)
+        })
+      }
+    },
     'GET /users': {
       controller: async (ctx) => {
-        ctx.ok({
-          users: []
-        });
+        const users = await getUsers();
+        return ctx.ok(users);
+      }
+    },
+    'PATCH /users/:id': {
+      controller: async (ctx) => {
+        const updated = await updateUserAge(ctx.state.params.id, ctx.state.body.age);
+        return ctx.ok(updated);
+      },
+      bodyParser: true,
+      validate: {
+        params: Joi.object({ id: Joi.number().required().min(1) }),
+        body: Joi.object({ age: Joi.number().min(1).max(150) })
+      }
+    },
+    'DELETE /users/:id': {
+      controller: async (ctx) => {
+        await deleteUser(ctx.state.params.id);
+        return ctx.ok();
+      },
+      validate: {
+        params: Joi.object({ id: Joi.number().required().min(1) })
       }
     }
   }
 });
 
 nico.start();
-```
-
-```bash
-$ curl "http://localhost:1314/users"
-# {"success":true,"data":{"users":[]},"message":"execute success"}
 ```
 
 ## Getting started
@@ -96,10 +123,6 @@ Start server on port, default is 1314. Custom callback listener is supported.
 ### Nico.mergeConfigs(configs)
 
 Merge multiple configs.
-
-### Nico.log(extend, message)
-
-Use `debug('nico').extend(extend)(message)` to log messages.
 
 ## Utility
 
