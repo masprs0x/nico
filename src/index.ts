@@ -6,39 +6,36 @@ import errorHandler from './middleware/error-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
 import custom from './middleware/custom';
-import { deepmerge } from './utils/utility';
+import { mergeConfigs } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
 import { log } from './utils/debug';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
-class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> {
-  app: Koa<TState, TCustom>;
+class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
+  config: Config<TState, TCustom>;
 
-  constructor(inputConfig: Config<TState, TCustom> | Config<TState, TCustom>[]) {
-    let config: Config<TState, TCustom>;
-    if (Array.isArray(inputConfig)) {
-      config = deepmerge(defaultConfig, Nico.mergeConfigs<TState, TCustom, Config<TState, TCustom>>(inputConfig));
-    } else {
-      config = deepmerge(defaultConfig, inputConfig);
-    }
+  constructor(...inputConfigs: Config<TState, TCustom>[]) {
+    super();
 
-    this.app = new Koa<TState, TCustom>();
+    const config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
+    this.config = config;
 
-    this.app.use(errorHandler());
-    this.app.use(cors(config.security?.cors));
-    this.app.use(custom(config.custom));
-    this.app.use(responses(config.responses));
+    this.use(errorHandler());
+    this.use(cors(config.security?.cors));
+    this.use(custom(config.custom));
+    this.use(responses(config.responses));
 
     const serveRouter = new Router();
-    this.app.use(serve(serveRouter, config.serve));
+    this.use(serve(serveRouter, config.serve));
 
+    this.emit('routerWillMount');
     const router = new Router(config.advancedConfigs?.routerOptions);
-    this.app.use(routes<TState, TCustom>(router, config));
+    this.use(routes<TState, TCustom>(router, config));
 
-    this.app.use(serveRouter.routes()).use(serveRouter.allowedMethods());
-    this.app.use(router.routes()).use(router.allowedMethods());
+    this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
+    this.use(router.routes()).use(router.allowedMethods());
   }
 
   start(port = 1314, messageOrListener?: string | (() => void)) {
@@ -54,23 +51,12 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
       listener = messageOrListener;
     }
 
-    this.app.listen(port, listener);
-  }
-
-  static mergeConfigs<
-    TState extends DefaultState = DefaultState,
-    TCustom extends DefaultCustom = DefaultCustom,
-    TConfig extends Config<TState, TCustom> = Config
-  >(configs: TConfig[]) {
-    if (!Array.isArray(configs)) return configs;
-
-    const config = configs.reduce((result, current, index) => {
-      if (index == 0) return current;
-      return deepmerge(result, current);
-    }, configs[0]);
-
-    return config;
+    this.listen(port, listener);
   }
 }
 
-export = Nico;
+export default Nico;
+
+export const utility = {
+  mergeConfigs
+};
