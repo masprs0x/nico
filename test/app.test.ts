@@ -62,20 +62,20 @@ afterAll(async () => {
 });
 
 test('App', async () => {
-  const createUser = await request(nico.app.callback()).post('/user').send({ name: 'nico nico ni' });
-  const getUsers = await request(nico.app.callback()).get('/user');
+  const createUser = await request(nico.callback()).post('/user').send({ name: 'nico nico ni' });
+  const getUsers = await request(nico.callback()).get('/user');
 
   expect(createUser.body.data.name).toEqual('nico nico ni');
   expect(getUsers.body.data[0].name).toEqual('nico nico ni');
 });
 
 test('Validate', async () => {
-  const testValidator = await request(nico.app.callback()).post('/users/122');
+  const testValidator = await request(nico.callback()).post('/users/122');
   expect(testValidator.body.message).toEqual('Need name');
-  const testValidator2 = await request(nico.app.callback()).post('/users/122').send({ name: '  1' });
+  const testValidator2 = await request(nico.callback()).post('/users/122').send({ name: '  1' });
   expect(testValidator2.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: {} });
-  const testValidator3 = await request(nico.app.callback()).post('/users/122?limit=-1').send({ name: '  1' });
+  const testValidator3 = await request(nico.callback()).post('/users/122?limit=-1').send({ name: '  1' });
   expect(testValidator3.body.message).toEqual('"limit" must be larger than or equal to 0');
-  const testValidator4 = await request(nico.app.callback()).post('/users/122?limit=100').send({ name: '  1' });
+  const testValidator4 = await request(nico.callback()).post('/users/122?limit=100').send({ name: '  1' });
   expect(testValidator4.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: { limit: 100 } });
 });

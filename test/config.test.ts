@@ -1,8 +1,37 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
 
 import Nico from '../src/index';
-import Joi from '@hapi/joi';
+
+test('Merge configs', async () => {
+  const nico = new Nico(
+    {
+      routes: {
+        'GET /test': {
+          controller: (ctx) => {
+            ctx.ok('test');
+          }
+        }
+      }
+    },
+    {
+      routes: {
+        'GET /test2': {
+          controller: (ctx) => {
+            ctx.ok('test2');
+          }
+        }
+      }
+    }
+  );
+
+  const req = request(nico.callback());
+
+  const { body } = await req.get('/test');
+  const { body: body2 } = await req.get('/test2');
+
+  expect(body.data).toEqual('test');
+  expect(body2.data).toEqual('test2');
+});
 
 test('Advanced Configs', async () => {
   const nico = new Nico({
@@ -25,7 +54,7 @@ test('Advanced Configs', async () => {
     }
   });
 
-  const req = request(nico.app.callback());
+  const req = request(nico.callback());
 
   const { body } = await req.get('/test');
   const { body: body2 } = await req.get('/test/');
