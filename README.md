@@ -13,8 +13,8 @@ npm install @blastz/nico
 ## Hello Nico
 
 ```js
-const Nico = require('@blastz/nico');
-const Joi = require('@hapi/joi');
+import Nico from '@blastz/nico';
+import Joi from '@hapi/joi';
 
 const nico = new Nico({
   routes: {
@@ -64,7 +64,7 @@ nico.start();
 
 ## Getting started
 
-- [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate) - An restful api services boilerplate build on nico.
+- [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate) (❌outdated) - An restful api services boilerplate build on nico.
 
 ## API
 
@@ -120,13 +120,11 @@ type Config<TState, TCustom> = {
 
 Start server on port, default is 1314. Custom callback listener is supported.
 
-### Nico.mergeConfigs(configs)
+## Plugins
 
-Merge multiple configs.
-
-## Utility
-
-Check utility in [nico-utility](https://github.com/blastZ/nico-utility).
+- [nico-mongo](https://github.com/blastZ/nico-mongo) (⚠️building) use mongo with nico.
+- [nico-redis](https://github.com/blastZ/nico-redis) (⚠️building) use ioredis with nico.
+- [nico-build](https://github.com/blastZ/nico-build) (⚠️building) bundle project build on nico.
 
 ## License
 
