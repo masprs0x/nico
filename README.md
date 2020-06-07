@@ -2,7 +2,7 @@
 
 **This package is still in development.**
 
-Nico is a backend framework build on koa. It's inspired by [sails](https://github.com/balderdashy/sails). Ultimately nico is an effort to provide a more clear way to build api services.
+Nico is a modern backend framework build on [koa](https://github.com/koajs/koa), it's inspired by [sails](https://github.com/balderdashy/sails). Ultimately nico is an effort to provide a more clear way to build api services.
 
 ## Installation
 
