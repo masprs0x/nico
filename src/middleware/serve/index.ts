@@ -7,14 +7,14 @@ import { log } from '../../utils/debug';
 
 import { ConfigServe } from '../../../typings';
 
-export = (router: Router, config?: ConfigServe) => {
+export default function serveMiddleware(router: Router, config?: ConfigServe) {
   const { root, opts } = config ?? {
     root: 'assets'
   };
 
   if (root) {
     router.get(
-      `/${root}/*`,
+      `/${root}/(.+)`,
       async (ctx, next) => {
         ctx.path = ctx.path.slice(('/' + root).length);
         log('serve')(ctx.method + ' ' + ctx.path);
@@ -31,4 +31,4 @@ export = (router: Router, config?: ConfigServe) => {
   return async (ctx: Context, next: Next) => {
     await next();
   };
-};
+}

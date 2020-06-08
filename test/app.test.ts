@@ -50,6 +50,9 @@ beforeAll(async () => {
           })
         }
       }
+    },
+    serve: {
+      root: 'assets'
     }
   });
 
@@ -78,4 +81,10 @@ test('Validate', async () => {
   expect(testValidator3.body.message).toEqual('"limit" must be larger than or equal to 0');
   const testValidator4 = await request(nico.callback()).post('/users/122?limit=100').send({ name: '  1' });
   expect(testValidator4.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: { limit: 100 } });
+});
+
+test('Serve', async () => {
+  const res = await request(nico.callback()).get('/assets/1/2');
+  expect(res.status).toEqual(404);
+  expect(res.body).toEqual({});
 });
