@@ -8,9 +8,9 @@ import csp from '../csp';
 import logMiddleware from '../log';
 
 import { Context, Middleware, Next, HttpMethod, ConfigRoutes, Config, ConfigSecurity, DefaultState, DefaultCustom } from '../../../typings';
-import { error } from '../../utils/debug';
+import log from '../../utils/log';
 
-export = function <TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
+export default function RouterMiddleware<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
   router: Router<TState, TCustom>,
   config: Config<TState, TCustom>
 ) {
@@ -115,7 +115,7 @@ export = function <TState extends DefaultState = DefaultState, TCustom extends D
             value = await validator(data);
           } else if (typeof validator === 'object' && validator.validateAsync) {
             if (validator.type !== typeof data) {
-              error('validate')(`${key}'s value (${typeof data}) mismatch Joi.Schema type (${validator.type})`);
+              log.warn(`validate: %s's value type %s mismatch Joi.Schema type %s`, key, typeof data, validator.type);
             } else {
               value = await validator.validateAsync(data);
             }
@@ -136,4 +136,4 @@ export = function <TState extends DefaultState = DefaultState, TCustom extends D
   return async (ctx: Context<TState, TCustom>, next: Next) => {
     await next();
   };
-};
+}

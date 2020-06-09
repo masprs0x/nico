@@ -1,13 +1,13 @@
 import { Context, Next } from 'koa';
 
-import { error } from '../../utils/debug';
+import log from '../../utils/log';
 
 export = () => {
   return async (ctx: Context, next: Next) => {
     try {
       await next();
     } catch (err) {
-      error('global')(err);
+      log.fatal('Error Capture In: /middleware/error-handler/index.js \n %O', err);
 
       ctx.status = 500;
       ctx.body = 'Server Error';

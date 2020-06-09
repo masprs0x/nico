@@ -3,7 +3,7 @@ import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
 
-import { log } from '../../utils/debug';
+import log from '../../utils/log';
 
 import { ConfigServe } from '../../../typings';
 
@@ -17,7 +17,7 @@ export default function serveMiddleware(router: Router, config?: ConfigServe) {
       `/${root}/(.+)`,
       async (ctx, next) => {
         ctx.path = ctx.path.slice(('/' + root).length);
-        log('serve')(ctx.method + ' ' + ctx.path);
+        log.debug('serve: %s %s', ctx.method, ctx.path);
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

@@ -13,10 +13,10 @@ npm install @blastz/nico
 ## Hello Nico
 
 ```js
-import Nico from '@blastz/nico';
+import nico from '@blastz/nico';
 import Joi from '@hapi/joi';
 
-const nico = new Nico({
+const nico = nico.init({
   routes: {
     'POST /users': {
       controller: async (ctx) => {
@@ -68,7 +68,7 @@ nico.start();
 
 ## API
 
-### new Nico(inputConfig)
+### nico.init(...inputConfigs: Config<TState, TCustom>[])
 
 Get nico application, `inputConfig` is extended from deafult config:
 
@@ -116,9 +116,49 @@ type Config<TState, TCustom> = {
 };
 ```
 
-### nico.start(port, messageOrListener)
+### nico.start(port = 1314, messageOrListener?: string | (() => void))
 
 Start server on port, default is 1314. Custom callback listener is supported.
+
+### nico.log: Logger
+
+Use [debug](https://github.com/visionmedia/debug) in inner function.
+
+```js
+log.silly('I am a silly log.');
+log.trace('I am a trace log with a stack trace.');
+log.debug('I am a debug log.');
+log.info('I am an info log.');
+log.warn('I am a warn log with a json object: %o', { foo: 'bar' });
+log.error('I am an error log.');
+log.fatal('I am a fatal log.');
+```
+
+### nico.mergeConfigs(...configs: Config<TState, TCustom>[])
+
+Merge mutiple nico configs
+
+## Events
+
+### beforeServe
+
+Emit before serve router mount.
+
+```js
+nico.on('beforeServe', (router) => {
+  // ...
+});
+```
+
+### beforeRouter
+
+Emit before api router mount.
+
+```js
+nico.on('beforeRouter', (router) => {
+  // ...
+});
+```
 
 ## Plugins
 

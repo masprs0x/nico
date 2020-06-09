@@ -9,15 +9,19 @@ import custom from './middleware/custom';
 import { mergeConfigs } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
-import { log } from './utils/debug';
+import log, { Logger } from './utils/log';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
-class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
-  config: Config<TState, TCustom>;
+export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
+  config: Config<TState, TCustom> = defaultConfig;
+  initialed = false;
 
-  constructor(...inputConfigs: Config<TState, TCustom>[]) {
-    super();
+  init(...inputConfigs: Config<TState, TCustom>[]) {
+    if (this.initialed) {
+      log.error('nico can only be initialize once');
+      return;
+    }
 
     const config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
     this.config = config;
@@ -28,22 +32,25 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
     this.use(responses(config.responses));
 
     const serveRouter = new Router();
+    this.emit('beforeServe', serveRouter);
     this.use(serve(serveRouter, config.serve));
 
-    this.emit('routerWillMount');
     const router = new Router(config.advancedConfigs?.routerOptions);
+    this.emit('beforeRouter', router);
     this.use(routes<TState, TCustom>(router, config));
 
     this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
     this.use(router.routes()).use(router.allowedMethods());
+
+    this.initialed = true;
   }
 
   start(port = 1314, messageOrListener?: string | (() => void)) {
     let listener = () => {
       if (typeof messageOrListener === 'string') {
-        log('app')(messageOrListener);
+        log.info(messageOrListener);
       } else {
-        log('app')('app is on ' + port);
+        log.info('app is on %d', port);
       }
     };
 
@@ -53,10 +60,9 @@ class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCu
 
     this.listen(port, listener);
   }
+
+  mergeConfigs = mergeConfigs;
+  log = new Logger();
 }
 
-export default Nico;
-
-export const utility = {
-  mergeConfigs
-};
+export default new Nico();

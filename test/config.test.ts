@@ -1,9 +1,10 @@
 import request from 'supertest';
 
-import Nico from '../src/index';
+import { Nico } from '../src/index';
 
 test('Merge configs', async () => {
-  const nico = new Nico(
+  const nico = new Nico();
+  nico.init(
     {
       routes: {
         'GET /test': {
@@ -34,7 +35,8 @@ test('Merge configs', async () => {
 });
 
 test('Advanced Configs', async () => {
-  const nico = new Nico({
+  const nico = new Nico();
+  nico.init({
     routes: {
       'GET /test': {
         controller: (ctx) => {
