@@ -31,6 +31,7 @@ declare namespace Application {
     allowOrigins: string[] | string;
     allowMethods?: string[] | string;
     allowHeaders?: string[] | string;
+    exposeHeaders?: string[] | string;
     allowCredentials?: boolean;
     maxAge?: number;
   };

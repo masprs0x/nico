@@ -22,6 +22,10 @@ export = (config?: CorsOptions, global = true) => {
     options.allowHeaders = options.allowHeaders.join(',');
   }
 
+  if (Array.isArray(options.exposeHeaders)) {
+    options.exposeHeaders = options.exposeHeaders.join(',');
+  }
+
   const allowedOrigin = options.allowOrigins;
   const allRoutes = options.allRoutes;
 
@@ -54,6 +58,10 @@ export = (config?: CorsOptions, global = true) => {
     if (((global && allRoutes) || !global) && method !== 'OPTIONS') {
       setCredentials(ctx, options.allowCredentials);
       setOrigin(ctx, getOrigin(requestOrigin));
+
+      if (options.exposeHeaders) {
+        ctx.set('Access-Control-Expose-Headers', options.exposeHeaders);
+      }
 
       await next();
     } else {
