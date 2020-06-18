@@ -16,7 +16,7 @@ npm install @blastz/nico
 import nico from '@blastz/nico';
 import Joi from '@hapi/joi';
 
-const nico = nico.init({
+nico.init({
   routes: {
     'POST /users': {
       controller: async (ctx) => {
@@ -120,11 +120,17 @@ type Config<TState, TCustom> = {
 
 Start server on port, default is 1314. Custom callback listener is supported.
 
-### nico.log: Logger
+### nico.mergeConfigs(...configs: Config<TState, TCustom>[])
+
+Merge mutiple nico configs
+
+## Debug
 
 Use [debug](https://github.com/visionmedia/debug) in inner function.
 
 ```js
+import { log } from '@blastz/nico';
+
 log.silly('I am a silly log.');
 log.trace('I am a trace log with a stack trace.');
 log.debug('I am a debug log.');
@@ -133,10 +139,6 @@ log.warn('I am a warn log with a json object: %o', { foo: 'bar' });
 log.error('I am an error log.');
 log.fatal('I am a fatal log.');
 ```
-
-### nico.mergeConfigs(...configs: Config<TState, TCustom>[])
-
-Merge mutiple nico configs
 
 ## Events
 
