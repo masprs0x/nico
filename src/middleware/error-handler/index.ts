@@ -7,7 +7,7 @@ export = () => {
     try {
       await next();
     } catch (err) {
-      log.fatal('Error Capture In: /middleware/error-handler/index.js \n %O', err);
+      log.fatal.extend('error-middleware')(err);
 
       ctx.status = 500;
       ctx.body = 'Server Error';

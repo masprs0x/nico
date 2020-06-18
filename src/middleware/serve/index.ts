@@ -17,7 +17,7 @@ export default function serveMiddleware(router: Router, config?: ConfigServe) {
       `/${root}/(.+)`,
       async (ctx, next) => {
         ctx.path = ctx.path.slice(('/' + root).length);
-        log.debug('serve: %s %s', ctx.method, ctx.path);
+        log.debug.extend('serve')(ctx.method, ctx.path);
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

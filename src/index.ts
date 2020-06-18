@@ -9,9 +9,11 @@ import custom from './middleware/custom';
 import { mergeConfigs } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
-import log, { Logger } from './utils/log';
+import { Logger } from './utils/log';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
+
+export const log = new Logger();
 
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
@@ -62,7 +64,6 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
   }
 
   mergeConfigs = mergeConfigs;
-  log = new Logger();
 }
 
 export default new Nico();

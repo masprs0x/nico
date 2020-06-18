@@ -1,4 +1,4 @@
-import nico from '../src/index';
+import nico, { log } from '../src/index';
 
 test('Merge Configs', () => {
   const configs = nico.mergeConfigs(
@@ -18,11 +18,11 @@ test('Merge Configs', () => {
 });
 
 test('Log Methods', () => {
-  expect(typeof nico.log.silly).toEqual('function');
-  expect(typeof nico.log.trace).toEqual('function');
-  expect(typeof nico.log.debug).toEqual('function');
-  expect(typeof nico.log.info).toEqual('function');
-  expect(typeof nico.log.warn).toEqual('function');
-  expect(typeof nico.log.error).toEqual('function');
-  expect(typeof nico.log.fatal).toEqual('function');
+  expect(typeof log.silly).toEqual('function');
+  expect(typeof log.trace).toEqual('function');
+  expect(typeof log.debug).toEqual('function');
+  expect(typeof log.info).toEqual('function');
+  expect(typeof log.warn).toEqual('function');
+  expect(typeof log.error).toEqual('function');
+  expect(typeof log.fatal).toEqual('function');
 });

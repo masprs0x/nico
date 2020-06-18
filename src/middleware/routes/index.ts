@@ -115,7 +115,7 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
             value = await validator(data);
           } else if (typeof validator === 'object' && validator.validateAsync) {
             if (validator.type !== typeof data) {
-              log.warn(`validate: %s's value type %s mismatch Joi.Schema type %s`, key, typeof data, validator.type);
+              log.warn.extend('validate')(`%s type %s mismatch Joi.Schema type %s`, key, typeof data, validator.type);
             } else {
               value = await validator.validateAsync(data);
             }
