@@ -1,14 +1,14 @@
 import Router from '@koa/router';
 import KoaBody from 'koa-body';
 
+import { Context, Middleware, Next, HttpMethod, ConfigRoutes, Config, ConfigSecurity, DefaultState, DefaultCustom } from '../../../typings';
+
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
-import logMiddleware from '../log';
-
-import { Context, Middleware, Next, HttpMethod, ConfigRoutes, Config, ConfigSecurity, DefaultState, DefaultCustom } from '../../../typings';
 import log from '../../utils/log';
+import debug, { debugLog } from '../debug';
 
 export default function RouterMiddleware<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
   router: Router<TState, TCustom>,
@@ -19,27 +19,39 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
 
   const defaultCorsMiddleware = cors(configSecurity.cors, false);
   const removeCorsMiddleware = removeCors();
+  const defaultController = async (ctx: Context<TState, TCustom>, next: Next) => {
+    await next();
+  };
+  const forbiddenMiddleware = (ctx: Context<TState, TCustom>) => {
+    ctx.status = 403;
+    ctx.body = 'Route is disabled';
+    return ctx;
+  };
 
   const testMethod = /^(get|post|delete|put|patch|options|all)$/;
 
   Object.entries(configRoutes).map(([key, value]) => {
-    const { policies = true, bodyParser = false, validate = {}, cors: corsOptions, xframes: xframesOptions, csp: cspOptions } = value;
-    let { controller } = value;
+    const {
+      controller = defaultController,
+      policies = true,
+      bodyParser = false,
+      validate = {},
+      cors: corsOptions,
+      xframes: xframesOptions,
+      csp: cspOptions
+    } = value;
     const [methodStr, ...route] = key.split(' ');
     const method = methodStr.toLowerCase();
 
-    if (!controller) {
-      controller = async function defaultController(ctx, next) {
-        await next();
-      };
-    }
-
     if (!testMethod.test(method)) {
-      console.error('E_ROUTES_INVALID_HTTP_METHOD: ', key);
+      log.error('invalid route', key);
       return;
     }
 
-    let middlewares: Middleware<TState, TCustom>[] = [];
+    const middlewares: Middleware<TState, TCustom>[] = [];
+
+    /** Log Router */
+    middlewares.push(debug('api:route', { stage: 'api-start' }));
 
     /** Cors Middleware */
     if (corsOptions || typeof corsOptions === 'boolean') {
@@ -58,13 +70,10 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
       }
     }
 
-    /** Route Error Handler And Debug Middleware */
-    middlewares.push(logMiddleware(controller.name));
-
     /** CSP Middleware */
     if (cspOptions) {
-      if (typeof cspOptions === 'boolean' && cspOptions === true) {
-        middlewares.push(csp(configSecurity.csp || { policy: {} }));
+      if (typeof cspOptions === 'boolean') {
+        cspOptions && middlewares.push(csp(configSecurity.csp || { policy: {} }));
       } else {
         middlewares.push(csp(cspOptions));
       }
@@ -72,8 +81,8 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
 
     /** Xframes Middleware */
     if (xframesOptions) {
-      if (typeof xframesOptions === 'boolean' && xframesOptions === true) {
-        middlewares.push(xframes(configSecurity.xframes || 'SAMEORIGIN'));
+      if (typeof xframesOptions === 'boolean') {
+        xframesOptions === true && middlewares.push(xframes(configSecurity.xframes || 'SAMEORIGIN'));
       } else {
         middlewares.push(xframes(xframesOptions));
       }
@@ -81,31 +90,43 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
 
     /** Policies Middleware */
     if (typeof policies === 'boolean') {
-      if (!policies) {
-        middlewares.push((ctx: Context, next: Next) => {
-          ctx.status = 400;
-          ctx.body = 'Route is disabled';
-          return ctx;
-        });
-      }
+      !policies && middlewares.push(forbiddenMiddleware);
     } else if (Array.isArray(policies)) {
-      middlewares = middlewares.concat([...policies]);
+      policies.map((policyMiddleware) => {
+        middlewares.push(async (ctx, next) => {
+          debugLog('api:policy', ctx, {
+            stage: 'policy',
+            name: policyMiddleware.name
+          });
+
+          await policyMiddleware(ctx, next);
+        });
+      });
     }
 
     /** BodyParser Middleware */
     if (bodyParser) {
       if (typeof bodyParser === 'boolean') {
-        if (bodyParser) {
-          middlewares.push(KoaBody());
-        }
+        bodyParser &&
+          middlewares.push(async (ctx, next) => {
+            try {
+              await KoaBody()(ctx, next);
+            } catch (err) {
+              debugLog('api:body-parser', ctx, {
+                stage: 'body-parser',
+                errMessage: err.message
+              });
+              return ctx.ok(undefined, err.message, false);
+            }
+          });
       } else {
-        middlewares.push(KoaBody({ ...bodyParser }));
+        middlewares.push(KoaBody(bodyParser));
       }
     }
 
     /** Validate Middleware */
     Object.keys(validate).map((key) => {
-      const middleware = async (ctx: Context<TState, TCustom>, next: Next) => {
+      const validateMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
         if (key === 'params' || key === 'query' || key === 'body') {
           const validator = validate[key];
           const data = key == 'params' ? ctx.params : ctx.request[key];
@@ -117,7 +138,21 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
             if (validator.type !== typeof data) {
               log.warn.extend('validate')(`%s type %s mismatch Joi.Schema type %s`, key, typeof data, validator.type);
             } else {
-              value = await validator.validateAsync(data);
+              try {
+                value = await validator.validateAsync(data);
+                debugLog('api:validate', ctx, {
+                  stage: 'validate-' + key,
+                  value
+                });
+              } catch (err) {
+                debugLog('api:validate', ctx, {
+                  stage: 'validate-' + key,
+                  data,
+                  errMessage: err.message
+                });
+
+                return ctx.ok(undefined, err.message, false);
+              }
             }
           }
 
@@ -127,10 +162,19 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
         await next();
       };
 
-      middlewares.push(middleware);
+      middlewares.push(validateMiddleware);
     });
 
-    router[method as HttpMethod](route, ...middlewares, controller);
+    const controllerMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
+      debugLog('api:controller', ctx, {
+        stage: 'controller',
+        name: controller.name
+      });
+
+      await controller(ctx, next);
+    };
+
+    router[method as HttpMethod](route, ...middlewares, controllerMiddleware);
   });
 
   return async (ctx: Context<TState, TCustom>, next: Next) => {
