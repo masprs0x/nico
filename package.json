@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.9.4",
+  "version": "0.9.7",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -11,7 +11,7 @@
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
     "test": "jest",
-    "build": "rm -rf dist && npm run tsc && cp -r typings ./dist && cp package.json README.md ./dist",
+    "build": "rm -rf dist && npm run tsc && cp package.json README.md ./dist",
     "push": "npm run build && cd ./dist && npm publish --access public --registry=https://registry.npmjs.org"
   },
   "keywords": [

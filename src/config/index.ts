@@ -14,4 +14,4 @@ const config: Config = {
   responses
 };
 
-export = config;
+export default config;

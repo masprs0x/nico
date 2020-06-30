@@ -2,4 +2,4 @@ import { ConfigSecurity } from '../../typings';
 
 const config: ConfigSecurity = {};
 
-export = config;
+export default config;

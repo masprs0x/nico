@@ -13,6 +13,8 @@ import { Logger } from './utils/log';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
+export * from '../typings';
+
 export const log = new Logger();
 
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {

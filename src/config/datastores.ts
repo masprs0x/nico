@@ -2,4 +2,4 @@
 
 // const config: Application.ConfigDatastores = {};
 
-// export = config;
+// export default config;

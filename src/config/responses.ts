@@ -4,4 +4,4 @@ const config: ConfigResponses = {
   ok: require('../api/responses/ok')
 };
 
-export = config;
+export default config;

@@ -2,4 +2,4 @@ import { ConfigRoutes } from '../../typings';
 
 const config: ConfigRoutes = {};
 
-export = config;
+export default config;

@@ -5,15 +5,18 @@ import nico from '../src/index';
 import Joi from '@hapi/joi';
 import Mongo from '@blastz/nico-mongo';
 
+import getController from './api/controllers/get';
+import createControler from './api/controllers/create';
+
 beforeAll(async () => {
   nico.init({
     routes: {
       'GET /user': {
-        controller: require('./api/controllers/get'),
+        controller: getController,
         policies: true
       },
       'POST /user': {
-        controller: require('./api/controllers/create'),
+        controller: createControler,
         bodyParser: true,
         validate: {
           body: Joi.object({
