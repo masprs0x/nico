@@ -165,16 +165,19 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
       middlewares.push(validateMiddleware);
     });
 
-    const controllerMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
-      debugLog('api:controller', ctx, {
-        stage: 'controller',
-        name: controller.name
-      });
+    const controllers = Array.isArray(controller) ? controller : [controller];
+    const controllerMiddlewares = controllers.map((o) => {
+      return async (ctx: Context<TState, TCustom>, next: Next) => {
+        debugLog('api:controller', ctx, {
+          stage: 'controller',
+          name: o.name
+        });
 
-      await controller(ctx, next);
-    };
+        await o(ctx, next);
+      };
+    });
 
-    router[method as HttpMethod](route, ...middlewares, controllerMiddleware);
+    router[method as HttpMethod](route, ...middlewares, ...controllerMiddlewares);
   });
 
   return async (ctx: Context<TState, TCustom>, next: Next) => {

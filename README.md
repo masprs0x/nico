@@ -76,7 +76,7 @@ Get nico application, `inputConfig` is extended from deafult config:
 type Config<TState, TCustom> = {
   routes?: {
     [method_route: string]: {
-      controller: Middleware<TState, TCustom>;
+      controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
       policies?: Middleware<TState, TCustom>[] | boolean;
       bodyParser?: boolean | koaBody.IKoaBodyOptions;
       validate?: {

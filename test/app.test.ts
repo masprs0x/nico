@@ -50,6 +50,17 @@ beforeAll(async () => {
             limit: Joi.number().min(0)
           })
         }
+      },
+      'GET /controllers': {
+        controller: [
+          async (ctx, next) => {
+            await next();
+            return ctx.ok(ctx.state.name);
+          },
+          async (ctx) => {
+            ctx.state.name = 'test-controllers';
+          }
+        ]
       }
     },
     serve: {
@@ -68,9 +79,11 @@ afterAll(async () => {
 test('App', async () => {
   const createUser = await request(nico.callback()).post('/user').send({ name: 'nico nico ni' });
   const getUsers = await request(nico.callback()).get('/user');
+  const testControllers = await request(nico.callback()).get('/controllers');
 
   expect(createUser.body.data.name).toEqual('nico nico ni');
   expect(getUsers.body.data[0].name).toEqual('nico nico ni');
+  expect(testControllers.body.data).toEqual('test-controllers');
 });
 
 test('Validate', async () => {

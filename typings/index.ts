@@ -8,7 +8,7 @@ export type Validator = (data: any) => { [key: string]: any };
 
 export type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
   [method_route: string]: {
-    controller: Middleware<TState, TCustom>;
+    controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
     policies?: Middleware<TState, TCustom>[] | boolean;
     bodyParser?: boolean | koaBody.IKoaBodyOptions;
     validate?: {
