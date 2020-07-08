@@ -21,14 +21,20 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
   config: Config<TState, TCustom> = defaultConfig;
   initialed = false;
 
+  constructor(...inputConfigs: Config<TState, TCustom>[]) {
+    super();
+
+    this.config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
+  }
+
   init(...inputConfigs: Config<TState, TCustom>[]) {
     if (this.initialed) {
       log.error('nico can only be initialize once');
       return;
     }
 
-    const config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
-    this.config = config;
+    this.config = mergeConfigs<TState, TCustom>(this.config, ...inputConfigs);
+    const config = this.config;
 
     this.use(errorHandler());
     this.use(cors(config.security?.cors));
