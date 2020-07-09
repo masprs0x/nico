@@ -29,32 +29,13 @@ nico.init({
           name: Joi.string().required().trim().min(1).max(16)
         })
       }
-    },
-    'GET /users': {
-      controller: async (ctx) => {
-        const users = await getUsers();
-        return ctx.ok(users);
-      }
-    },
-    'PATCH /users/:id': {
-      controller: async (ctx) => {
-        const updated = await updateUserAge(ctx.state.params.id, ctx.state.body.age);
-        return ctx.ok(updated);
-      },
-      bodyParser: true,
-      validate: {
-        params: Joi.object({ id: Joi.number().required().min(1) }),
-        body: Joi.object({ age: Joi.number().min(1).max(150) })
-      }
-    },
-    'DELETE /users/:id': {
-      controller: async (ctx) => {
-        await deleteUser(ctx.state.params.id);
-        return ctx.ok();
-      },
-      validate: {
-        params: Joi.object({ id: Joi.number().required().min(1) })
-      }
+    }
+  },
+  responses: {
+    ok: function ok(data) {
+      this.body = {
+        data
+      };
     }
   }
 });

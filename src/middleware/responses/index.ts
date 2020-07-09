@@ -1,12 +1,12 @@
 import { Context, Next } from 'koa';
 import { ConfigResponses } from '../../../typings';
 
-export = (responses: ConfigResponses = {}) => {
-  return async (ctx: Context, next: Next) => {
+export default function getResponsesMiddleware(responses: ConfigResponses = {}) {
+  return async function responsesMiddleware(ctx: Context, next: Next) {
     Object.entries(responses).map(([key, value]) => {
-      ctx[key] = value;
+      ctx[key] = value.bind(ctx);
     });
 
     await next();
   };
-};
+}

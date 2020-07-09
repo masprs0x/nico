@@ -78,7 +78,6 @@ export interface DefaultState extends Koa.DefaultState {
 }
 
 export interface DefaultCustom extends Koa.DefaultContext {
-  ok: (this: Context, data?: any, message?: string, success?: boolean) => void;
   custom: ConfigCustom;
 }
 

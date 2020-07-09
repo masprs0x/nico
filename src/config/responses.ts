@@ -1,7 +1,5 @@
 import { ConfigResponses } from '../../typings';
 
-const config: ConfigResponses = {
-  ok: require('../api/responses/ok')
-};
+const config: ConfigResponses = {};
 
 export default config;

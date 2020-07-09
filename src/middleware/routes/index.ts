@@ -116,7 +116,12 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
                 stage: 'body-parser',
                 errMessage: err.message
               });
-              return ctx.ok(undefined, err.message, false);
+
+              if (ctx.onBodyParserError) {
+                return ctx.onBodyParserError(err);
+              }
+
+              throw err;
             }
           });
       } else {
@@ -151,7 +156,11 @@ export default function RouterMiddleware<TState extends DefaultState = DefaultSt
                   errMessage: err.message
                 });
 
-                return ctx.ok(undefined, err.message, false);
+                if (ctx.onValidateError) {
+                  return ctx.onValidateError(err);
+                }
+
+                throw err;
               }
             }
           }

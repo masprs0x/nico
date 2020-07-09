@@ -12,6 +12,15 @@ test('Merge configs', async () => {
             ctx.ok('test');
           }
         }
+      },
+      responses: {
+        ok: function ok(data, message, success) {
+          this.body = {
+            success,
+            data,
+            message
+          };
+        }
       }
     },
     {
@@ -73,18 +82,24 @@ test('Merge configs in constructor', async () => {
   expect(body2).toEqual({}); // policies is false
 });
 
+test('Empty configs', async () => {
+  const nico = new Nico();
+
+  nico.init();
+});
+
 test('Cors Configs', async () => {
   const nico = new Nico();
   nico.init({
     routes: {
       'OPTIONS /test': {
         controller: (ctx) => {
-          ctx.ok('options test');
+          ctx.body = 'options test';
         }
       },
       'GET /test': {
         controller: (ctx) => {
-          ctx.ok('get test');
+          ctx.body = 'get test';
         },
         cors: {
           allowOrigins: '*',
@@ -122,12 +137,12 @@ test('Advanced Configs', async () => {
     routes: {
       'GET /test': {
         controller: (ctx) => {
-          ctx.ok('/test');
+          ctx.body = { name: '/test' };
         }
       },
       'GET /test/': {
         controller: (ctx) => {
-          ctx.ok('/test/');
+          ctx.body = { name: '/test/' };
         }
       }
     },
@@ -143,6 +158,6 @@ test('Advanced Configs', async () => {
   const { body } = await req.get('/test');
   const { body: body2 } = await req.get('/test/');
 
-  expect(body.data).toEqual('/test');
-  expect(body2.data).toEqual('/test/');
+  expect(body.name).toEqual('/test');
+  expect(body2.name).toEqual('/test/');
 });

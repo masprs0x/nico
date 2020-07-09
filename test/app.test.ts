@@ -65,6 +65,21 @@ beforeAll(async () => {
     },
     serve: {
       root: 'assets'
+    },
+    responses: {
+      ok: function ok(data, message, success) {
+        this.body = {
+          success,
+          data,
+          message
+        };
+      },
+      onValidateError: function handle(err) {
+        this.body = {
+          success: false,
+          message: err.message
+        };
+      }
     }
   });
 
@@ -88,7 +103,7 @@ test('App', async () => {
 
 test('Validate', async () => {
   const testValidator = await request(nico.callback()).post('/users/122');
-  expect(testValidator.body.message).toEqual('Need name');
+  expect(testValidator.text).toEqual('Server Error');
   const testValidator2 = await request(nico.callback()).post('/users/122').send({ name: '  1' });
   expect(testValidator2.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: {} });
   const testValidator3 = await request(nico.callback()).post('/users/122?limit=-1').send({ name: '  1' });
