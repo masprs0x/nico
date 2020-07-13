@@ -2,7 +2,7 @@ import { Context, Next } from 'koa';
 
 import { CorsOptions } from '../../../typings';
 
-export = (config?: CorsOptions, global = true) => {
+export default function getCorsMiddleware(config?: CorsOptions, global = true) {
   const options: CorsOptions = {
     allowOrigins: ['http://127.0.0.1'],
     allowCredentials: false,
@@ -51,7 +51,7 @@ export = (config?: CorsOptions, global = true) => {
     allowCredentials ? ctx.set('Access-Control-Allow-Credentials', 'true') : ctx.remove('Access-Control-Allow-Credentials');
   };
 
-  return async (ctx: Context, next: Next) => {
+  return async function corsMiddleware(ctx: Context, next: Next) {
     const requestOrigin = ctx.request.headers.origin;
     const method = ctx.method;
 
@@ -91,4 +91,4 @@ export = (config?: CorsOptions, global = true) => {
       await next();
     }
   };
-};
+}

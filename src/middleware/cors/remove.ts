@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa';
 
-export = () => {
-  return async (ctx: Context, next: Next) => {
+export default function getRemoveCorsMiddleware() {
+  return async function removeCorsMiddleware(ctx: Context, next: Next) {
     await next();
     ctx.remove('Access-Control-Allow-Origin');
     ctx.remove('Access-Control-Allow-Credentials');
@@ -10,4 +10,4 @@ export = () => {
     ctx.remove('Access-Control-Expose-Headers');
     ctx.remove('Access-Control-Max-Age');
   };
-};
+}

@@ -6,20 +6,22 @@ import Router from '@koa/router';
 
 export type Validator = (data: any) => { [key: string]: any };
 
-export type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
-  [method_route: string]: {
-    controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
-    policies?: Middleware<TState, TCustom>[] | boolean;
-    bodyParser?: boolean | koaBody.IKoaBodyOptions;
-    validate?: {
-      params?: Joi.ObjectSchema | Validator;
-      query?: Joi.ObjectSchema | Validator;
-      body?: Joi.ObjectSchema | Validator;
-    };
-    cors?: CorsOptions | boolean;
-    xframes?: XFrameOptions | true;
-    csp?: CSPOptions | true;
+export type ConfigRoute<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+  controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
+  policies?: Middleware<TState, TCustom>[] | boolean;
+  bodyParser?: boolean | koaBody.IKoaBodyOptions;
+  validate?: {
+    params?: Joi.ObjectSchema | Validator;
+    query?: Joi.ObjectSchema | Validator;
+    body?: Joi.ObjectSchema | Validator;
   };
+  cors?: CorsOptions | boolean;
+  xframes?: XFrameOptions | true;
+  csp?: CSPOptions | true;
+};
+
+export type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+  [routeOrPrefix: string]: ConfigRoute<TState, TCustom> | ConfigRoutes<TState, TCustom>;
 };
 
 export type ConfigCustom = {

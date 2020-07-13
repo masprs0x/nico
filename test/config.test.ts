@@ -1,6 +1,7 @@
 import request from 'supertest';
 
 import { Nico } from '../src/index';
+import Joi from '@hapi/joi';
 
 test('Merge configs', async () => {
   const nico = new Nico();
@@ -160,4 +161,71 @@ test('Advanced Configs', async () => {
 
   expect(body.name).toEqual('/test');
   expect(body2.name).toEqual('/test/');
+});
+
+test('Nested Routes', async () => {
+  const nico = new Nico({
+    routes: {
+      '/api/v1': {
+        '/users': {
+          GET: {
+            controller: (ctx) => {
+              return (ctx.body = { data: 'get' });
+            }
+          },
+          POST: {
+            controller: (ctx) => {
+              return (ctx.body = { data: 'post' });
+            }
+          },
+          '/:id': {
+            DELETE: {
+              controller: (ctx) => {
+                return (ctx.body = { data: 'delete' + ' ' + ctx.state.params.id });
+              },
+              validate: {
+                params: Joi.object({
+                  id: Joi.number()
+                })
+              }
+            }
+          }
+        }
+      },
+      '/api/v2': {
+        '/posts': {
+          '/:id': {
+            'GET /categories': {
+              controller: (ctx) => {
+                return (ctx.body = { data: `category${ctx.params.id}` });
+              }
+            },
+            'GET /authors': {
+              controller: (ctx) => {
+                return (ctx.body = { data: `author${ctx.params.id}` });
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  nico.init();
+
+  const req = request(nico.callback());
+
+  const { body: getBody } = await req.get('/api/v1/users');
+  expect(getBody.data).toEqual('get');
+
+  const { body: postBody } = await req.post('/api/v1/users');
+  expect(postBody.data).toEqual('post');
+
+  const { body: deleteBody } = await req.delete('/api/v1/users/233');
+  expect(deleteBody.data).toEqual('delete 233');
+
+  const { body: body1 } = await req.get('/api/v2/posts/2/categories');
+  const { body: body2 } = await req.get('/api/v2/posts/3/authors');
+  expect(body1.data).toEqual('category2');
+  expect(body2.data).toEqual('author3');
 });
