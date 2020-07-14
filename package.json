@@ -12,7 +12,7 @@
     "tsc-watch": "tsc -w",
     "test": "jest",
     "build": "rm -rf dist && npm run tsc && cp package.json README.md ./dist",
-    "push": "npm run build && cd ./dist && npm publish --access public --registry=https://registry.npmjs.org"
+    "push": "npm run test && npm run build && cd ./dist && npm publish --access public --registry=https://registry.npmjs.org"
   },
   "keywords": [
     "node",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@koa/router": "^9.3.1",
     "@types/debug": "^4.1.5",
-    "@types/hapi__joi": "^17.1.3",
+    "@types/hapi__joi": "^17.1.4",
     "@types/koa": "^2.11.3",
     "@types/koa-static": "^4.0.1",
     "@types/koa__router": "^8.0.2",
@@ -40,7 +40,7 @@
     "@types/jest": "^26.0.4",
     "@types/supertest": "^2.0.10",
     "jest": "^26.1.0",
-    "mongoose": "^5.9.22",
+    "mongoose": "^5.9.24",
     "supertest": "^4.0.2",
     "typescript": "^3.9.6"
   },
