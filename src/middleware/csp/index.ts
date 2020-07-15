@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa';
 import { CSPOptions } from '../../../typings';
 
-export = (config: CSPOptions) => {
+export default function getCspMiddleware(config: CSPOptions) {
   const options: CSPOptions = {
     reportOnly: false,
     reportUri: '',
@@ -25,9 +25,9 @@ export = (config: CSPOptions) => {
     rules += `report-uri ${reportUri};`;
   }
 
-  return async (ctx: Context, next: Next) => {
+  return async function cspMiddleware(ctx: Context, next: Next) {
     ctx.set(name, rules);
 
     await next();
   };
-};
+}

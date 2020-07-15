@@ -2,7 +2,7 @@ import { Context, Next } from '../../../typings';
 
 import { log } from '../..';
 
-export default function debug(namespace: string, data?: object) {
+export default function getDebugMiddleware(namespace: string, data?: object) {
   return async function debugMiddleware(ctx: Context, next: Next) {
     let start: [number, number] = [0, 0];
 

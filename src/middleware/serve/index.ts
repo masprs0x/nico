@@ -7,7 +7,7 @@ import log from '../../utils/log';
 
 import { ConfigServe } from '../../../typings';
 
-export default function serveMiddleware(router: Router, config?: ConfigServe) {
+export default function getServeMiddleware(router: Router, config?: ConfigServe) {
   const { root, opts } = config ?? {
     root: 'assets'
   };
@@ -28,7 +28,7 @@ export default function serveMiddleware(router: Router, config?: ConfigServe) {
     );
   }
 
-  return async (ctx: Context, next: Next) => {
+  return async function serveMiddleware(ctx: Context, next: Next) {
     await next();
   };
 }

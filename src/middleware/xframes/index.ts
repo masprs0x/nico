@@ -1,12 +1,12 @@
 import { Context, Next } from 'koa';
 import { XFrameOptions } from '../../../typings';
 
-export = (value: XFrameOptions) => {
-  return async (ctx: Context, next: Next) => {
+export default function getXframesMiddleware(value: XFrameOptions) {
+  return async function xframesMiddleware(ctx: Context, next: Next) {
     await next();
 
     if (value) {
       ctx.set('X-Frame-Options', value);
     }
   };
-};
+}
