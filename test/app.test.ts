@@ -91,6 +91,12 @@ afterAll(async () => {
   await Mongo.disconnect(mongoose);
 });
 
+test('Log', async () => {
+  expect(() => {
+    nico.log.error('error');
+  }).not.toThrowError();
+});
+
 test('App', async () => {
   const createUser = await request(nico.callback()).post('/user').send({ name: 'nico nico ni' });
   const getUsers = await request(nico.callback()).get('/user');

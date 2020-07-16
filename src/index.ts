@@ -19,7 +19,9 @@ export const log = new Logger();
 
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
-  initialed = false;
+  log: Logger = log;
+
+  #initialed = false;
 
   constructor(...inputConfigs: Config<TState, TCustom>[]) {
     super();
@@ -28,7 +30,7 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
   }
 
   init(...inputConfigs: Config<TState, TCustom>[]) {
-    if (this.initialed) {
+    if (this.#initialed) {
       log.error('nico can only be initialize once');
       return;
     }
@@ -52,7 +54,7 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
     this.use(router.routes()).use(router.allowedMethods());
 
-    this.initialed = true;
+    this.#initialed = true;
   }
 
   start(port = 1314, messageOrListener?: string | (() => void)) {
