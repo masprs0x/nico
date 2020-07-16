@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.9.12",
+  "version": "0.9.13",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {

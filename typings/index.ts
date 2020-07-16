@@ -6,7 +6,7 @@ import Router from '@koa/router';
 
 export type Validator = (data: any) => { [key: string]: any };
 
-export type ConfigRoute<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
   policies?: Middleware<TState, TCustom>[] | boolean;
   bodyParser?: boolean | koaBody.IKoaBodyOptions;
@@ -20,7 +20,7 @@ export type ConfigRoute<TState extends DefaultState = DefaultState, TCustom exte
   csp?: CSPOptions | true;
 };
 
-export type ConfigRoutes<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+export type ConfigRoutes<TState = DefaultState, TCustom = DefaultCustom> = {
   [routeOrPrefix: string]: ConfigRoute<TState, TCustom> | ConfigRoutes<TState, TCustom>;
 };
 
@@ -51,8 +51,13 @@ export type ConfigSecurity = {
   csp?: CSPOptions;
 };
 
-export type ConfigResponses = {
-  [key: string]: (this: Koa.Context, ...args: any) => void;
+export type Response<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = (
+  this: ParameterizedContext<TState, TCustom>,
+  ...args: any
+) => void;
+
+export type ConfigResponses<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = {
+  [key: string]: Response<TState, TCustom>;
 };
 
 export interface ConfigServe {
@@ -60,7 +65,7 @@ export interface ConfigServe {
   opts?: serve.Options;
 }
 
-export type Config<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> = {
+export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
   routes?: ConfigRoutes<TState, TCustom>;
   custom?: ConfigCustom;
   security?: ConfigSecurity;
@@ -83,12 +88,7 @@ export interface DefaultCustom extends Koa.DefaultContext {
   custom: ConfigCustom;
 }
 
-export type Context<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.ParameterizedContext<
-  State,
-  Custom
->;
+export type ParameterizedContext<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = Koa.ParameterizedContext<TState, TCustom>;
+export type Context<State = DefaultState, Custom = DefaultCustom> = Koa.ParameterizedContext<State, Custom>;
 export type Next = Koa.Next;
-export type Middleware<State extends DefaultState = DefaultState, Custom extends DefaultCustom = DefaultCustom> = Koa.Middleware<
-  State,
-  Custom
->;
+export type Middleware<State = DefaultState, Custom = DefaultCustom> = Koa.Middleware<State, Custom>;
