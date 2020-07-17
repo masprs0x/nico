@@ -5,21 +5,18 @@ import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
-import custom from './middleware/custom';
 import { mergeConfigs } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
-import { Logger } from './utils/log';
+import logger, { Logger } from './utils/logger';
 
 import { Config, DefaultState, DefaultCustom } from '../typings';
 
 export * from '../typings';
 
-export const log = new Logger();
-
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
-  log: Logger = log;
+  logger: Logger = logger;
 
   #initialed = false;
 
@@ -31,16 +28,18 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
 
   init(...inputConfigs: Config<TState, TCustom>[]) {
     if (this.#initialed) {
-      log.error('nico can only be initialize once');
+      this.logger.error('nico can only be initialize once');
       return;
     }
 
     this.config = mergeConfigs<TState, TCustom>(this.config, ...inputConfigs);
+    this.context.logger = this.logger;
+    this.context.custom = this.config.custom;
+
     const config = this.config;
 
     this.use(errorHandler());
     this.use(cors(config.security?.cors));
-    this.use(custom(config.custom));
     this.use(responses(config.responses));
 
     const serveRouter = new Router();
@@ -60,9 +59,9 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
   start(port = 1314, messageOrListener?: string | (() => void)) {
     let listener = () => {
       if (typeof messageOrListener === 'string') {
-        log.info(messageOrListener);
+        this.logger.info(messageOrListener);
       } else {
-        log.info('app is on %d', port);
+        this.logger.info(`app is on ${port}`);
       }
     };
 

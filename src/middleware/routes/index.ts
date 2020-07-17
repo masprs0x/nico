@@ -2,7 +2,7 @@ import Router from '@koa/router';
 
 import { Context, Next, HttpMethod, ConfigRoutes, Config, DefaultState, DefaultCustom, ConfigRoute } from '../../../typings';
 
-import log from '../../utils/log';
+import logger from '../../utils/logger';
 import getMiddlewares from './get-middlewares';
 
 export default function getRouterMiddleware<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
@@ -22,7 +22,7 @@ export default function getRouterMiddleware<TState extends DefaultState = Defaul
         const method = methodStr.toLowerCase();
 
         if (!testMethod.test(method)) {
-          log.error('invalid route', key);
+          logger.error('invalid route', key);
           return;
         }
 

@@ -93,7 +93,7 @@ afterAll(async () => {
 
 test('Log', async () => {
   expect(() => {
-    nico.log.error('error');
+    nico.logger.error('error');
   }).not.toThrowError();
 });
 

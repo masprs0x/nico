@@ -1,11 +1,8 @@
-import { Context, Next } from 'koa';
 import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
 
-import log from '../../utils/log';
-
-import { ConfigServe } from '../../../typings';
+import { ConfigServe, Context, Next } from '../../../typings';
 
 export default function getServeMiddleware(router: Router, config?: ConfigServe) {
   const { root, opts } = config ?? {
@@ -15,9 +12,9 @@ export default function getServeMiddleware(router: Router, config?: ConfigServe)
   if (root) {
     router.get(
       `/${root}/(.+)`,
-      async (ctx, next) => {
+      async (ctx: Context, next: Next) => {
         ctx.path = ctx.path.slice(('/' + root).length);
-        log.debug.extend('serve')(ctx.method, ctx.path);
+        ctx.logger.child({ stage: 'serve' }).debug('static assets');
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

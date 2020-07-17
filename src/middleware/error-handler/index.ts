@@ -1,13 +1,11 @@
 import { Context, Next } from 'koa';
 
-import log from '../../utils/log';
-
 export default function getErrorMiddleware() {
   return async function errorMiddleware(ctx: Context, next: Next) {
     try {
       await next();
     } catch (err) {
-      log.fatal.extend('error-middleware')(err);
+      ctx.logger.child({ stage: 'error-handler-middleware' }).error(err);
 
       if (ctx.onError) {
         return ctx.onError(err);

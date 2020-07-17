@@ -107,18 +107,13 @@ Merge mutiple nico configs
 
 ## Debug
 
-Use [debug](https://github.com/visionmedia/debug) in inner function.
+Use [winston](https://github.com/winstonjs/winston) underhood.
 
 ```js
-import { log } from '@blastz/nico';
-
-log.silly('I am a silly log.');
-log.trace('I am a trace log with a stack trace.');
-log.debug('I am a debug log.');
-log.info('I am an info log.');
-log.warn('I am a warn log with a json object: %o', { foo: 'bar' });
-log.error('I am an error log.');
-log.fatal('I am a fatal log.');
+logger.debug('I am a debug log.');
+logger.info('I am an info log.');
+logger.warn('I am a warn log.');
+logger.error('I am an error log.');
 ```
 
 ## Events

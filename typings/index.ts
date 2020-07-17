@@ -4,6 +4,8 @@ import serve from 'koa-static';
 import Joi from '@hapi/joi';
 import Router from '@koa/router';
 
+import { Logger } from '../src/utils/logger';
+
 export type Validator = (data: any) => { [key: string]: any };
 
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
@@ -86,6 +88,7 @@ export interface DefaultState extends Koa.DefaultState {
 
 export interface DefaultCustom extends Koa.DefaultContext {
   custom: ConfigCustom;
+  logger: Logger;
 }
 
 export type ParameterizedContext<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = Koa.ParameterizedContext<TState, TCustom>;

@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.9.13",
+  "version": "0.10.0",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -24,15 +24,15 @@
   "license": "MIT",
   "dependencies": {
     "@koa/router": "^9.3.1",
-    "@types/debug": "^4.1.5",
     "@types/hapi__joi": "^17.1.4",
     "@types/koa": "^2.11.3",
     "@types/koa-static": "^4.0.1",
     "@types/koa__router": "^8.0.2",
-    "debug": "^4.1.1",
+    "chalk": "^4.1.0",
     "koa": "^2.13.0",
     "koa-body": "^4.2.0",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@blastz/nico-mongo": "^0.1.0",

@@ -1,8 +1,8 @@
 import KoaBody from 'koa-body';
 
 import { Context, Middleware, Next, ConfigSecurity, DefaultState, DefaultCustom, ConfigRoute } from '../../../typings';
-import log from '../../utils/log';
-import debug, { debugLog } from '../debug';
+
+import debug from '../debug';
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
@@ -38,7 +38,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
   } = routeConfig;
 
   /** Log Router */
-  middlewares.push(debug('api:route', { stage: 'api-start' }));
+  middlewares.push(debug());
 
   /** Cors Middleware */
   const defaultCorsMiddleware = cors(securityConfig.cors, false);
@@ -82,10 +82,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
   } else if (Array.isArray(policies)) {
     policies.map((policyMiddleware) => {
       middlewares.push(async (ctx, next) => {
-        debugLog('api:policy', ctx, {
-          stage: 'policy',
-          name: policyMiddleware.name
-        });
+        ctx.logger.child({ stage: 'policy' }).debug(`${policyMiddleware.name} execute`);
 
         await policyMiddleware(ctx, next);
       });
@@ -100,10 +97,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
           try {
             await KoaBody()(ctx, next);
           } catch (err) {
-            debugLog('api:body-parser', ctx, {
-              stage: 'body-parser',
-              errMessage: err.message
-            });
+            ctx.logger.child({ stage: 'body-parser' }).error(err.message);
 
             if (ctx.onBodyParserError) {
               return ctx.onBodyParserError(err);
@@ -129,20 +123,13 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
           value = await validator(data);
         } else if (typeof validator === 'object' && validator.validateAsync) {
           if (validator.type !== typeof data) {
-            log.warn.extend('validate')(`%s type %s mismatch Joi.Schema type %s`, key, typeof data, validator.type);
+            ctx.logger.child({ stage: 'validate' }).warn(`${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`);
           } else {
             try {
               value = await validator.validateAsync(data);
-              debugLog('api:validate', ctx, {
-                stage: 'validate-' + key,
-                value
-              });
+              ctx.logger.child({ stage: `validate-${key}` }).debug({ origin: data, parsed: value });
             } catch (err) {
-              debugLog('api:validate', ctx, {
-                stage: 'validate-' + key,
-                data,
-                errMessage: err.message
-              });
+              ctx.logger.child({ stage: `validate-${key}` }).error({ origin: data, errMessage: err.message });
 
               if (ctx.onValidateError) {
                 return ctx.onValidateError(err);
@@ -165,10 +152,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
   const controllers = Array.isArray(controller) ? controller : [controller];
   const controllerMiddlewares = controllers.map((o) => {
     return async (ctx: Context<TState, TCustom>, next: Next) => {
-      debugLog('api:controller', ctx, {
-        stage: 'controller',
-        name: o.name
-      });
+      ctx.logger.child({ stage: 'controller' }).debug(`${o.name} execute`);
 
       await o(ctx, next);
     };
