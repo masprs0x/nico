@@ -80,6 +80,9 @@ beforeAll(async () => {
           message: err.message
         };
       }
+    },
+    logger: {
+      consoleLevel: 'none'
     }
   });
 

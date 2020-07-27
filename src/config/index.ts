@@ -3,6 +3,7 @@ import security from './security';
 import serve from './serve';
 import responses from './responses';
 import routes from './routes';
+import logger from './logger';
 
 import { Config } from '../../typings';
 
@@ -11,7 +12,8 @@ const config: Config = {
   routes,
   security,
   serve,
-  responses
+  responses,
+  logger
 };
 
 export default config;

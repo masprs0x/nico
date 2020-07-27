@@ -22,6 +22,9 @@ test('Merge configs', async () => {
             message
           };
         }
+      },
+      logger: {
+        consoleLevel: 'none'
       }
     },
     {

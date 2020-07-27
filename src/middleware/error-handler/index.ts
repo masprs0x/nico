@@ -5,7 +5,7 @@ export default function getErrorMiddleware() {
     try {
       await next();
     } catch (err) {
-      ctx.logger.child({ stage: 'error-handler-middleware' }).error(err);
+      ctx.logger.child({ stage: 'error-handler-middleware' }).fatal(err);
 
       if (ctx.onError) {
         return ctx.onError(err);

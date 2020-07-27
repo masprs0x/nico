@@ -91,6 +91,10 @@ type Config<TState, TCustom> = {
   responses?: {
     [key: string]: (this: Koa.Context, ...args: any) => void;
   };
+  logger?: {
+    fileLevel?: LoggerLevel | 'none';
+    consoleLevel?: LoggerLevel | 'none';
+  };
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
   };
@@ -109,11 +113,10 @@ Merge mutiple nico configs
 
 Use [winston](https://github.com/winstonjs/winston) underhood.
 
+Nico has five log levels: `fatal`, `error`, `warn`, `info` and `debug`.
+
 ```js
-logger.debug('I am a debug log.');
-logger.info('I am an info log.');
-logger.warn('I am a warn log.');
-logger.error('I am an error log.');
+ctx.logger.debug('I am a debug log.');
 ```
 
 ## Events

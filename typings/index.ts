@@ -67,6 +67,13 @@ export interface ConfigServe {
   opts?: serve.Options;
 }
 
+export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug';
+
+export interface ConfigLogger {
+  fileLevel?: LoggerLevel | 'none';
+  consoleLevel?: LoggerLevel | 'none';
+}
+
 export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
   routes?: ConfigRoutes<TState, TCustom>;
   custom?: ConfigCustom;
@@ -76,6 +83,7 @@ export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
   };
+  logger?: ConfigLogger;
 };
 
 export type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
