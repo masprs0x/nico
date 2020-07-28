@@ -83,3 +83,5 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
 }
 
 export default new Nico();
+
+export { default as logger, Logger } from './utils/logger';
