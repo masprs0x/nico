@@ -95,6 +95,9 @@ type Config<TState, TCustom> = {
     fileLevel?: LoggerLevel | 'none';
     consoleLevel?: LoggerLevel | 'none';
   };
+  middlewares?: {
+    [key: string]: (...args: any) => Middleware<any, any>;
+  };
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
   };
@@ -119,25 +122,47 @@ Nico has five log levels: `fatal`, `error`, `warn`, `info` and `debug`.
 ctx.logger.debug('I am a debug log.');
 ```
 
-## Events
+## Custom Middleware
 
-### beforeServe
+Nico use `appMiddlewares` and `routeMiddlewares` to store middleware informations, app middlewares will execute when `nico.init()` is called,
+route middlewares will execute when http request come.
 
-Emit before serve router mount.
+The default `appMiddleware` is `['error-handler', 'global-cors', 'responses', 'serve', 'routes']`.
+
+Use custom middlewares:
 
 ```js
-nico.on('beforeServe', (router) => {
-  // ...
-});
+nico.appMiddlewares = ['error-handler', 'custom', 'custom2', 'global-cors', 'responses', 'serve', 'routes'];
+// or
+nico.useCustomAppMiddleware('custom', 'error-handler');
+nico.useCustomAppMiddleware('custom2', 'custom');
 ```
 
-### beforeRouter
-
-Emit before api router mount.
+Define custom middlewares:
 
 ```js
-nico.on('beforeRouter', (router) => {
-  // ...
+// define when create nico
+const nico = new Nico({
+  //...
+  middlewares: {
+    custom: () => async (ctx, next) => {
+      // do something
+      await next();
+      // do something
+    }
+  }
+});
+
+// or define when init nico
+nico.init({
+  //...
+  middlewares: {
+    custom2: () => async (ctx, next) => {
+      // do something
+      await next();
+      // do something
+    }
+  }
 });
 ```
 

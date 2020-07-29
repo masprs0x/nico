@@ -14,9 +14,30 @@ import { Config, DefaultState, DefaultCustom } from '../typings';
 
 export * from '../typings';
 
+const getCustomMiddlewares = (middlewares: string[], name: string, after: string) => {
+  let result = middlewares;
+
+  const index = middlewares.findIndex((o) => o == after);
+  if (index < 0) {
+    result = [name].concat(middlewares);
+  } else {
+    result = middlewares
+      .slice(0, index + 1)
+      .concat([name])
+      .concat(middlewares.slice(index + 1));
+  }
+
+  return result;
+};
+
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
   logger: Logger = logger;
+
+  /** ['error-handler', 'global-cors', 'responses', 'serve', 'routes'] */
+  appMiddlewares: string[] = ['error-handler', 'global-cors', 'responses', 'serve', 'routes'];
+  /** ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'] */
+  routeMiddlewares: string[] = ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'];
 
   #initialed = false;
 
@@ -24,6 +45,14 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     super();
 
     this.config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
+  }
+
+  useCustomAppMiddleware(name: string, after = 'global-cors') {
+    this.appMiddlewares = getCustomMiddlewares(this.appMiddlewares, name, after);
+  }
+
+  useCustomRouteMiddleware(name: string, after = 'controller-cors') {
+    this.routeMiddlewares = getCustomMiddlewares(this.routeMiddlewares, name, after);
   }
 
   init(...inputConfigs: Config<TState, TCustom>[]) {
@@ -40,20 +69,33 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     this.context.logger = this.logger;
     this.context.custom = config.custom;
 
-    this.use(errorHandler());
-    this.use(cors(config.security?.cors));
-    this.use(responses(config.responses));
+    this.appMiddlewares.map((name) => {
+      if (name == 'error-handler') {
+        this.use(errorHandler());
+      } else if (name == 'global-cors') {
+        this.use(cors(config.security?.cors));
+      } else if (name == 'responses') {
+        this.use(responses(config.responses));
+      } else if (name == 'serve') {
+        const serveRouter = new Router();
+        this.use(serve(serveRouter, config.serve));
+        this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
+      } else if (name == 'routes') {
+        const router = new Router(config.advancedConfigs?.routerOptions);
+        this.use(
+          routes<TState, TCustom>(router, config, { routeMiddlewares: this.routeMiddlewares, logger: this.logger })
+        );
+        this.use(router.routes()).use(router.allowedMethods());
+      } else {
+        const middleware = config.middlewares?.[name];
 
-    const serveRouter = new Router();
-    this.emit('beforeServe', serveRouter);
-    this.use(serve(serveRouter, config.serve));
-
-    const router = new Router(config.advancedConfigs?.routerOptions);
-    this.emit('beforeRouter', router);
-    this.use(routes<TState, TCustom>(router, config));
-
-    this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
-    this.use(router.routes()).use(router.allowedMethods());
+        if (middleware) {
+          this.use(middleware());
+        } else {
+          this.logger.warn(`${name} is defined in nico.appMiddlewares but doesn't be implemented in config.middlewares`);
+        }
+      }
+    });
 
     this.#initialed = true;
   }
