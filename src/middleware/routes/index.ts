@@ -2,12 +2,16 @@ import Router from '@koa/router';
 
 import { Context, Next, HttpMethod, ConfigRoutes, Config, DefaultState, DefaultCustom, ConfigRoute } from '../../../typings';
 
-import logger from '../../utils/logger';
+import logger, { Logger } from '../../utils/logger';
 import getMiddlewares from './get-middlewares';
 
 export default function getRouterMiddleware<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
   router: Router<TState, TCustom>,
-  config: Config<TState, TCustom>
+  config: Config<TState, TCustom>,
+  options: {
+    routeMiddlewares: string[];
+    logger: Logger;
+  }
 ) {
   const routesConfig = config.routes || {};
 
@@ -26,7 +30,12 @@ export default function getRouterMiddleware<TState extends DefaultState = Defaul
           return;
         }
 
-        const middlewares = getMiddlewares<TState, TCustom>(value as ConfigRoute, { securityConfig: config.security });
+        const middlewares = getMiddlewares<TState, TCustom>(value as ConfigRoute, {
+          securityConfig: config.security,
+          routeMiddlewares: options.routeMiddlewares,
+          logger: options.logger,
+          middlewares: config.middlewares
+        });
 
         router[method as HttpMethod](prefix + route, ...middlewares);
       } else {

@@ -232,3 +232,73 @@ test('Nested Routes', async () => {
   expect(body1.data).toEqual('category2');
   expect(body2.data).toEqual('author3');
 });
+
+test('Custom App Middlewares', async () => {
+  const nico = new Nico({
+    routes: {
+      '/test': {
+        GET: {
+          controller: (ctx) => {
+            ctx.body = { text: 'test' };
+          }
+        }
+      }
+    },
+    middlewares: {
+      custom: () => async (ctx, next) => {
+        await next();
+        ctx.body = { text: 'custom' };
+      },
+      custom2: () => async (ctx, next) => {
+        await next();
+        ctx.set('custom2', 'custom2');
+      }
+    }
+  });
+
+  nico.appMiddlewares = ['error-handler', 'global-cors', 'custom', 'responses', 'serve', 'routes'];
+  nico.useCustomAppMiddleware('custom2', 'custom');
+  nico.init();
+
+  const req = request(nico.callback());
+
+  const result = await req.get('/test');
+
+  expect(result.body.text).toEqual('custom');
+  expect(result.header.custom2).toEqual('custom2');
+});
+
+test('Custom Route Middlewares', async () => {
+  const nico = new Nico({
+    routes: {
+      '/test': {
+        GET: {
+          controller: (ctx) => {
+            ctx.body = { text: 'test' };
+          }
+        }
+      }
+    },
+    middlewares: {
+      custom: () => async (ctx, next) => {
+        await next();
+        ctx.set('X-TEST', 'heihei');
+      },
+      custom2: () => async (ctx, next) => {
+        await next();
+        ctx.set('custom2', 'custom2-cool');
+      }
+    }
+  });
+
+  nico.useCustomRouteMiddleware('custom', 'debug');
+  nico.useCustomRouteMiddleware('custom2', 'custom');
+  nico.init();
+
+  const req = request(nico.callback());
+
+  const result = await req.get('/test');
+
+  expect(result.header['x-test']).toEqual('heihei');
+  expect(result.header.custom2).toEqual('custom2-cool');
+});
