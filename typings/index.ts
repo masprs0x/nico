@@ -76,7 +76,7 @@ export interface ConfigLogger {
 
 export type GetMiddlewareFunc = (...args: any) => Middleware<any, any>;
 
-export type ConfigMiddlewares = {
+export type CustomMiddlewares = {
   [key: string]: GetMiddlewareFunc;
 };
 
@@ -90,7 +90,6 @@ export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
     routerOptions?: Router.RouterOptions;
   };
   logger?: ConfigLogger;
-  middlewares?: ConfigMiddlewares;
 };
 
 export type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';

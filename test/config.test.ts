@@ -243,28 +243,29 @@ test('Custom App Middlewares', async () => {
           }
         }
       }
-    },
-    middlewares: {
-      custom: () => async (ctx, next) => {
-        await next();
-        ctx.body = { text: 'custom' };
-      },
-      custom2: () => async (ctx, next) => {
-        await next();
-        ctx.set('custom2', 'custom2');
-      }
     }
   });
 
-  nico.appMiddlewares = ['error-handler', 'global-cors', 'custom', 'responses', 'serve', 'routes'];
-  nico.useCustomAppMiddleware('custom2', 'custom');
+  nico.useCustomAppMiddleware(() => async (ctx, next) => {
+    await next();
+    ctx.set('custom', 'custom');
+  });
+
+  nico.useCustomAppMiddleware(
+    () => async (ctx, next) => {
+      await next();
+      ctx.set('custom2', 'custom2');
+    },
+    'custom'
+  );
+
   nico.init();
 
   const req = request(nico.callback());
 
   const result = await req.get('/test');
 
-  expect(result.body.text).toEqual('custom');
+  expect(result.header.custom).toEqual('custom');
   expect(result.header.custom2).toEqual('custom2');
 });
 
@@ -278,27 +279,26 @@ test('Custom Route Middlewares', async () => {
           }
         }
       }
-    },
-    middlewares: {
-      custom: () => async (ctx, next) => {
-        await next();
-        ctx.set('X-TEST', 'heihei');
-      },
-      custom2: () => async (ctx, next) => {
-        await next();
-        ctx.set('custom2', 'custom2-cool');
-      }
     }
   });
 
-  nico.useCustomRouteMiddleware('custom', 'debug');
-  nico.useCustomRouteMiddleware('custom2', 'custom');
+  nico.useCustomRouteMiddleware(() => async (ctx, next) => {
+    await next();
+    ctx.set('custom', 'custom');
+  });
+
+  nico.useCustomRouteMiddleware(
+    () => async (ctx, next) => {
+      await next();
+      ctx.set('custom2', 'custom2');
+    },
+    'custom'
+  );
   nico.init();
 
   const req = request(nico.callback());
-
   const result = await req.get('/test');
 
-  expect(result.header['x-test']).toEqual('heihei');
-  expect(result.header.custom2).toEqual('custom2-cool');
+  expect(result.header.custom).toEqual('custom');
+  expect(result.header.custom2).toEqual('custom2');
 });

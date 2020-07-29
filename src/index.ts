@@ -5,35 +5,20 @@ import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
-import { mergeConfigs } from './utils/utility';
+import { mergeConfigs, createUid } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
 import logger, { Logger, initLogger } from './utils/logger';
 
-import { Config, DefaultState, DefaultCustom } from '../typings';
+import { Config, DefaultState, DefaultCustom, GetMiddlewareFunc, CustomMiddlewares } from '../typings';
 
 export * from '../typings';
-
-const getCustomMiddlewares = (middlewares: string[], name: string, after: string) => {
-  let result = middlewares;
-
-  const index = middlewares.findIndex((o) => o == after);
-  if (index < 0) {
-    result = [name].concat(middlewares);
-  } else {
-    result = middlewares
-      .slice(0, index + 1)
-      .concat([name])
-      .concat(middlewares.slice(index + 1));
-  }
-
-  return result;
-};
 
 export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
   logger: Logger = logger;
 
+  customMiddlewares: CustomMiddlewares = {};
   /** ['error-handler', 'global-cors', 'responses', 'serve', 'routes'] */
   appMiddlewares: string[] = ['error-handler', 'global-cors', 'responses', 'serve', 'routes'];
   /** ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'] */
@@ -45,14 +30,43 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     super();
 
     this.config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
+    this.logger = initLogger(this.logger, this.config.logger);
   }
 
-  useCustomAppMiddleware(name: string, after = 'global-cors') {
-    this.appMiddlewares = getCustomMiddlewares(this.appMiddlewares, name, after);
+  private getCustomMiddlewares(middlewares: string[], getMiddleware: GetMiddlewareFunc, after: string) {
+    let name = getMiddleware.name.trim();
+    if (!name) {
+      name = createUid();
+      this.logger.warn(`custom middleware need a name, use uuid ${name} instead`);
+    }
+
+    if (this.customMiddlewares[name]) {
+      this.logger.warn(`custom middleware ${name} already exist, previous one will be used`);
+    } else {
+      this.customMiddlewares[name] = getMiddleware;
+    }
+
+    let result = middlewares;
+
+    const index = middlewares.findIndex((o) => o == after);
+    if (index < 0) {
+      result = [name].concat(middlewares);
+    } else {
+      result = middlewares
+        .slice(0, index + 1)
+        .concat([name])
+        .concat(middlewares.slice(index + 1));
+    }
+
+    return result;
   }
 
-  useCustomRouteMiddleware(name: string, after = 'controller-cors') {
-    this.routeMiddlewares = getCustomMiddlewares(this.routeMiddlewares, name, after);
+  useCustomAppMiddleware(getMiddleware: GetMiddlewareFunc, after = 'global-cors') {
+    this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, getMiddleware, after);
+  }
+
+  useCustomRouteMiddleware(getMiddleware: GetMiddlewareFunc, after = 'controller-cors') {
+    this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
   }
 
   init(...inputConfigs: Config<TState, TCustom>[]) {
@@ -83,11 +97,15 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
       } else if (name == 'routes') {
         const router = new Router(config.advancedConfigs?.routerOptions);
         this.use(
-          routes<TState, TCustom>(router, config, { routeMiddlewares: this.routeMiddlewares, logger: this.logger })
+          routes<TState, TCustom>(router, config, {
+            routeMiddlewares: this.routeMiddlewares,
+            customMiddlewares: this.customMiddlewares,
+            logger: this.logger
+          })
         );
         this.use(router.routes()).use(router.allowedMethods());
       } else {
-        const middleware = config.middlewares?.[name];
+        const middleware = this.customMiddlewares[name];
 
         if (middleware) {
           this.use(middleware());

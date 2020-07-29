@@ -1,6 +1,6 @@
 import KoaBody from 'koa-body';
 
-import { Context, Middleware, Next, ConfigSecurity, DefaultState, DefaultCustom, ConfigRoute, ConfigMiddlewares } from '../../../typings';
+import { Context, Middleware, Next, ConfigSecurity, DefaultState, DefaultCustom, ConfigRoute, CustomMiddlewares } from '../../../typings';
 
 import debug from '../debug';
 import cors from '../cors';
@@ -27,10 +27,10 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
     securityConfig?: ConfigSecurity;
     routeMiddlewares?: string[];
     logger?: Logger;
-    middlewares?: ConfigMiddlewares;
+    customMiddlewares?: CustomMiddlewares;
   }
 ) {
-  const { securityConfig = {}, routeMiddlewares = [], logger = defaultLogger, middlewares: customMiddlewares = {} } = options ?? {};
+  const { securityConfig = {}, routeMiddlewares = [], logger = defaultLogger, customMiddlewares = {} } = options ?? {};
   const middlewares: Middleware<TState, TCustom>[] = [];
 
   const {

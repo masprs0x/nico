@@ -122,49 +122,44 @@ Nico has five log levels: `fatal`, `error`, `warn`, `info` and `debug`.
 ctx.logger.debug('I am a debug log.');
 ```
 
-## Custom Middleware
+## Custom Middlewares
 
 Nico use `appMiddlewares` and `routeMiddlewares` to store middleware informations, app middlewares will execute when `nico.init()` is called,
 route middlewares will execute when http request come.
 
 The default `appMiddleware` is `['error-handler', 'global-cors', 'responses', 'serve', 'routes']`.
+The default `routeMiddleware` is `['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller']`.
 
-Use custom middlewares:
+Change default middlewares:
 
 ```js
-nico.appMiddlewares = ['error-handler', 'custom', 'custom2', 'global-cors', 'responses', 'serve', 'routes'];
-// or
-nico.useCustomAppMiddleware('custom', 'error-handler');
-nico.useCustomAppMiddleware('custom2', 'custom');
+nico.appMiddlewares = ['error-handler', 'global-cors', 'routes'];
+nico.routeMiddlewares = ['controller'];
 ```
 
 Define custom middlewares:
 
 ```js
-// define when create nico
-const nico = new Nico({
-  //...
-  middlewares: {
-    custom: () => async (ctx, next) => {
-      // do something
-      await next();
-      // do something
-    }
-  }
+nico.useCustomAppMiddleware(() => async (ctx, next) => {
+  await next();
+  ctx.set('custom', 'custom');
 });
 
-// or define when init nico
-nico.init({
-  //...
-  middlewares: {
-    custom2: () => async (ctx, next) => {
-      // do something
-      await next();
-      // do something
-    }
-  }
-});
+nico.useCustomRouteMiddleware(
+  () => async (ctx, next) => {
+    await next();
+    ctx.set('custom', 'custom');
+  },
+  'debug'
+);
+
+nico.init();
 ```
+
+The second argument is middleware name, if it's `debug` that's mean custom middleware will execute after `debug` middleware.
+
+The default second argument of `useCustomAppMiddleware` is `global-cors` and `useCustomRouteMiddleware` is `controller-cors`, if the second argument is `null`
+or won't be find in middlewares, the custom middleware will be execute before all middlewares.
 
 ## Plugins
 
