@@ -128,6 +128,7 @@ Nico use `appMiddlewares` and `routeMiddlewares` to store middleware information
 route middlewares will execute when http request come.
 
 The default `appMiddleware` is `['error-handler', 'global-cors', 'responses', 'serve', 'routes']`.
+
 The default `routeMiddleware` is `['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller']`.
 
 Change default middlewares:
@@ -157,9 +158,11 @@ nico.init();
 ```
 
 The second argument is middleware name, if it's `debug` that's mean custom middleware will execute after `debug` middleware.
+Custom middleware will be added to the middlewares after use middleware function, the name in the middlewares is the name of the function.
 
-The default second argument of `useCustomAppMiddleware` is `global-cors` and `useCustomRouteMiddleware` is `controller-cors`, if the second argument is `null`
-or won't be find in middlewares, the custom middleware will be execute before all middlewares.
+The default second argument of `useCustomAppMiddleware` is `global-cors` and `useCustomRouteMiddleware` is `controller-cors`.
+
+If the second argument is `null` or not found in middlewares, the custom middleware will be execute before all middlewares.
 
 ## Plugins
 
