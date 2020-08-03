@@ -67,7 +67,7 @@ export interface ConfigServe {
   opts?: serve.Options;
 }
 
-export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug';
+export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 
 export interface ConfigLogger {
   fileLevel?: LoggerLevel | 'none';

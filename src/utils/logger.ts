@@ -1,10 +1,10 @@
-import { Logger, createLogger, format, transports } from 'winston';
+import { Logger as WinstonLogger, createLogger, format, transports, LeveledLogMethod } from 'winston';
 import os from 'os';
 import util from 'util';
 import chalk from 'chalk';
 import { ConfigLogger } from '../../typings';
 
-const levels = ['fatal', 'error', 'warn', 'info', 'debug'];
+const levels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
 
 const colorize = (inputLevel: string) => {
   const level = inputLevel.toUpperCase();
@@ -25,6 +25,9 @@ const colorize = (inputLevel: string) => {
       break;
     case 'DEBUG':
       paint = chalk.white.bgRgb(0, 157, 37).bold;
+      break;
+    case 'TRACE':
+      paint = chalk.white.bgRgb(91, 0, 171).bold;
       break;
   }
 
@@ -54,14 +57,15 @@ const logger = createLogger({
     error: 1,
     warn: 2,
     info: 3,
-    debug: 4
+    debug: 4,
+    trace: 5
   },
   format: format.combine(levelFormat(), format.timestamp(), outputFormat),
   defaultMeta: {
     serverName: os.hostname()
   },
   transports: []
-});
+}) as Logger;
 
 export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
   logger.clear();
@@ -98,4 +102,8 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
 
 export default logger;
 
-export { Logger } from 'winston';
+export interface Logger extends WinstonLogger {
+  fatal: LeveledLogMethod;
+  trace: LeveledLogMethod;
+  child(options: Object): Logger;
+}

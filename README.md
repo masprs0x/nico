@@ -116,7 +116,7 @@ Merge mutiple nico configs
 
 Use [winston](https://github.com/winstonjs/winston) underhood.
 
-Nico has five log levels: `fatal`, `error`, `warn`, `info` and `debug`.
+Nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
 ```js
 ctx.logger.debug('I am a debug log.');

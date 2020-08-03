@@ -133,7 +133,7 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     };
 
     if (typeof messageOrListener === 'function') {
-      listener = messageOrListener;
+      listener = messageOrListener.bind(this);
     }
 
     this.listen(port, listener);
