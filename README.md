@@ -26,18 +26,18 @@ nico.init({
       bodyParser: true,
       validate: {
         body: Joi.object({
-          name: Joi.string().required().trim().min(1).max(16)
-        })
-      }
-    }
+          name: Joi.string().required().trim().min(1).max(16),
+        }),
+      },
+    },
   },
   responses: {
     ok: function ok(data) {
       this.body = {
-        data
+        data,
       };
-    }
-  }
+    },
+  },
 });
 
 nico.start();
@@ -151,7 +151,7 @@ nico.useCustomRouteMiddleware(
     await next();
     ctx.set('custom', 'custom');
   },
-  'debug'
+  'debug',
 );
 
 nico.init();

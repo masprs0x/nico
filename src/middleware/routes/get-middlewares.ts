@@ -1,13 +1,23 @@
 import KoaBody from 'koa-body';
 
-import { Context, Middleware, Next, ConfigSecurity, DefaultState, DefaultCustom, ConfigRoute, CustomMiddlewares } from '../../../typings';
+import {
+  Logger,
+  Context,
+  Middleware,
+  Next,
+  ConfigSecurity,
+  DefaultState,
+  DefaultCustom,
+  ConfigRoute,
+  CustomMiddlewares,
+} from '../../../typings';
 
 import debug from '../debug';
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
-import { default as defaultLogger, Logger } from '../../utils/logger';
+import defaultLogger from '../../utils/logger';
 
 async function defaultController(ctx: Context, next: Next) {
   await next();
@@ -21,16 +31,24 @@ function forbiddenMiddleware(ctx: Context) {
 
 const removeCorsMiddleware = removeCors();
 
-export default function getMiddlewares<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
+export default function getMiddlewares<
+  TState extends DefaultState = DefaultState,
+  TCustom extends DefaultCustom = DefaultCustom
+>(
   routeConfig: ConfigRoute<TState, TCustom>,
   options?: {
     securityConfig?: ConfigSecurity;
     routeMiddlewares?: string[];
     logger?: Logger;
     customMiddlewares?: CustomMiddlewares;
-  }
+  },
 ) {
-  const { securityConfig = {}, routeMiddlewares = [], logger = defaultLogger, customMiddlewares = {} } = options ?? {};
+  const {
+    securityConfig = {},
+    routeMiddlewares = [],
+    logger = defaultLogger,
+    customMiddlewares = {},
+  } = options ?? {};
   const middlewares: Middleware<TState, TCustom>[] = [];
 
   const {
@@ -40,13 +58,13 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
     validate = {},
     cors: corsOptions,
     xframes: xframesOptions,
-    csp: cspOptions
+    csp: cspOptions,
   } = routeConfig;
 
-  routeMiddlewares.map((name) => {
-    if (name == 'debug') {
+  routeMiddlewares.forEach((name) => {
+    if (name === 'debug') {
       middlewares.push(debug());
-    } else if (name == 'controller-cors') {
+    } else if (name === 'controller-cors') {
       const defaultCorsMiddleware = cors(securityConfig.cors, false);
       if (corsOptions || typeof corsOptions === 'boolean') {
         if (typeof corsOptions === 'boolean') {
@@ -58,12 +76,12 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
         } else {
           const corsConfig = {
             ...securityConfig.cors,
-            ...corsOptions
+            ...corsOptions,
           };
           middlewares.push(cors(corsConfig, false));
         }
       }
-    } else if (name == 'csp') {
+    } else if (name === 'csp') {
       if (cspOptions) {
         if (typeof cspOptions === 'boolean') {
           cspOptions && middlewares.push(csp(securityConfig.csp || { policy: {} }));
@@ -71,19 +89,20 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
           middlewares.push(csp(cspOptions));
         }
       }
-    } else if (name == 'xframes') {
+    } else if (name === 'xframes') {
       if (xframesOptions) {
         if (typeof xframesOptions === 'boolean') {
-          xframesOptions === true && middlewares.push(xframes(securityConfig.xframes || 'SAMEORIGIN'));
+          xframesOptions === true &&
+            middlewares.push(xframes(securityConfig.xframes || 'SAMEORIGIN'));
         } else {
           middlewares.push(xframes(xframesOptions));
         }
       }
-    } else if (name == 'policies') {
+    } else if (name === 'policies') {
       if (typeof policies === 'boolean') {
         !policies && middlewares.push(forbiddenMiddleware);
       } else if (Array.isArray(policies)) {
-        policies.map((policyMiddleware) => {
+        policies.forEach((policyMiddleware) => {
           middlewares.push(async (ctx, next) => {
             ctx.logger.child({ stage: 'policy' }).debug(`${policyMiddleware.name} execute`);
 
@@ -91,7 +110,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
           });
         });
       }
-    } else if (name == 'body-parser') {
+    } else if (name === 'body-parser') {
       if (bodyParser) {
         if (typeof bodyParser === 'boolean') {
           bodyParser &&
@@ -112,25 +131,31 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
           middlewares.push(KoaBody(bodyParser));
         }
       }
-    } else if (name == 'validate') {
-      Object.keys(validate).map((key) => {
+    } else if (name === 'validate') {
+      Object.keys(validate).forEach((key) => {
         const validateMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
           if (key === 'params' || key === 'query' || key === 'body') {
             const validator = validate[key];
-            const data = key == 'params' ? ctx.params : ctx.request[key];
+            const data = key === 'params' ? ctx.params : ctx.request[key];
             let value = {};
 
             if (typeof validator === 'function') {
               value = await validator(data);
             } else if (typeof validator === 'object' && validator.validateAsync) {
               if (validator.type !== typeof data) {
-                ctx.logger.child({ stage: 'validate' }).warn(`${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`);
+                ctx.logger
+                  .child({ stage: 'validate' })
+                  .warn(`${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`);
               } else {
                 try {
                   value = await validator.validateAsync(data);
-                  ctx.logger.child({ stage: `validate-${key}` }).debug({ origin: data, parsed: value });
+                  ctx.logger
+                    .child({ stage: `validate-${key}` })
+                    .debug({ origin: data, parsed: value });
                 } catch (err) {
-                  ctx.logger.child({ stage: `validate-${key}` }).error({ origin: data, errMessage: err.message });
+                  ctx.logger
+                    .child({ stage: `validate-${key}` })
+                    .error({ origin: data, errMessage: err.message });
 
                   if (ctx.onValidateError) {
                     return ctx.onValidateError(err);
@@ -149,7 +174,7 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
 
         middlewares.push(validateMiddleware);
       });
-    } else if (name == 'controller') {
+    } else if (name === 'controller') {
       const controllers = Array.isArray(controller) ? controller : [controller];
       const controllerMiddlewares = controllers.map((o) => {
         return async (ctx: Context<TState, TCustom>, next: Next) => {
@@ -160,12 +185,12 @@ export default function getMiddlewares<TState extends DefaultState = DefaultStat
       });
 
       middlewares.push(...controllerMiddlewares);
+    } else if (customMiddlewares[name]) {
+      middlewares.push(customMiddlewares[name]());
     } else {
-      if (customMiddlewares[name]) {
-        middlewares.push(customMiddlewares[name]());
-      } else {
-        logger.warn(`${name} is defined in nico.routeMiddlewares but doesn't be implemented in config.middlewares`);
-      }
+      logger.warn(
+        `${name} is defined in nico.routeMiddlewares but doesn't be implemented in config.middlewares`,
+      );
     }
   });
 

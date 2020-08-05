@@ -5,7 +5,7 @@ export default function getCspMiddleware(config: CSPOptions) {
   const options: CSPOptions = {
     reportOnly: false,
     reportUri: '',
-    ...config
+    ...config,
   };
 
   const { policy, reportOnly, reportUri } = options;
@@ -17,7 +17,7 @@ export default function getCspMiddleware(config: CSPOptions) {
   const name = reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
 
   let rules = '';
-  Object.keys(policy).map((key) => {
+  Object.keys(policy).forEach((key) => {
     rules += `${key} ${policy[key]};`;
   });
 

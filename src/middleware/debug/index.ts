@@ -3,7 +3,7 @@ import { Context, Next } from '../../../typings';
 import { createUid } from '../../utils/utility';
 
 function getUrl(ctx: Context) {
-  return ctx.method + ' ' + ctx.url;
+  return `${ctx.method} ${ctx.url}`;
 }
 
 export default function getDebugMiddleware() {

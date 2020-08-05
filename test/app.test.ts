@@ -1,9 +1,9 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 
-import nico from '../src/index';
 import Joi from '@hapi/joi';
 import Mongo from '@blastz/nico-mongo';
+import nico from '../src/index';
 
 import getController from './api/controllers/get';
 import createControler from './api/controllers/create';
@@ -13,29 +13,29 @@ beforeAll(async () => {
     routes: {
       'GET /user': {
         controller: getController,
-        policies: true
+        policies: true,
       },
       'POST /user': {
         controller: createControler,
         bodyParser: true,
         validate: {
           body: Joi.object({
-            name: Joi.string().trim().required()
-          })
-        }
+            name: Joi.string().trim().required(),
+          }),
+        },
       },
       'POST /users/:id': {
         controller: async (ctx) => {
           return ctx.ok({
             params: ctx.state.params,
             body: ctx.state.body,
-            query: ctx.state.query
+            query: ctx.state.query,
           });
         },
         bodyParser: true,
         validate: {
           params: Joi.object({
-            id: Joi.number().required().min(1)
+            id: Joi.number().required().min(1),
           }),
           body: (data) => {
             if (!data.name) {
@@ -43,13 +43,13 @@ beforeAll(async () => {
             }
 
             return {
-              name: String(data.name).trim()
+              name: String(data.name).trim(),
             };
           },
           query: Joi.object({
-            limit: Joi.number().min(0)
-          })
-        }
+            limit: Joi.number().min(0),
+          }),
+        },
       },
       'GET /controllers': {
         controller: [
@@ -59,31 +59,31 @@ beforeAll(async () => {
           },
           async (ctx) => {
             ctx.state.name = 'test-controllers';
-          }
-        ]
-      }
+          },
+        ],
+      },
     },
     serve: {
-      root: 'assets'
+      root: 'assets',
     },
     responses: {
       ok: function ok(data, message, success) {
         this.body = {
           success,
           data,
-          message
+          message,
         };
       },
       onValidateError: function handle(err) {
         this.body = {
           success: false,
-          message: err.message
+          message: err.message,
         };
-      }
+      },
     },
     logger: {
-      consoleLevel: 'none'
-    }
+      consoleLevel: 'none',
+    },
   });
 
   await Mongo.connect(mongoose, 'mongodb://root:admin123@localhost:27017/test?authSource=admin');
@@ -115,10 +115,18 @@ test('Validate', async () => {
   expect(testValidator.text).toEqual('Server Error');
   const testValidator2 = await request(nico.callback()).post('/users/122').send({ name: '  1' });
   expect(testValidator2.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: {} });
-  const testValidator3 = await request(nico.callback()).post('/users/122?limit=-1').send({ name: '  1' });
+  const testValidator3 = await request(nico.callback())
+    .post('/users/122?limit=-1')
+    .send({ name: '  1' });
   expect(testValidator3.body.message).toEqual('"limit" must be larger than or equal to 0');
-  const testValidator4 = await request(nico.callback()).post('/users/122?limit=100').send({ name: '  1' });
-  expect(testValidator4.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: { limit: 100 } });
+  const testValidator4 = await request(nico.callback())
+    .post('/users/122?limit=100')
+    .send({ name: '  1' });
+  expect(testValidator4.body.data).toEqual({
+    params: { id: 122 },
+    body: { name: '1' },
+    query: { limit: 100 },
+  });
 });
 
 test('Serve', async () => {

@@ -3,8 +3,13 @@ import koaBody from 'koa-body';
 import serve from 'koa-static';
 import Joi from '@hapi/joi';
 import Router from '@koa/router';
+import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 
-import { Logger } from '../src/utils/logger';
+export interface Logger extends WinstonLogger {
+  fatal: LeveledLogMethod;
+  trace: LeveledLogMethod;
+  child(options: Object): Logger;
+}
 
 export type Validator = (data: any) => { [key: string]: any };
 
@@ -105,7 +110,16 @@ export interface DefaultCustom extends Koa.DefaultContext {
   logger: Logger;
 }
 
-export type ParameterizedContext<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = Koa.ParameterizedContext<TState, TCustom>;
-export type Context<State = DefaultState, Custom = DefaultCustom> = Koa.ParameterizedContext<State, Custom>;
+export type ParameterizedContext<
+  TState = Koa.DefaultState,
+  TCustom = Koa.DefaultContext
+> = Koa.ParameterizedContext<TState, TCustom>;
+export type Context<State = DefaultState, Custom = DefaultCustom> = Koa.ParameterizedContext<
+  State,
+  Custom
+>;
 export type Next = Koa.Next;
-export type Middleware<State = DefaultState, Custom = DefaultCustom> = Koa.Middleware<State, Custom>;
+export type Middleware<State = DefaultState, Custom = DefaultCustom> = Koa.Middleware<
+  State,
+  Custom
+>;

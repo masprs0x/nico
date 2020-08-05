@@ -1,6 +1,7 @@
 import Router from '@koa/router';
 
 import {
+  Logger,
   Context,
   Next,
   HttpMethod,
@@ -9,27 +10,30 @@ import {
   DefaultState,
   DefaultCustom,
   ConfigRoute,
-  CustomMiddlewares
+  CustomMiddlewares,
 } from '../../../typings';
 
-import logger, { Logger } from '../../utils/logger';
+import logger from '../../utils/logger';
 import getMiddlewares from './get-middlewares';
 
-export default function getRouterMiddleware<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom>(
+export default function getRouterMiddleware<
+  TState extends DefaultState = DefaultState,
+  TCustom extends DefaultCustom = DefaultCustom
+>(
   router: Router<TState, TCustom>,
   config: Config<TState, TCustom>,
   options: {
     routeMiddlewares: string[];
     customMiddlewares: CustomMiddlewares;
     logger: Logger;
-  }
+  },
 ) {
   const routesConfig = config.routes || {};
 
   const testMethod = /^(get|post|delete|put|patch|options|all)$/;
 
   const mountRoutes = (configRoutes: ConfigRoutes<TState, TCustom>, prefix = '') => {
-    Object.entries(configRoutes).map(([key, value]) => {
+    Object.entries(configRoutes).forEach(([key, value]) => {
       const isPrefix = key.startsWith('/');
 
       if (!isPrefix) {
@@ -45,7 +49,7 @@ export default function getRouterMiddleware<TState extends DefaultState = Defaul
           securityConfig: config.security,
           routeMiddlewares: options.routeMiddlewares,
           logger: options.logger,
-          customMiddlewares: options.customMiddlewares
+          customMiddlewares: options.customMiddlewares,
         });
 
         router[method as HttpMethod](prefix + route, ...middlewares);

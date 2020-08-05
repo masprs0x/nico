@@ -2,7 +2,9 @@ function isMergeableObject(val: any) {
   const nonNullObject = val && typeof val === 'object';
 
   return (
-    nonNullObject && Object.prototype.toString.call(val) !== '[object RegExp]' && Object.prototype.toString.call(val) !== '[object Date]'
+    nonNullObject &&
+    Object.prototype.toString.call(val) !== '[object RegExp]' &&
+    Object.prototype.toString.call(val) !== '[object Date]'
   );
 }
 
@@ -12,12 +14,14 @@ function emptyTarget(val: any) {
 
 function cloneIfNecessary(value: any, optionsArgument: OptionsArgument): any {
   const clone = optionsArgument && optionsArgument.clone === true;
-  return clone && isMergeableObject(value) ? deepmerge(emptyTarget(value), value, optionsArgument) : value;
+  return clone && isMergeableObject(value)
+    ? deepmerge(emptyTarget(value), value, optionsArgument)
+    : value;
 }
 
 function defaultArrayMerge(target: any, source: any, optionsArgument: OptionsArgument) {
   const destination = target.slice();
-  source.forEach(function (e: any, i: any) {
+  source.forEach((e: any, i: any) => {
     if (typeof destination[i] === 'undefined') {
       destination[i] = cloneIfNecessary(e, optionsArgument);
     } else if (isMergeableObject(e)) {
@@ -32,11 +36,11 @@ function defaultArrayMerge(target: any, source: any, optionsArgument: OptionsArg
 function mergeObject(target: any, source: any, optionsArgument: OptionsArgument) {
   const destination: any = {};
   if (isMergeableObject(target)) {
-    Object.keys(target).forEach(function (key) {
+    Object.keys(target).forEach((key) => {
       destination[key] = cloneIfNecessary(target[key], optionsArgument);
     });
   }
-  Object.keys(source).forEach(function (key) {
+  Object.keys(source).forEach((key) => {
     if (!isMergeableObject(source[key]) || !target[key]) {
       destination[key] = cloneIfNecessary(source[key], optionsArgument);
     } else {
@@ -52,10 +56,12 @@ export default function deepmerge(target: any, source: any, optionsArgument?: Op
   const arrayMerge = options.arrayMerge || defaultArrayMerge;
 
   if (array) {
-    return Array.isArray(target) ? arrayMerge(target, source, options) : cloneIfNecessary(source, options);
-  } else {
-    return mergeObject(target, source, options);
+    return Array.isArray(target)
+      ? arrayMerge(target, source, options)
+      : cloneIfNecessary(source, options);
   }
+
+  return mergeObject(target, source, options);
 }
 
 type OptionsArgument = {

@@ -1,8 +1,8 @@
-import { Logger as WinstonLogger, createLogger, format, transports, LeveledLogMethod } from 'winston';
+import { createLogger, format, transports } from 'winston';
 import os from 'os';
 import util from 'util';
 import chalk from 'chalk';
-import { ConfigLogger } from '../../typings';
+import { ConfigLogger, Logger } from '../../typings';
 
 const levels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
 
@@ -29,9 +29,11 @@ const colorize = (inputLevel: string) => {
     case 'TRACE':
       paint = chalk.white.bgRgb(91, 0, 171).bold;
       break;
+    default:
+      paint = chalk.white.cyan;
   }
 
-  return paint(' ' + level + ' ');
+  return paint(` ${level} `);
 };
 
 const levelFormat = format((info) => {
@@ -51,20 +53,20 @@ const outputFormat = format.printf((info) => {
   return `${info.timestamp} ${info.level}\n${util.inspect(message, { colors: true, depth: 8 })}`;
 });
 
-const logger = createLogger({
+const defaultLogger = createLogger({
   levels: {
     fatal: 0,
     error: 1,
     warn: 2,
     info: 3,
     debug: 4,
-    trace: 5
+    trace: 5,
   },
   format: format.combine(levelFormat(), format.timestamp(), outputFormat),
   defaultMeta: {
-    serverName: os.hostname()
+    serverName: os.hostname(),
   },
-  transports: []
+  transports: [],
 }) as Logger;
 
 export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
@@ -72,9 +74,9 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
 
   const { consoleLevel = 'debug', fileLevel = 'none' } = config;
 
-  if (consoleLevel == 'none' && fileLevel == 'none') {
+  if (consoleLevel === 'none' && fileLevel === 'none') {
     logger.configure({
-      silent: true
+      silent: true,
     });
 
     return logger;
@@ -83,8 +85,8 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
   if (consoleLevel !== 'none' && levels.includes(consoleLevel)) {
     logger.add(
       new transports.Console({
-        level: config.consoleLevel
-      })
+        level: config.consoleLevel,
+      }),
     );
   }
 
@@ -92,18 +94,12 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
     logger.add(
       new transports.File({
         filename: `${config.fileLevel}.log`,
-        level: config.fileLevel
-      })
+        level: config.fileLevel,
+      }),
     );
   }
 
   return logger;
 };
 
-export default logger;
-
-export interface Logger extends WinstonLogger {
-  fatal: LeveledLogMethod;
-  trace: LeveledLogMethod;
-  child(options: Object): Logger;
-}
+export default defaultLogger;

@@ -13,7 +13,6 @@ export default function getErrorMiddleware() {
 
       ctx.status = 500;
       ctx.body = 'Server Error';
-      return;
     }
   };
 }

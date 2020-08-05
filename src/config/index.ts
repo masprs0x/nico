@@ -13,7 +13,7 @@ const config: Config = {
   security,
   serve,
   responses,
-  logger
+  logger,
 };
 
 export default config;

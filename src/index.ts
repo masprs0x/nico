@@ -8,21 +8,43 @@ import defaultConfig from './config';
 import { mergeConfigs, createUid } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
-import logger, { Logger, initLogger } from './utils/logger';
+import logger, { initLogger } from './utils/logger';
 
-import { Config, DefaultState, DefaultCustom, GetMiddlewareFunc, CustomMiddlewares } from '../typings';
+import {
+  Logger,
+  Config,
+  DefaultState,
+  DefaultCustom,
+  GetMiddlewareFunc,
+  CustomMiddlewares,
+} from '../typings';
 
 export * from '../typings';
 
-export class Nico<TState extends DefaultState = DefaultState, TCustom extends DefaultCustom = DefaultCustom> extends Koa {
+export class Nico<
+  TState extends DefaultState = DefaultState,
+  TCustom extends DefaultCustom = DefaultCustom
+> extends Koa {
   config: Config<TState, TCustom> = defaultConfig;
+
   logger: Logger = logger;
 
   customMiddlewares: CustomMiddlewares = {};
+
   /** ['error-handler', 'global-cors', 'responses', 'serve', 'routes'] */
   appMiddlewares: string[] = ['error-handler', 'global-cors', 'responses', 'serve', 'routes'];
+
   /** ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'] */
-  routeMiddlewares: string[] = ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'];
+  routeMiddlewares: string[] = [
+    'debug',
+    'controller-cors',
+    'csp',
+    'xframes',
+    'policies',
+    'body-parser',
+    'validate',
+    'controller',
+  ];
 
   #initialed = false;
 
@@ -33,7 +55,11 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     this.logger = initLogger(this.logger, this.config.logger);
   }
 
-  private getCustomMiddlewares(middlewares: string[], getMiddleware: GetMiddlewareFunc, after: string) {
+  private getCustomMiddlewares(
+    middlewares: string[],
+    getMiddleware: GetMiddlewareFunc,
+    after: string,
+  ) {
     let name = getMiddleware.name.trim();
     if (!name) {
       name = createUid();
@@ -48,7 +74,7 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
 
     let result = middlewares;
 
-    const index = middlewares.findIndex((o) => o == after);
+    const index = middlewares.findIndex((o) => o === after);
     if (index < 0) {
       result = [name].concat(middlewares);
     } else {
@@ -76,32 +102,32 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
     }
 
     this.config = mergeConfigs<TState, TCustom>(this.config, ...inputConfigs);
-    const config = this.config;
+    const { config } = this;
 
     this.logger = initLogger(this.logger, config.logger);
 
     this.context.logger = this.logger;
     this.context.custom = config.custom;
 
-    this.appMiddlewares.map((name) => {
-      if (name == 'error-handler') {
+    this.appMiddlewares.forEach((name) => {
+      if (name === 'error-handler') {
         this.use(errorHandler());
-      } else if (name == 'global-cors') {
+      } else if (name === 'global-cors') {
         this.use(cors(config.security?.cors));
-      } else if (name == 'responses') {
+      } else if (name === 'responses') {
         this.use(responses(config.responses));
-      } else if (name == 'serve') {
+      } else if (name === 'serve') {
         const serveRouter = new Router();
         this.use(serve(serveRouter, config.serve));
         this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
-      } else if (name == 'routes') {
+      } else if (name === 'routes') {
         const router = new Router(config.advancedConfigs?.routerOptions);
         this.use(
           routes<TState, TCustom>(router, config, {
             routeMiddlewares: this.routeMiddlewares,
             customMiddlewares: this.customMiddlewares,
-            logger: this.logger
-          })
+            logger: this.logger,
+          }),
         );
         this.use(router.routes()).use(router.allowedMethods());
       } else {
@@ -110,7 +136,9 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
         if (middleware) {
           this.use(middleware());
         } else {
-          this.logger.warn(`${name} is defined in nico.appMiddlewares but doesn't be implemented in config.middlewares`);
+          this.logger.warn(
+            `${name} is defined in nico.appMiddlewares but doesn't be implemented in config.middlewares`,
+          );
         }
       }
     });
@@ -144,4 +172,4 @@ export class Nico<TState extends DefaultState = DefaultState, TCustom extends De
 
 export default new Nico();
 
-export { default as logger, Logger } from './utils/logger';
+export { default as logger } from './utils/logger';

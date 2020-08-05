@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -10,15 +10,25 @@
   "scripts": {
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
-    "test": "jest",
+    "test": "npm run format && npm run lint && jest",
+    "lint": "eslint --fix --ignore-path .gitignore 'src/**/*' 'test/**/*' 'typings/**/*'",
+    "format": "prettier --ignore-path .gitignore --write .",
     "build": "rm -rf dist && npm run tsc && cp package.json README.md ./dist",
     "push": "npm run test && npm run build && cd ./dist && npm publish --access public --registry=https://registry.npmjs.org"
   },
   "keywords": [
-    "node",
-    "typescript",
+    "nico",
+    "web",
+    "app",
+    "http",
+    "application",
+    "mvc",
+    "framework",
+    "middleware",
+    "rank",
     "koa",
-    "framework"
+    "node",
+    "typescript"
   ],
   "author": "blastz",
   "license": "MIT",
@@ -35,12 +45,15 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
+    "@blastz/eslint-config-nico": "^0.1.0",
     "@blastz/nico-mongo": "^0.1.0",
     "@hapi/joi": "^17.1.1",
     "@types/jest": "^26.0.8",
     "@types/supertest": "^2.0.10",
+    "eslint": "^7.6.0",
     "jest": "^26.2.2",
     "mongoose": "^5.9.27",
+    "prettier": "^2.0.5",
     "supertest": "^4.0.2",
     "typescript": "^3.9.7"
   },

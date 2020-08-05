@@ -9,7 +9,7 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     allowHeaders: 'Origin, Content-Type, Method',
     maxAge: 60,
-    ...config
+    ...config,
   };
 
   options.maxAge = Number(options.maxAge);
@@ -27,7 +27,7 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
   }
 
   const allowedOrigin = options.allowOrigins;
-  const allRoutes = options.allRoutes;
+  const { allRoutes } = options;
 
   const getOrigin = (requestOrigin: string) => {
     let origin = '';
@@ -44,16 +44,20 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
   };
 
   const setOrigin = (ctx: Context, origin: string) => {
-    origin ? ctx.set('Access-Control-Allow-Origin', origin) : ctx.remove('Access-Control-Allow-Origin');
+    origin
+      ? ctx.set('Access-Control-Allow-Origin', origin)
+      : ctx.remove('Access-Control-Allow-Origin');
   };
 
   const setCredentials = (ctx: Context, allowCredentials?: boolean) => {
-    allowCredentials ? ctx.set('Access-Control-Allow-Credentials', 'true') : ctx.remove('Access-Control-Allow-Credentials');
+    allowCredentials
+      ? ctx.set('Access-Control-Allow-Credentials', 'true')
+      : ctx.remove('Access-Control-Allow-Credentials');
   };
 
   return async function corsMiddleware(ctx: Context, next: Next) {
     const requestOrigin = ctx.request.headers.origin;
-    const method = ctx.method;
+    const { method } = ctx;
 
     if (((global && allRoutes) || !global) && method !== 'OPTIONS') {
       setCredentials(ctx, options.allowCredentials);
@@ -66,7 +70,8 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
       await next();
     } else {
       if (!ctx.get('Access-Control-Request-Method')) {
-        return await next();
+        await next();
+        return;
       }
 
       setCredentials(ctx, options.allowCredentials);
@@ -78,9 +83,12 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
       }
 
       options.allowMethods && ctx.set('Access-Control-Allow-Methods', options.allowMethods);
-      options.maxAge && !Number.isNaN(options.maxAge) && options.maxAge > 0 && ctx.set('Access-Control-Max-Age', String(options.maxAge));
+      options.maxAge &&
+        !Number.isNaN(options.maxAge) &&
+        options.maxAge > 0 &&
+        ctx.set('Access-Control-Max-Age', String(options.maxAge));
 
-      let allowHeaders = options.allowHeaders;
+      let { allowHeaders } = options;
       if (!allowHeaders) {
         allowHeaders = ctx.get('Access-Control-Request-Headers');
       }

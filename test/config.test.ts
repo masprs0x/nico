@@ -1,7 +1,7 @@
 import request from 'supertest';
 
-import { Nico } from '../src/index';
 import Joi from '@hapi/joi';
+import { Nico } from '../src/index';
 
 test('Merge configs', async () => {
   const nico = new Nico();
@@ -11,31 +11,31 @@ test('Merge configs', async () => {
         'GET /test': {
           controller: (ctx) => {
             ctx.ok('test');
-          }
-        }
+          },
+        },
       },
       responses: {
         ok: function ok(data, message, success) {
           this.body = {
             success,
             data,
-            message
+            message,
           };
-        }
+        },
       },
       logger: {
-        consoleLevel: 'none'
-      }
+        consoleLevel: 'none',
+      },
     },
     {
       routes: {
         'GET /test2': {
           controller: (ctx) => {
             ctx.ok('test2');
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   );
 
   const req = request(nico.callback());
@@ -54,13 +54,13 @@ test('Merge configs in constructor', async () => {
         controller: (ctx) => {
           return (ctx.body = { name: 'blast' });
         },
-        policies: true
+        policies: true,
       },
       'GET /test2': {
         controller: function a() {},
-        policies: true
-      }
-    }
+        policies: true,
+      },
+    },
   });
 
   nico.init({
@@ -69,9 +69,9 @@ test('Merge configs in constructor', async () => {
         controller: function b(ctx) {
           return (ctx.body = { name: 'z' });
         },
-        policies: false
-      }
-    }
+        policies: false,
+      },
+    },
   });
 
   expect(nico.config.routes?.['GET /test'].policies).toEqual(true);
@@ -99,7 +99,7 @@ test('Cors Configs', async () => {
       'OPTIONS /test': {
         controller: (ctx) => {
           ctx.body = 'options test';
-        }
+        },
       },
       'GET /test': {
         controller: (ctx) => {
@@ -108,17 +108,17 @@ test('Cors Configs', async () => {
         cors: {
           allowOrigins: '*',
           allowCredentials: true,
-          exposeHeaders: ['Pagination-Count']
-        }
-      }
+          exposeHeaders: ['Pagination-Count'],
+        },
+      },
     },
     security: {
       cors: {
         allRoutes: true,
         allowOrigins: ['http://127.0.0.1'],
-        allowHeaders: ['Pagination-Page']
-      }
-    }
+        allowHeaders: ['Pagination-Page'],
+      },
+    },
   });
 
   const req = request(nico.callback());
@@ -128,7 +128,10 @@ test('Cors Configs', async () => {
   expect(header['access-control-allow-credentials']).toEqual('true');
   expect(header['access-control-expose-headers']).toEqual('Pagination-Count');
 
-  const { header: header2 } = await req.options('/test').set('Access-Control-Request-Method', 'PATCH').set('Origin', 'http://127.0.0.1');
+  const { header: header2 } = await req
+    .options('/test')
+    .set('Access-Control-Request-Method', 'PATCH')
+    .set('Origin', 'http://127.0.0.1');
   expect(header2['access-control-allow-origin']).toEqual('http://127.0.0.1');
   expect(header2['access-control-allow-methods']).toEqual('GET,HEAD,PUT,POST,DELETE,PATCH');
   expect(header2['access-control-max-age']).toEqual('60');
@@ -142,19 +145,19 @@ test('Advanced Configs', async () => {
       'GET /test': {
         controller: (ctx) => {
           ctx.body = { name: '/test' };
-        }
+        },
       },
       'GET /test/': {
         controller: (ctx) => {
           ctx.body = { name: '/test/' };
-        }
-      }
+        },
+      },
     },
     advancedConfigs: {
       routerOptions: {
-        strict: true
-      }
-    }
+        strict: true,
+      },
+    },
   });
 
   const req = request(nico.callback());
@@ -174,26 +177,26 @@ test('Nested Routes', async () => {
           GET: {
             controller: (ctx) => {
               return (ctx.body = { data: 'get' });
-            }
+            },
           },
           POST: {
             controller: (ctx) => {
               return (ctx.body = { data: 'post' });
-            }
+            },
           },
           '/:id': {
             DELETE: {
               controller: (ctx) => {
-                return (ctx.body = { data: 'delete' + ' ' + ctx.state.params.id });
+                return (ctx.body = { data: `delete ${ctx.state.params.id}` });
               },
               validate: {
                 params: Joi.object({
-                  id: Joi.number()
-                })
-              }
-            }
-          }
-        }
+                  id: Joi.number(),
+                }),
+              },
+            },
+          },
+        },
       },
       '/api/v2': {
         '/posts': {
@@ -201,17 +204,17 @@ test('Nested Routes', async () => {
             'GET /categories': {
               controller: (ctx) => {
                 return (ctx.body = { data: `category${ctx.params.id}` });
-              }
+              },
             },
             'GET /authors': {
               controller: (ctx) => {
                 return (ctx.body = { data: `author${ctx.params.id}` });
-              }
-            }
-          }
-        }
-      }
-    }
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   nico.init();
@@ -240,10 +243,10 @@ test('Custom App Middlewares', async () => {
         GET: {
           controller: (ctx) => {
             ctx.body = { text: 'test' };
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   nico.useCustomAppMiddleware(() => async (ctx, next) => {
@@ -256,7 +259,7 @@ test('Custom App Middlewares', async () => {
       await next();
       ctx.set('custom2', 'custom2');
     },
-    'custom'
+    'custom',
   );
 
   nico.init();
@@ -276,10 +279,10 @@ test('Custom Route Middlewares', async () => {
         GET: {
           controller: (ctx) => {
             ctx.body = { text: 'test' };
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   nico.useCustomRouteMiddleware(() => async (ctx, next) => {
@@ -292,7 +295,7 @@ test('Custom Route Middlewares', async () => {
       await next();
       ctx.set('custom2', 'custom2');
     },
-    'custom'
+    'custom',
   );
   nico.init();
 
