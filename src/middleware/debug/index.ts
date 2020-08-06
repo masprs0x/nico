@@ -8,11 +8,10 @@ function getUrl(ctx: Context) {
 
 export default function getDebugMiddleware() {
   const HEADER_REQUEST_ID = 'X-Request-ID';
+  const stage = 'middleware-debug';
 
   return async function debugMiddleware(ctx: Context, next: Next) {
-    let start: [number, number] = [0, 0];
-
-    start = process.hrtime();
+    ctx.state.requestStartTime = process.hrtime();
 
     const requestId = ctx.get(HEADER_REQUEST_ID) || createUid();
 
@@ -20,14 +19,16 @@ export default function getDebugMiddleware() {
       ctx.set(HEADER_REQUEST_ID, requestId);
     }
 
-    ctx.logger = ctx.logger.child({ requestId, url: getUrl(ctx), label: 'request' });
-    ctx.logger.child({ stage: 'debug-middleware' }).debug('api start');
+    ctx.logger = ctx.logger.child({
+      requestId,
+      url: getUrl(ctx),
+      label: 'request',
+      stage,
+    });
+    ctx.logger.child({ executeTime: 0 }).debug('request in');
 
     await next();
 
-    const end = process.hrtime(start);
-    const time = end[0] * 1000 + end[1] / 1000000;
-
-    ctx.logger.child({ stage: 'debug-middleware', executeTime: time }).debug('api end');
+    ctx.logger.child({ stage, executeTime: ctx.helper.getExecuteTime() }).debug('request out');
   };
 }

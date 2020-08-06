@@ -9,6 +9,7 @@ import { mergeConfigs, createUid } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
 import logger, { initLogger } from './utils/logger';
+import getHelperMiddleware from './middleware/helper';
 
 import {
   Logger,
@@ -53,6 +54,8 @@ export class Nico<
 
     this.config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
     this.logger = initLogger(this.logger, this.config.logger);
+
+    this.context.helper = {};
   }
 
   private getCustomMiddlewares(
@@ -108,6 +111,8 @@ export class Nico<
 
     this.context.logger = this.logger;
     this.context.custom = config.custom;
+
+    this.use(getHelperMiddleware());
 
     this.appMiddlewares.forEach((name) => {
       if (name === 'error-handler') {

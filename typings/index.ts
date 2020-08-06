@@ -4,6 +4,7 @@ import serve from 'koa-static';
 import Joi from '@hapi/joi';
 import Router from '@koa/router';
 import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 export interface Logger extends WinstonLogger {
   fatal: LeveledLogMethod;
@@ -75,7 +76,7 @@ export interface ConfigServe {
 export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 
 export interface ConfigLogger {
-  fileLevel?: LoggerLevel | 'none';
+  fileLevel?: LoggerLevel | DailyRotateFile.DailyRotateFileTransportOptions | 'none';
   consoleLevel?: LoggerLevel | 'none';
 }
 
@@ -103,11 +104,15 @@ export interface DefaultState extends Koa.DefaultState {
   query?: any;
   params?: any;
   body?: any;
+  requestStartTime?: [number, number];
 }
 
 export interface DefaultCustom extends Koa.DefaultContext {
   custom: ConfigCustom;
   logger: Logger;
+  helper: {
+    getExecuteTime(): number;
+  };
 }
 
 export type ParameterizedContext<

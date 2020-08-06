@@ -103,8 +103,12 @@ export default function getMiddlewares<
         !policies && middlewares.push(forbiddenMiddleware);
       } else if (Array.isArray(policies)) {
         policies.forEach((policyMiddleware) => {
+          const policyName = policyMiddleware.name;
+          const stage = `policy-${policyName}`;
+
           middlewares.push(async (ctx, next) => {
-            ctx.logger.child({ stage: 'policy' }).debug(`${policyMiddleware.name} execute`);
+            ctx.logger = ctx.logger.child({ stage });
+            ctx.logger.debug(`hit policy ${policyName}`);
 
             await policyMiddleware(ctx, next);
           });
@@ -115,10 +119,13 @@ export default function getMiddlewares<
         if (typeof bodyParser === 'boolean') {
           bodyParser &&
             middlewares.push(async (ctx, next) => {
+              const stage = 'middleware-bodyParser';
+              ctx.logger = ctx.logger.child({ stage });
               try {
+                ctx.logger.debug('hit bodyParser middleware');
                 await KoaBody()(ctx, next);
               } catch (err) {
-                ctx.logger.child({ stage: 'body-parser' }).error(err.message);
+                ctx.logger.error(`hit bodyParser middleware catch: ${err.message}`);
 
                 if (ctx.onBodyParserError) {
                   return ctx.onBodyParserError(err);
@@ -133,7 +140,11 @@ export default function getMiddlewares<
       }
     } else if (name === 'validate') {
       Object.keys(validate).forEach((key) => {
+        const stage = `validate-${key}`;
+
         const validateMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
+          ctx.logger = ctx.logger.child({ stage });
+
           if (key === 'params' || key === 'query' || key === 'body') {
             const validator = validate[key];
             const data = key === 'params' ? ctx.params : ctx.request[key];
@@ -143,19 +154,15 @@ export default function getMiddlewares<
               value = await validator(data);
             } else if (typeof validator === 'object' && validator.validateAsync) {
               if (validator.type !== typeof data) {
-                ctx.logger
-                  .child({ stage: 'validate' })
-                  .warn(`${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`);
+                ctx.logger.warn(
+                  `${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`,
+                );
               } else {
                 try {
                   value = await validator.validateAsync(data);
-                  ctx.logger
-                    .child({ stage: `validate-${key}` })
-                    .debug({ origin: data, parsed: value });
+                  ctx.logger.debug({ origin: data, parsed: value });
                 } catch (err) {
-                  ctx.logger
-                    .child({ stage: `validate-${key}` })
-                    .error({ origin: data, errMessage: err.message });
+                  ctx.logger.error({ origin: data, errMessage: err.message });
 
                   if (ctx.onValidateError) {
                     return ctx.onValidateError(err);
@@ -167,6 +174,8 @@ export default function getMiddlewares<
             }
 
             ctx.state[key] = value;
+          } else {
+            ctx.logger.warn(`validate key '${key}', is not allowed`);
           }
 
           await next();
@@ -177,8 +186,13 @@ export default function getMiddlewares<
     } else if (name === 'controller') {
       const controllers = Array.isArray(controller) ? controller : [controller];
       const controllerMiddlewares = controllers.map((o) => {
+        const stage = `controller-${o.name}`;
+
         return async (ctx: Context<TState, TCustom>, next: Next) => {
-          ctx.logger.child({ stage: 'controller' }).debug(`${o.name} execute`);
+          ctx.logger = ctx.logger.child({ stage });
+          ctx.logger
+            .child({ executeTime: ctx.helper.getExecuteTime() })
+            .debug(`hit controller ${o.name}`);
 
           await o(ctx, next);
         };

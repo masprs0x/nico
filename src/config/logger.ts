@@ -2,7 +2,7 @@ import { ConfigLogger } from '../../typings';
 
 const loggerConfig: ConfigLogger = {
   fileLevel: 'none',
-  consoleLevel: 'debug',
+  consoleLevel: 'info',
 };
 
 export default loggerConfig;

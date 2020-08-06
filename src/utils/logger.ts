@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from 'winston';
+import 'winston-daily-rotate-file';
 import os from 'os';
 import util from 'util';
 import chalk from 'chalk';
@@ -72,7 +73,7 @@ const defaultLogger = createLogger({
 export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
   logger.clear();
 
-  const { consoleLevel = 'debug', fileLevel = 'none' } = config;
+  const { consoleLevel = 'info', fileLevel = 'none' } = config;
 
   if (consoleLevel === 'none' && fileLevel === 'none') {
     logger.configure({
@@ -90,13 +91,32 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
     );
   }
 
-  if (fileLevel !== 'none' && levels.includes(fileLevel)) {
-    logger.add(
-      new transports.File({
-        filename: `${config.fileLevel}.log`,
-        level: config.fileLevel,
-      }),
-    );
+  if (fileLevel !== 'none') {
+    const defaultFileTransportOptions = {
+      level: 'trace',
+      frequency: '1h',
+      dirname: './log',
+      datePattern: 'YYYY-MM-DD-HH',
+      maxSize: '20m',
+      maxFiles: '30d',
+    };
+
+    if (typeof fileLevel === 'string') {
+      logger.add(
+        new transports.DailyRotateFile({
+          ...defaultFileTransportOptions,
+          filename: '%DATE%.log',
+          level: fileLevel,
+        }),
+      );
+    }
+
+    if (typeof fileLevel === 'object') {
+      if (!fileLevel.stream && !fileLevel.filename) {
+        fileLevel.filename = '%DATE%.log';
+      }
+      logger.add(new transports.DailyRotateFile({ ...defaultFileTransportOptions, ...fileLevel }));
+    }
   }
 
   return logger;

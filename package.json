@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.11.4",
+  "version": "0.12.0",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -42,7 +42,8 @@
     "koa": "^2.13.0",
     "koa-body": "^4.2.0",
     "koa-static": "^5.0.0",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.0"
   },
   "devDependencies": {
     "@blastz/eslint-config-nico": "^0.1.0",

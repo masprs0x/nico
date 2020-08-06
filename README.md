@@ -118,6 +118,8 @@ Use [winston](https://github.com/winstonjs/winston) underhood.
 
 Nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
+Default console level is `info`, file level is `none`.
+
 ```js
 ctx.logger.debug('I am a debug log.');
 ```
