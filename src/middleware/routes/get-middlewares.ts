@@ -1,4 +1,4 @@
-import KoaBody from 'koa-body';
+import path from 'path';
 
 import {
   Logger,
@@ -18,6 +18,8 @@ import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
 import defaultLogger from '../../utils/logger';
+import getBodyParserHandleMiddleware from './get-body-parser-handle';
+import getPolicyHandleMiddleware from './get-policy-handle';
 
 async function defaultController(ctx: Context, next: Next) {
   await next();
@@ -91,51 +93,26 @@ export default function getMiddlewares<
       }
     } else if (name === 'xframes') {
       if (xframesOptions) {
-        if (typeof xframesOptions === 'boolean') {
-          xframesOptions === true &&
-            middlewares.push(xframes(securityConfig.xframes || 'SAMEORIGIN'));
-        } else {
+        if (typeof xframesOptions === 'boolean' && xframesOptions) {
+          middlewares.push(xframes(securityConfig.xframes || 'SAMEORIGIN'));
+        } else if (typeof xframesOptions === 'object') {
           middlewares.push(xframes(xframesOptions));
         }
       }
     } else if (name === 'policies') {
-      if (typeof policies === 'boolean') {
-        !policies && middlewares.push(forbiddenMiddleware);
+      if (typeof policies === 'boolean' && !policies) {
+        middlewares.push(forbiddenMiddleware);
       } else if (Array.isArray(policies)) {
         policies.forEach((policyMiddleware) => {
-          const policyName = policyMiddleware.name;
-          const stage = `policy-${policyName}`;
-
-          middlewares.push(async (ctx, next) => {
-            ctx.logger = ctx.logger.child({ stage });
-            ctx.logger.debug(`hit policy ${policyName}`);
-
-            await policyMiddleware(ctx, next);
-          });
+          middlewares.push(getPolicyHandleMiddleware(policyMiddleware));
         });
       }
     } else if (name === 'body-parser') {
       if (bodyParser) {
-        if (typeof bodyParser === 'boolean') {
-          bodyParser &&
-            middlewares.push(async (ctx, next) => {
-              const stage = 'middleware-bodyParser';
-              ctx.logger = ctx.logger.child({ stage });
-              try {
-                ctx.logger.debug('hit bodyParser middleware');
-                await KoaBody()(ctx, next);
-              } catch (err) {
-                ctx.logger.error(`hit bodyParser middleware catch: ${err.message}`);
-
-                if (ctx.onBodyParserError) {
-                  return ctx.onBodyParserError(err);
-                }
-
-                throw err;
-              }
-            });
-        } else {
-          middlewares.push(KoaBody(bodyParser));
+        if (typeof bodyParser === 'boolean' && bodyParser) {
+          middlewares.push(getBodyParserHandleMiddleware());
+        } else if (typeof bodyParser === 'object') {
+          middlewares.push(getBodyParserHandleMiddleware(bodyParser));
         }
       }
     } else if (name === 'validate') {
@@ -145,37 +122,111 @@ export default function getMiddlewares<
         const validateMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
           ctx.logger = ctx.logger.child({ stage });
 
-          if (key === 'params' || key === 'query' || key === 'body') {
-            const validator = validate[key];
-            const data = key === 'params' ? ctx.params : ctx.request[key];
-            let value = {};
+          if (key !== 'params' && key !== 'query' && key !== 'body' && key !== 'files') {
+            ctx.logger.debug(`${key} is not allowed in validate`);
+            return next();
+          }
 
-            if (typeof validator === 'function') {
-              value = await validator(data);
-            } else if (typeof validator === 'object' && validator.validateAsync) {
-              if (validator.type !== typeof data) {
-                ctx.logger.warn(
-                  `${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`,
-                );
-              } else {
-                try {
+          let data = key === 'params' ? ctx.params : ctx.request[key];
+
+          try {
+            if (key === 'params' || key === 'query' || key === 'body') {
+              const validator = validate[key];
+
+              let value = {};
+
+              if (typeof validator === 'function') {
+                value = await validator(data);
+              } else if (typeof validator === 'object' && validator.validateAsync) {
+                if (validator.type !== typeof data) {
+                  ctx.logger.warn(
+                    `${key} type ${typeof data} mismatch Joi.Schema type ${validator.type}`,
+                  );
+                } else {
                   value = await validator.validateAsync(data);
                   ctx.logger.debug({ origin: data, parsed: value });
-                } catch (err) {
-                  ctx.logger.error({ origin: data, errMessage: err.message });
-
-                  if (ctx.onValidateError) {
-                    return ctx.onValidateError(err);
-                  }
-
-                  throw err;
                 }
               }
+
+              ctx.state[key] = value;
+            } else if (key === 'files') {
+              const files = validate.files || {};
+
+              await Promise.all(
+                Object.keys(files).map(async (optionalFileKey) => {
+                  let allowNull = false;
+                  let fileKey = optionalFileKey;
+
+                  if (optionalFileKey.endsWith('?')) {
+                    fileKey = optionalFileKey.slice(0, -1);
+                    allowNull = true;
+                  }
+
+                  const file = ctx.request?.files?.[fileKey];
+
+                  if (!file) {
+                    if (allowNull) return;
+                    throw new Error(`${fileKey} is required`);
+                  }
+
+                  const fileValidateSchema = files[optionalFileKey];
+
+                  await Promise.all(
+                    Object.keys(fileValidateSchema).map(async (fileValidateKey) => {
+                      const validator = fileValidateSchema[fileValidateKey];
+
+                      if (
+                        !['size', 'name', 'basename', 'extname', 'type'].includes(fileValidateKey)
+                      ) {
+                        ctx.logger.warn(`${fileValidateKey} is not allowed in files validates`);
+                        return;
+                      }
+
+                      try {
+                        if (typeof validator === 'function') {
+                          if (fileValidateKey === 'basename') {
+                            await validator(path.basename(file.name, path.extname(file.name)));
+                          } else if (fileValidateKey === 'extname') {
+                            await validator(path.extname(file.name));
+                          } else {
+                            // @ts-ignore
+                            await validator(file[fileValidateKey]);
+                          }
+                        } else if (typeof validator === 'object' && validator.validateAsync) {
+                          if (fileValidateKey === 'basename') {
+                            await validator.validateAsync(
+                              path.basename(file.name, path.extname(file.name)),
+                            );
+                          } else if (fileValidateKey === 'extname') {
+                            await validator.validateAsync(path.extname(file.name));
+                          } else {
+                            // @ts-ignore
+                            await validator.validateAsync(file[fileValidateKey]);
+                          }
+                        }
+                      } catch (err) {
+                        data = data[fileKey];
+                        throw err;
+                      }
+                    }),
+                  );
+
+                  ctx.logger.debug({ [fileKey]: file });
+                }),
+              );
+
+              ctx.state.files = ctx.request.files;
+            } else {
+              ctx.logger.warn(`validate key '${key}', is not allowed`);
+            }
+          } catch (err) {
+            ctx.logger.error({ origin: data, errMessage: err.message });
+
+            if (ctx.onValidateError) {
+              return ctx.onValidateError(err);
             }
 
-            ctx.state[key] = value;
-          } else {
-            ctx.logger.warn(`validate key '${key}', is not allowed`);
+            throw err;
           }
 
           await next();

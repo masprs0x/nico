@@ -5,6 +5,7 @@ import Joi from '@hapi/joi';
 import Router from '@koa/router';
 import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { Files } from 'formidable';
 
 export interface Logger extends WinstonLogger {
   fatal: LeveledLogMethod;
@@ -14,6 +15,8 @@ export interface Logger extends WinstonLogger {
 
 export type Validator = (data: any) => { [key: string]: any };
 
+type FilesValidator = Joi.Schema | Validator;
+
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
   policies?: Middleware<TState, TCustom>[] | boolean;
@@ -22,6 +25,17 @@ export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
     params?: Joi.ObjectSchema | Validator;
     query?: Joi.ObjectSchema | Validator;
     body?: Joi.ObjectSchema | Validator;
+    files?: {
+      [key: string]: {
+        size?: FilesValidator;
+        name?: FilesValidator;
+        basename?: FilesValidator;
+        extname?: FilesValidator;
+        type?: FilesValidator;
+      } & {
+        [key: string]: FilesValidator;
+      };
+    };
   };
   cors?: CorsOptions | boolean;
   xframes?: XFrameOptions | true;
@@ -104,6 +118,7 @@ export interface DefaultState extends Koa.DefaultState {
   query?: any;
   params?: any;
   body?: any;
+  files?: Files;
   requestStartTime?: [number, number];
 }
 
