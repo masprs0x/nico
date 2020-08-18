@@ -3,7 +3,7 @@ import 'winston-daily-rotate-file';
 import os from 'os';
 import util from 'util';
 import chalk from 'chalk';
-import { ConfigLogger, Logger } from '../../typings';
+import { ConfigLogger, Logger, FileLevel } from '../../typings';
 
 const levels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
 
@@ -70,6 +70,40 @@ const defaultLogger = createLogger({
   transports: [],
 }) as Logger;
 
+const mountFileTransport = (logger: Logger, fileLevel: FileLevel) => {
+  const defaultFileTransportOptions = {
+    level: 'trace',
+    frequency: '1h',
+    dirname: './log/trace',
+    datePattern: 'YYYY-MM-DD-HH',
+    maxSize: '20m',
+    maxFiles: '30d',
+  };
+
+  if (typeof fileLevel === 'string') {
+    logger.add(
+      new transports.DailyRotateFile({
+        ...defaultFileTransportOptions,
+        filename: '%DATE%.log',
+        dirname: `./log/${fileLevel}`,
+        level: fileLevel,
+      }),
+    );
+  }
+
+  if (typeof fileLevel === 'object') {
+    if (!fileLevel.stream && !fileLevel.filename) {
+      fileLevel.filename = '%DATE%.log';
+    }
+
+    if (fileLevel.level) {
+      defaultFileTransportOptions.dirname = `./log/${fileLevel.level}`;
+    }
+
+    logger.add(new transports.DailyRotateFile({ ...defaultFileTransportOptions, ...fileLevel }));
+  }
+};
+
 export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
   logger.clear();
 
@@ -92,30 +126,13 @@ export const initLogger = (logger: Logger, config: ConfigLogger = {}) => {
   }
 
   if (fileLevel !== 'none') {
-    const defaultFileTransportOptions = {
-      level: 'trace',
-      frequency: '1h',
-      dirname: './log',
-      datePattern: 'YYYY-MM-DD-HH',
-      maxSize: '20m',
-      maxFiles: '30d',
-    };
-
-    if (typeof fileLevel === 'string') {
-      logger.add(
-        new transports.DailyRotateFile({
-          ...defaultFileTransportOptions,
-          filename: '%DATE%.log',
-          level: fileLevel,
-        }),
-      );
-    }
-
-    if (typeof fileLevel === 'object') {
-      if (!fileLevel.stream && !fileLevel.filename) {
-        fileLevel.filename = '%DATE%.log';
-      }
-      logger.add(new transports.DailyRotateFile({ ...defaultFileTransportOptions, ...fileLevel }));
+    if (Array.isArray(fileLevel)) {
+      fileLevel.map((o) => {
+        mountFileTransport(logger, o);
+        return undefined;
+      });
+    } else {
+      mountFileTransport(logger, fileLevel);
     }
   }
 

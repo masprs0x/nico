@@ -89,8 +89,10 @@ export interface ConfigServe {
 
 export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 
+export type FileLevel = LoggerLevel | DailyRotateFile.DailyRotateFileTransportOptions;
+
 export interface ConfigLogger {
-  fileLevel?: LoggerLevel | DailyRotateFile.DailyRotateFileTransportOptions | 'none';
+  fileLevel?: FileLevel | FileLevel[] | 'none';
   consoleLevel?: LoggerLevel | 'none';
 }
 
