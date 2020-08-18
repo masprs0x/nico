@@ -5,16 +5,14 @@ import path from 'path';
 import { ConfigServe, Context, Next } from '../../../typings';
 
 export default function getServeMiddleware(router: Router, config?: ConfigServe) {
-  const { root, opts } = config ?? {
-    root: 'assets',
-  };
+  const { root, route = '/assets', opts } = config || {};
 
   if (root) {
     router.get(
-      `/${root}/(.+)`,
+      `${route}/(.+)`,
       async (ctx: Context, next: Next) => {
-        ctx.path = ctx.path.slice(`/${root}`.length);
-        ctx.logger.child({ stage: 'serve' }).debug('static assets');
+        ctx.path = ctx.path.slice(route.length);
+        ctx.logger.child({ stage: 'serve' }).debug('serve static assets');
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

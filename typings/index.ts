@@ -84,6 +84,7 @@ export type ConfigResponses<TState = Koa.DefaultState, TCustom = Koa.DefaultCont
 
 export interface ConfigServe {
   root?: string;
+  route?: string;
   opts?: serve.Options;
 }
 
