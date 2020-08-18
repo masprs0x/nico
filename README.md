@@ -120,8 +120,30 @@ Nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
 Default console level is `info`, file level is `none`.
 
+### Default Logger Config
+
+```ts
+const loggerConfig: ConfigLogger = {
+  fileLevel: 'none',
+  consoleLevel: 'info',
+};
+```
+
+### Mutiple File Logger
+
+```ts
+const loggerConfig: ConfigLogger = {
+  fileLevel: ['trace', 'error'],
+};
+```
+
+Output directories are `log/trace` and `log/error`.
+
+### Usage Example
+
 ```js
-ctx.logger.debug('I am a debug log.');
+ctx.logger.fatal('fatal');
+ctx.logger.debug('debug');
 ```
 
 ## Custom Middlewares
