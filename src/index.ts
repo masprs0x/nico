@@ -11,23 +11,11 @@ import cors from './middleware/cors';
 import logger, { initLogger } from './utils/logger';
 import getHelperMiddleware from './middleware/helper';
 
-import {
-  Logger,
-  Config,
-  DefaultState,
-  DefaultCustom,
-  GetMiddlewareFunc,
-  CustomMiddlewares,
-} from '../typings';
+import { Logger, Config, GetMiddlewareFunc, CustomMiddlewares, InputConfig } from '../typings';
 
 export * from '../typings';
 
-export class Nico<
-  TState extends DefaultState = DefaultState,
-  TCustom extends DefaultCustom = DefaultCustom
-> extends Koa {
-  config: Config<TState, TCustom> = defaultConfig;
-
+export class Nico extends Koa {
   logger: Logger = logger;
 
   customMiddlewares: CustomMiddlewares = {};
@@ -49,11 +37,21 @@ export class Nico<
 
   #initialed = false;
 
-  constructor(...inputConfigs: Config<TState, TCustom>[]) {
+  get initialed() {
+    return this.#initialed;
+  }
+
+  #config: Config = defaultConfig;
+
+  get config() {
+    return { ...this.#config };
+  }
+
+  constructor(...inputConfigs: InputConfig[]) {
     super();
 
-    this.config = mergeConfigs<TState, TCustom>(defaultConfig, ...inputConfigs);
-    this.logger = initLogger(this.logger, this.config.logger);
+    this.#config = mergeConfigs(defaultConfig, ...inputConfigs) as Config;
+    this.logger = initLogger(this.logger, this.#config.logger);
 
     this.context.helper = {};
   }
@@ -98,19 +96,19 @@ export class Nico<
     this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
   }
 
-  init(...inputConfigs: Config<TState, TCustom>[]) {
+  init(...inputConfigs: InputConfig[]) {
     if (this.#initialed) {
       this.logger.warn('nico can only be initialized once');
       return;
     }
 
-    this.config = mergeConfigs<TState, TCustom>(this.config, ...inputConfigs);
-    const { config } = this;
+    this.#config = mergeConfigs(this.config, ...inputConfigs) as Config;
+    const config = { ...this.#config };
 
     this.logger = initLogger(this.logger, config.logger);
 
+    this.context.config = config;
     this.context.logger = this.logger;
-    this.context.custom = config.custom;
 
     this.use(getHelperMiddleware());
 
@@ -128,7 +126,7 @@ export class Nico<
       } else if (name === 'routes') {
         const router = new Router(config.advancedConfigs?.routerOptions);
         this.use(
-          routes<TState, TCustom>(router, config, {
+          routes(router, config, {
             routeMiddlewares: this.routeMiddlewares,
             customMiddlewares: this.customMiddlewares,
             logger: this.logger,
@@ -175,6 +173,12 @@ export class Nico<
   mergeConfigs = mergeConfigs;
 }
 
-export default new Nico();
+let nico: Nico;
 
-export { default as logger } from './utils/logger';
+export function getNico() {
+  if (nico) return nico;
+  nico = new Nico();
+  return nico;
+}
+
+export default getNico();

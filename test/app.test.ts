@@ -115,9 +115,16 @@ beforeAll(async () => {
     logger: {
       consoleLevel: 'none',
     },
+    custom: {
+      datastores: {
+        default: {
+          url: 'mongodb://root:admin123@localhost:27017/test?authSource=admin',
+        },
+      },
+    },
   });
 
-  await Mongo.connect(mongoose, 'mongodb://root:admin123@localhost:27017/test?authSource=admin');
+  await Mongo.connect(mongoose, nico.config.custom.datastores.default.url);
   await mongoose.connection.db.dropDatabase();
 });
 
@@ -201,4 +208,25 @@ test('Serve', async () => {
   const res = await request(nico.callback()).get('/assets/1/2');
   expect(res.status).toEqual(404);
   expect(res.body).toEqual({});
+});
+
+test('Private Attributes', () => {
+  expect(nico.initialed).toEqual(true);
+
+  expect(() => {
+    // @ts-ignore
+    nico.initialed = false;
+  }).toThrowError();
+
+  expect(nico.initialed).toEqual(true);
+
+  expect(nico.config.custom.datastores.default.url).toEqual(
+    'mongodb://root:admin123@localhost:27017/test?authSource=admin',
+  );
+
+  nico.config.custom = {};
+
+  expect(nico.config.custom.datastores.default.url).toEqual(
+    'mongodb://root:admin123@localhost:27017/test?authSource=admin',
+  );
 });

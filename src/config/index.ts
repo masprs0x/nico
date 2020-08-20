@@ -12,6 +12,8 @@ const config: Config = {
   security,
   responses,
   logger,
+  serve: {},
+  advancedConfigs: {},
 };
 
 export default config;

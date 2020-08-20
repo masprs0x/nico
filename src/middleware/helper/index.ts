@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa';
-import getExecuteTime from './utility/getExecuteTime';
+import getExecuteTime from './helpers/getExecuteTime';
 
 function getHelperMiddleware() {
   return async function helperMiddleware(ctx: Context, next: Next) {

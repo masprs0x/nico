@@ -6,22 +6,19 @@ import {
   Next,
   HttpMethod,
   ConfigRoutes,
-  Config,
-  DefaultState,
-  DefaultCustom,
   ConfigRoute,
   CustomMiddlewares,
+  InputConfig,
+  DefaultState,
+  DefaultCustom,
 } from '../../../typings';
 
 import logger from '../../utils/logger';
 import getMiddlewares from './get-middlewares';
 
-export default function getRouterMiddleware<
-  TState extends DefaultState = DefaultState,
-  TCustom extends DefaultCustom = DefaultCustom
->(
-  router: Router<TState, TCustom>,
-  config: Config<TState, TCustom>,
+export default function getRouterMiddleware(
+  router: Router<DefaultState, DefaultCustom>,
+  config: InputConfig,
   options: {
     routeMiddlewares: string[];
     customMiddlewares: CustomMiddlewares;
@@ -32,7 +29,7 @@ export default function getRouterMiddleware<
 
   const testMethod = /^(get|post|delete|put|patch|options|all)$/;
 
-  const mountRoutes = (configRoutes: ConfigRoutes<TState, TCustom>, prefix = '') => {
+  const mountRoutes = (configRoutes: ConfigRoutes, prefix = '') => {
     Object.entries(configRoutes).forEach(([key, value]) => {
       const isPrefix = key.startsWith('/');
 
@@ -45,7 +42,7 @@ export default function getRouterMiddleware<
           return;
         }
 
-        const middlewares = getMiddlewares<TState, TCustom>(value as ConfigRoute, {
+        const middlewares = getMiddlewares(value as ConfigRoute, {
           securityConfig: config.security,
           routeMiddlewares: options.routeMiddlewares,
           logger: options.logger,
@@ -61,7 +58,7 @@ export default function getRouterMiddleware<
 
   mountRoutes(routesConfig);
 
-  return async function routerMiddleware(ctx: Context<TState, TCustom>, next: Next) {
+  return async function routerMiddleware(ctx: Context, next: Next) {
     await next();
   };
 }

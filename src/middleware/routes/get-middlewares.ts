@@ -2,14 +2,12 @@ import path from 'path';
 
 import {
   Logger,
-  Context,
-  Middleware,
-  Next,
   ConfigSecurity,
-  DefaultState,
-  DefaultCustom,
   ConfigRoute,
   CustomMiddlewares,
+  NicoMiddleware as Middleware,
+  NicoContext as Context,
+  NicoNext as Next,
 } from '../../../typings';
 
 import debug from '../debug';
@@ -33,11 +31,8 @@ function forbiddenMiddleware(ctx: Context) {
 
 const removeCorsMiddleware = removeCors();
 
-export default function getMiddlewares<
-  TState extends DefaultState = DefaultState,
-  TCustom extends DefaultCustom = DefaultCustom
->(
-  routeConfig: ConfigRoute<TState, TCustom>,
+export default function getMiddlewares(
+  routeConfig: ConfigRoute,
   options?: {
     securityConfig?: ConfigSecurity;
     routeMiddlewares?: string[];
@@ -51,7 +46,7 @@ export default function getMiddlewares<
     logger = defaultLogger,
     customMiddlewares = {},
   } = options ?? {};
-  const middlewares: Middleware<TState, TCustom>[] = [];
+  const middlewares: Middleware[] = [];
 
   const {
     controller = defaultController,
@@ -119,7 +114,7 @@ export default function getMiddlewares<
       Object.keys(validate).forEach((key) => {
         const stage = `validate-${key}`;
 
-        const validateMiddleware = async (ctx: Context<TState, TCustom>, next: Next) => {
+        const validateMiddleware = async (ctx: Context, next: Next) => {
           ctx.logger = ctx.logger.child({ stage });
 
           if (key !== 'params' && key !== 'query' && key !== 'body' && key !== 'files') {
@@ -239,7 +234,7 @@ export default function getMiddlewares<
       const controllerMiddlewares = controllers.map((o) => {
         const stage = `controller-${o.name}`;
 
-        return async (ctx: Context<TState, TCustom>, next: Next) => {
+        return async (ctx: Context, next: Next) => {
           ctx.logger = ctx.logger.child({ stage });
           ctx.logger
             .child({ executeTime: ctx.helper.getExecuteTime() })

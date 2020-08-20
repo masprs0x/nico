@@ -14,6 +14,7 @@ dist
 /lib
 /app.js
 /log
+/app
 
 # Miscellaneous
 *~

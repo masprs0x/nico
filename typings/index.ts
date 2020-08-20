@@ -17,9 +17,9 @@ export type Validator = (data: any) => { [key: string]: any };
 
 type FilesValidator = Joi.Schema | Validator;
 
-export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
-  controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
-  policies?: Middleware<TState, TCustom>[] | boolean;
+export type ConfigRoute = {
+  controller: Middleware | Middleware[];
+  policies?: Middleware[] | boolean;
   bodyParser?: boolean | koaBody.IKoaBodyOptions;
   validate?: {
     params?: Joi.ObjectSchema | Validator;
@@ -42,8 +42,8 @@ export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   csp?: CSPOptions | true;
 };
 
-export type ConfigRoutes<TState = DefaultState, TCustom = DefaultCustom> = {
-  [routeOrPrefix: string]: ConfigRoute<TState, TCustom> | ConfigRoutes<TState, TCustom>;
+export type ConfigRoutes = {
+  [routeOrPrefix: string]: ConfigRoute | ConfigRoutes;
 };
 
 export type ConfigCustom = {
@@ -73,13 +73,10 @@ export type ConfigSecurity = {
   csp?: CSPOptions;
 };
 
-export type Response<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = (
-  this: ParameterizedContext<TState, TCustom>,
-  ...args: any
-) => void;
+export type Response = (this: Context, ...args: any) => void;
 
-export type ConfigResponses<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = {
-  [key: string]: Response<TState, TCustom>;
+export type ConfigResponses = {
+  [key: string]: Response;
 };
 
 export interface ConfigServe {
@@ -103,8 +100,8 @@ export type CustomMiddlewares = {
   [key: string]: GetMiddlewareFunc;
 };
 
-export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
-  routes?: ConfigRoutes<TState, TCustom>;
+export type InputConfig = {
+  routes?: ConfigRoutes;
   custom?: ConfigCustom;
   security?: ConfigSecurity;
   serve?: ConfigServe;
@@ -114,6 +111,8 @@ export type Config<TState = DefaultState, TCustom = DefaultCustom> = {
   };
   logger?: ConfigLogger;
 };
+
+export type Config = Required<InputConfig>;
 
 export type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
 
@@ -126,23 +125,33 @@ export interface DefaultState extends Koa.DefaultState {
 }
 
 export interface DefaultCustom extends Koa.DefaultContext {
-  custom: ConfigCustom;
+  config: Config;
   logger: Logger;
   helper: {
     getExecuteTime(): number;
   };
 }
 
-export type ParameterizedContext<
+export type Context<
   TState = Koa.DefaultState,
   TCustom = Koa.DefaultContext
 > = Koa.ParameterizedContext<TState, TCustom>;
-export type Context<State = DefaultState, Custom = DefaultCustom> = Koa.ParameterizedContext<
-  State,
-  Custom
->;
+
 export type Next = Koa.Next;
-export type Middleware<State = DefaultState, Custom = DefaultCustom> = Koa.Middleware<
-  State,
-  Custom
+
+export type Middleware<TState = Koa.DefaultState, TCustom = Koa.DefaultContext> = Koa.Middleware<
+  TState,
+  TCustom
+>;
+
+export type NicoContext<TState = DefaultState, TCustom = DefaultCustom> = Koa.ParameterizedContext<
+  TState,
+  TCustom
+>;
+
+export type NicoNext = Next;
+
+export type NicoMiddleware<TState = DefaultState, TCustom = DefaultCustom> = Koa.Middleware<
+  TState,
+  TCustom
 >;

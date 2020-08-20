@@ -1,11 +1,11 @@
 import deepmerge from './deepmerge';
 
-import { Config, DefaultState, DefaultCustom } from '../../typings';
+import { DefaultState, DefaultCustom, InputConfig } from '../../typings';
 
 export function mergeConfigs<
   TState extends DefaultState = DefaultState,
   TCustom extends DefaultCustom = DefaultCustom
->(...configs: Config<TState, TCustom>[]) {
+>(...configs: InputConfig[]) {
   if (!Array.isArray(configs)) return configs;
 
   const config = configs.reduce((result, current, index) => {
