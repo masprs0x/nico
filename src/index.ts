@@ -11,12 +11,24 @@ import cors from './middleware/cors';
 import logger, { initLogger } from './utils/logger';
 import getHelperMiddleware from './middleware/helper';
 
-import { Logger, Config, GetMiddlewareFunc, CustomMiddlewares, InputConfig } from '../typings';
+import {
+  Logger,
+  Config,
+  GetMiddlewareFunc,
+  CustomMiddlewares,
+  InputConfig,
+  DefaultState,
+  DefaultCustom,
+} from '../typings';
 
 export * from '../typings';
 
 export class Nico extends Koa {
-  logger: Logger = logger;
+  logger: Logger;
+
+  #initialed: Boolean;
+
+  #config: Config<any, any>;
 
   customMiddlewares: CustomMiddlewares = {};
 
@@ -35,23 +47,20 @@ export class Nico extends Koa {
     'controller',
   ];
 
-  #initialed = false;
-
   get initialed() {
     return this.#initialed;
   }
-
-  #config: Config = defaultConfig;
 
   get config() {
     return { ...this.#config };
   }
 
-  constructor(...inputConfigs: InputConfig[]) {
+  constructor() {
     super();
 
-    this.#config = mergeConfigs(defaultConfig, ...inputConfigs) as Config;
-    this.logger = initLogger(this.logger, this.#config.logger);
+    this.#initialed = false;
+    this.#config = defaultConfig;
+    this.logger = initLogger(logger, defaultConfig.logger);
 
     this.context.helper = {};
   }
@@ -89,20 +98,33 @@ export class Nico extends Koa {
   }
 
   useCustomAppMiddleware(getMiddleware: GetMiddlewareFunc, after = 'global-cors') {
+    if (this.#initialed) {
+      this.logger.warn('custom app middleware should mount before init');
+    }
+
     this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, getMiddleware, after);
   }
 
   useCustomRouteMiddleware(getMiddleware: GetMiddlewareFunc, after = 'controller-cors') {
+    if (this.#initialed) {
+      this.logger.warn('custom route middleware should mount before init');
+    }
+
     this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
   }
 
-  init(...inputConfigs: InputConfig[]) {
+  init<TState = DefaultState, TCustom = DefaultCustom>(
+    ...inputConfigs: InputConfig<TState, TCustom>[]
+  ) {
     if (this.#initialed) {
       this.logger.warn('nico can only be initialized once');
       return;
     }
 
-    this.#config = mergeConfigs(this.config, ...inputConfigs) as Config;
+    this.#config = mergeConfigs<TState, TCustom>(this.#config, ...inputConfigs) as Config<
+      TState,
+      TCustom
+    >;
     const config = { ...this.#config };
 
     this.logger = initLogger(this.logger, config.logger);

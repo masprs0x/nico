@@ -1,6 +1,6 @@
 import request from 'supertest';
-
 import Joi from '@hapi/joi';
+
 import { Nico } from '../src/index';
 
 test('Merge configs', async () => {
@@ -45,45 +45,6 @@ test('Merge configs', async () => {
 
   expect(body.data).toEqual('test');
   expect(body2.data).toEqual('test2');
-});
-
-test('Merge configs in constructor', async () => {
-  const nico = new Nico({
-    routes: {
-      'GET /test': {
-        controller: (ctx) => {
-          return (ctx.body = { name: 'blast' });
-        },
-        policies: true,
-      },
-      'GET /test2': {
-        controller: function a() {},
-        policies: true,
-      },
-    },
-  });
-
-  nico.init({
-    routes: {
-      'GET /test2': {
-        controller: function b(ctx) {
-          return (ctx.body = { name: 'z' });
-        },
-        policies: false,
-      },
-    },
-  });
-
-  expect(nico.config.routes?.['GET /test'].policies).toEqual(true);
-  expect(nico.config.routes?.['GET /test2'].policies).toEqual(false);
-
-  const req = request(nico.callback());
-
-  const { body } = await req.get('/test');
-  const { body: body2 } = await req.get('/test2');
-
-  expect(body).toEqual({ name: 'blast' });
-  expect(body2).toEqual({}); // policies is false
 });
 
 test('Empty configs', async () => {
@@ -170,7 +131,9 @@ test('Advanced Configs', async () => {
 });
 
 test('Nested Routes', async () => {
-  const nico = new Nico({
+  const nico = new Nico();
+
+  nico.init({
     routes: {
       '/api/v1': {
         '/users': {
@@ -217,8 +180,6 @@ test('Nested Routes', async () => {
     },
   });
 
-  nico.init();
-
   const req = request(nico.callback());
 
   const { body: getBody } = await req.get('/api/v1/users');
@@ -237,17 +198,7 @@ test('Nested Routes', async () => {
 });
 
 test('Custom App Middlewares', async () => {
-  const nico = new Nico({
-    routes: {
-      '/test': {
-        GET: {
-          controller: (ctx) => {
-            ctx.body = { text: 'test' };
-          },
-        },
-      },
-    },
-  });
+  const nico = new Nico();
 
   nico.useCustomAppMiddleware(() => async (ctx, next) => {
     await next();
@@ -262,18 +213,7 @@ test('Custom App Middlewares', async () => {
     'custom',
   );
 
-  nico.init();
-
-  const req = request(nico.callback());
-
-  const result = await req.get('/test');
-
-  expect(result.header.custom).toEqual('custom');
-  expect(result.header.custom2).toEqual('custom2');
-});
-
-test('Custom Route Middlewares', async () => {
-  const nico = new Nico({
+  nico.init({
     routes: {
       '/test': {
         GET: {
@@ -284,6 +224,17 @@ test('Custom Route Middlewares', async () => {
       },
     },
   });
+
+  const req = request(nico.callback());
+
+  const result = await req.get('/test');
+
+  expect(result.header.custom).toEqual('custom');
+  expect(result.header.custom2).toEqual('custom2');
+});
+
+test('Custom Route Middlewares', async () => {
+  const nico = new Nico();
 
   nico.useCustomRouteMiddleware(() => async (ctx, next) => {
     await next();
@@ -297,7 +248,18 @@ test('Custom Route Middlewares', async () => {
     },
     'custom',
   );
-  nico.init();
+
+  nico.init({
+    routes: {
+      '/test': {
+        GET: {
+          controller: (ctx) => {
+            ctx.body = { text: 'test' };
+          },
+        },
+      },
+    },
+  });
 
   const req = request(nico.callback());
   const result = await req.get('/test');

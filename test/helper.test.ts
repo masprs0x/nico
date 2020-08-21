@@ -14,7 +14,7 @@ beforeAll(() => {
           await new Promise((resolve) => {
             setTimeout(() => {
               resolve();
-            }, 2000);
+            }, 600);
           });
           const end = ctx.helper.getExecuteTime();
           return (ctx.body = { time: end - start });
@@ -30,5 +30,5 @@ beforeAll(() => {
 
 test('getExecuteTime', async () => {
   const { time } = (await req.get('/getExecuteTime')).body;
-  expect(Math.round(time / 1000 - 2)).toEqual(0);
+  expect(Math.round(time / 1000 - 0.6)).toEqual(0);
 });

@@ -2,10 +2,9 @@ import deepmerge from './deepmerge';
 
 import { DefaultState, DefaultCustom, InputConfig } from '../../typings';
 
-export function mergeConfigs<
-  TState extends DefaultState = DefaultState,
-  TCustom extends DefaultCustom = DefaultCustom
->(...configs: InputConfig[]) {
+export function mergeConfigs<TState = DefaultState, TCustom = DefaultCustom>(
+  ...configs: InputConfig<TState, TCustom>[]
+): InputConfig<TState, TCustom> {
   if (!Array.isArray(configs)) return configs;
 
   const config = configs.reduce((result, current, index) => {
@@ -13,7 +12,7 @@ export function mergeConfigs<
     return deepmerge(result, current);
   }, configs[0]);
 
-  return config;
+  return config as InputConfig<TState, TCustom>;
 }
 
 export function createUid() {

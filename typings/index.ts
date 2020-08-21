@@ -17,9 +17,9 @@ export type Validator = (data: any) => { [key: string]: any };
 
 type FilesValidator = Joi.Schema | Validator;
 
-export type ConfigRoute = {
-  controller: Middleware | Middleware[];
-  policies?: Middleware[] | boolean;
+export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
+  controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
+  policies?: Middleware<TState, TCustom>[] | boolean;
   bodyParser?: boolean | koaBody.IKoaBodyOptions;
   validate?: {
     params?: Joi.ObjectSchema | Validator;
@@ -42,8 +42,8 @@ export type ConfigRoute = {
   csp?: CSPOptions | true;
 };
 
-export type ConfigRoutes = {
-  [routeOrPrefix: string]: ConfigRoute | ConfigRoutes;
+export type ConfigRoutes<TState = DefaultState, TCustom = DefaultCustom> = {
+  [routeOrPrefix: string]: ConfigRoute<TState, TCustom> | ConfigRoutes<TState, TCustom>;
 };
 
 export type ConfigCustom = {
@@ -94,14 +94,14 @@ export interface ConfigLogger {
   consoleLevel?: LoggerLevel | 'none';
 }
 
-export type GetMiddlewareFunc = (...args: any) => Middleware<any, any>;
+export type GetMiddlewareFunc = (...args: any) => Middleware;
 
 export type CustomMiddlewares = {
   [key: string]: GetMiddlewareFunc;
 };
 
-export type InputConfig = {
-  routes?: ConfigRoutes;
+export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {
+  routes?: ConfigRoutes<TState, TCustom>;
   custom?: ConfigCustom;
   security?: ConfigSecurity;
   serve?: ConfigServe;
@@ -112,7 +112,9 @@ export type InputConfig = {
   logger?: ConfigLogger;
 };
 
-export type Config = Required<InputConfig>;
+export type Config<TState = DefaultState, TCustom = DefaultCustom> = Required<
+  InputConfig<TState, TCustom>
+>;
 
 export type HttpMethod = 'post' | 'get' | 'delete' | 'put' | 'patch';
 
