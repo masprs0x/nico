@@ -8,7 +8,7 @@ export function mergeConfigs<TState = DefaultState, TCustom = DefaultCustom>(
   if (!Array.isArray(configs)) return {};
 
   const config = configs.reduce((result, current) => {
-    if (typeof current !== 'object' || current === null) {
+    if (typeof current !== 'object' || current === null || Array.isArray(current)) {
       return result;
     }
     return deepmerge(result, current);

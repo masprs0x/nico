@@ -16,9 +16,17 @@ test('Merge Configs', () => {
     11,
     undefined,
     null,
+    'string',
+    function test() {},
+    [{ custom: { name: 'a' } }],
+    {
+      custom: {
+        name: 'cool',
+      },
+    },
   );
 
-  expect(configs).toEqual({ custom: { name: 'test', age: 12 } });
+  expect(configs).toEqual({ custom: { name: 'cool', age: 12 } });
 });
 
 test('Logger level', () => {

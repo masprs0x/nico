@@ -30,5 +30,5 @@ beforeAll(() => {
 
 test('getExecuteTime', async () => {
   const { time } = (await req.get('/getExecuteTime')).body;
-  expect(Math.round(time / 1000 - 0.6)).toEqual(0);
+  expect(Math.abs(Math.round(time / 1000 - 0.6))).toEqual(0);
 });
