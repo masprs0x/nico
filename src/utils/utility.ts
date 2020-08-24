@@ -5,12 +5,14 @@ import { DefaultState, DefaultCustom, InputConfig } from '../../typings';
 export function mergeConfigs<TState = DefaultState, TCustom = DefaultCustom>(
   ...configs: InputConfig<TState, TCustom>[]
 ): InputConfig<TState, TCustom> {
-  if (!Array.isArray(configs)) return configs;
+  if (!Array.isArray(configs)) return {};
 
-  const config = configs.reduce((result, current, index) => {
-    if (index === 0) return current;
+  const config = configs.reduce((result, current) => {
+    if (typeof current !== 'object' || current === null) {
+      return result;
+    }
     return deepmerge(result, current);
-  }, configs[0]);
+  }, {});
 
   return config as InputConfig<TState, TCustom>;
 }

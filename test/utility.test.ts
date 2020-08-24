@@ -12,6 +12,10 @@ test('Merge Configs', () => {
         age: 12,
       },
     },
+    // @ts-ignore
+    11,
+    undefined,
+    null,
   );
 
   expect(configs).toEqual({ custom: { name: 'test', age: 12 } });
