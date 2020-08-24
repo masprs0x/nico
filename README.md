@@ -14,28 +14,13 @@ npm install @blastz/nico
 
 ```js
 import nico from '@blastz/nico';
-import Joi from '@hapi/joi';
 
 nico.init({
   routes: {
-    'POST /users': {
+    'GET /users': {
       controller: async (ctx) => {
-        const user = await createUser({ name: ctx.state.body.name });
-        return ctx.ok(user);
+        return (ctx.body = []);
       },
-      bodyParser: true,
-      validate: {
-        body: Joi.object({
-          name: Joi.string().required().trim().min(1).max(16),
-        }),
-      },
-    },
-  },
-  responses: {
-    ok: function ok(data) {
-      this.body = {
-        data,
-      };
     },
   },
 });
@@ -43,74 +28,55 @@ nico.init({
 nico.start();
 ```
 
-## Getting started
+## Router
 
-- [node-services-boilerplate](https://github.com/blastZ/node-services-boilerplate) (❌outdated) - An restful api services boilerplate build on nico.
+### Basic Router
 
-## API
+Nico use `routes` config to register routes, the basic usage like:
 
-### nico.init(...inputConfigs: Config<TState, TCustom>[])
-
-Get nico application, `inputConfig` is extended from deafult config:
-
-```ts
-type Config<TState, TCustom> = {
-  routes?: {
-    [method_route: string]: {
-      controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
-      policies?: Middleware<TState, TCustom>[] | boolean;
-      bodyParser?: boolean | koaBody.IKoaBodyOptions;
-      validate?: {
-        params?: Joi.ObjectSchema | Validator;
-        query?: Joi.ObjectSchema | Validator;
-        body?: Joi.ObjectSchema | Validator;
-      };
-      cors?: CorsOptions | boolean;
-      xframes?: XFrameOptions | true;
-      csp?: CSPOptions | true;
-    };
-  };
-  custom?: {
-    [key: string]: any;
-  };
-  security?: {
-    cors?: {
-      allowOrigins: string[] | string;
-      allRoutes?: boolean;
-      allowMethods?: string[] | string;
-      allowHeaders?: string[] | string;
-      allowCredentials?: boolean;
-    };
-    xframes?: XFrameOptions;
-    csp?: CSPOptions;
-  };
-  serve?: {
-    root?: string;
-    opts?: serve.Options;
-  };
-  responses?: {
-    [key: string]: (this: Koa.Context, ...args: any) => void;
-  };
-  logger?: {
-    fileLevel?: LoggerLevel | 'none';
-    consoleLevel?: LoggerLevel | 'none';
-  };
-  middlewares?: {
-    [key: string]: (...args: any) => Middleware<any, any>;
-  };
-  advancedConfigs?: {
-    routerOptions?: Router.RouterOptions;
-  };
-};
+```js
+nico.init({
+  routes: {
+    'GET /users': {
+      // ...
+    },
+  },
+});
 ```
 
-### nico.start(port = 1314, messageOrListener?: string | (() => void))
+This will register a route whose path is `/users` and http method is `Get`.
 
-Start server on port, default is 1314. Custom callback listener is supported.
+### Nested Router
 
-### nico.mergeConfigs(...configs: Config<TState, TCustom>[])
+Nesetd router also supported:
 
-Merge mutiple nico configs
+```js
+nico.init({
+  routes: {
+    '/api/v3': {
+      '/users': {
+        GET: {
+          // ...
+        },
+        POST: {
+          // ...
+        },
+        '/:id': {
+          DELETE: {
+            // ...
+          },
+        },
+      },
+    },
+  },
+});
+```
+
+This config will register three routes
+
+- `GET /api/v3/users`
+- `POST /api/v3/users`
+- `DELETE /api/v3/users/:id`
 
 ## Debug
 
