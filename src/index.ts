@@ -132,7 +132,7 @@ export class Nico extends Koa {
     this.context.config = config;
     this.context.logger = this.logger;
 
-    this.use(getHelperMiddleware());
+    this.use(getHelperMiddleware(config.helpers));
 
     this.appMiddlewares.forEach((name) => {
       if (name === 'error-handler') {

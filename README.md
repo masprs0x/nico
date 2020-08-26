@@ -78,11 +78,88 @@ This config will register three routes
 - `POST /api/v3/users`
 - `DELETE /api/v3/users/:id`
 
+## Responses
+
+Use responses to change response format.
+
+```js
+nico.init({
+  routes: {
+    'GET /users': {
+      controller: (ctx) => {
+        return ctx.ok([]); // { data: [], message: 'execute success', success: true }
+      },
+    },
+  },
+  responses: {
+    ok: function ok(data, message = 'execute success', success = true) {
+      this.status = 200;
+      this.body = {
+        success,
+        data,
+        message,
+      };
+    },
+  },
+});
+```
+
+## Validate
+
+Nico support validate `params`, `query`, `body` and `files`, It's recommend to use it with [Joi](https://github.com/sideway/joi).
+
+```js
+nico.init({
+  routes: {
+    'POST /users': {
+      controller: (ctx) => {
+        ctx.logger.info(ctx.state.body.name); // validated value will be mounted at ctx.state
+      },
+      bodyParser: true, // enable body parser middleware
+      validate: {
+        body: Joi.object({
+          username: Joi.string().trim().required().min(1).max(50),
+        }),
+      },
+    },
+  },
+});
+```
+
+Nico will throw validate error by default, the error will be cached by global error handler.
+You can add `onError`, `onBodyParserError`, `onValidateError` in `responses` config to change default behavior.
+
+```js
+nico.init({
+  responses: {
+    onError: function onError(err) {
+      this.status = 200;
+      return (this.body = {
+        message: err.message,
+        success: false,
+      });
+    }, // change global error handle
+    onBodyParserError: function onBodyParserError(err) {
+      this.status = 200;
+      return (this.body = {
+        message: err.message,
+        success: false,
+      });
+    }, // change body parser error handle
+    onValidateError: function onValidateError(err) {
+      this.status = 200;
+      return (this.body = {
+        message: err.message,
+        success: false,
+      });
+    }, // change validate error handle
+  },
+});
+```
+
 ## Debug
 
-Use [winston](https://github.com/winstonjs/winston) underhood.
-
-Nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
+Nico use [winston](https://github.com/winstonjs/winston) underhood, nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
 Default console level is `info`, file level is `none`.
 
@@ -103,7 +180,7 @@ const loggerConfig: ConfigLogger = {
 };
 ```
 
-Output directories are `log/trace` and `log/error`.
+Default Output directories are `log/trace` and `log/error`.
 
 ### Usage Example
 
@@ -153,6 +230,60 @@ Custom middleware will be added to the middlewares after use middleware function
 The default second argument of `useCustomAppMiddleware` is `global-cors` and `useCustomRouteMiddleware` is `controller-cors`.
 
 If the second argument is `null` or not found in middlewares, the custom middleware will be execute before all middlewares.
+
+## Full Config Type
+
+```ts
+type Config<TState, TCustom> = {
+  routes?: {
+    [method_route: string]: {
+      controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
+      policies?: Middleware<TState, TCustom>[] | boolean;
+      bodyParser?: boolean | koaBody.IKoaBodyOptions;
+      validate?: {
+        params?: Joi.ObjectSchema | Validator;
+        query?: Joi.ObjectSchema | Validator;
+        body?: Joi.ObjectSchema | Validator;
+      };
+      cors?: CorsOptions | boolean;
+      xframes?: XFrameOptions | true;
+      csp?: CSPOptions | true;
+    };
+  };
+  custom?: {
+    [key: string]: any;
+  };
+  security?: {
+    cors?: {
+      allowOrigins: string[] | string;
+      allRoutes?: boolean;
+      allowMethods?: string[] | string;
+      allowHeaders?: string[] | string;
+      allowCredentials?: boolean;
+    };
+    xframes?: XFrameOptions;
+    csp?: CSPOptions;
+  };
+  serve?: {
+    root?: string;
+    opts?: serve.Options;
+  };
+  responses?: {
+    [key: string]: (this: Koa.Context, ...args: any) => void;
+  };
+  helpers?: ConfigHelpers;
+  logger?: {
+    fileLevel?: LoggerLevel | 'none';
+    consoleLevel?: LoggerLevel | 'none';
+  };
+  middlewares?: {
+    [key: string]: (...args: any) => Middleware<any, any>;
+  };
+  advancedConfigs?: {
+    routerOptions?: Router.RouterOptions;
+  };
+};
+```
 
 ## Plugins
 

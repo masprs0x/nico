@@ -79,6 +79,12 @@ export type ConfigResponses = {
   [key: string]: Response;
 };
 
+export type Helper = (this: NicoContext<DefaultState, any>, ...args: any) => any;
+
+export type ConfigHelpers = {
+  [key: string]: Helper;
+};
+
 export interface ConfigServe {
   root?: string;
   route?: string;
@@ -106,6 +112,7 @@ export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {
   security?: ConfigSecurity;
   serve?: ConfigServe;
   responses?: ConfigResponses;
+  helpers?: ConfigHelpers;
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
   };
@@ -130,7 +137,9 @@ export interface DefaultCustom extends Koa.DefaultContext {
   config: Config;
   logger: Logger;
   helper: {
-    getExecuteTime(): number;
+    [key: string]: Helper;
+  } & {
+    getExecuteTime: () => number;
   };
 }
 

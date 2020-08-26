@@ -267,3 +267,36 @@ test('Custom Route Middlewares', async () => {
   expect(result.header.custom).toEqual('custom');
   expect(result.header.custom2).toEqual('custom2');
 });
+
+test('Logger Configs', async () => {
+  const nico = new Nico();
+  nico.init({
+    logger: {
+      consoleLevel: 'info',
+      fileLevel: ['trace', { level: 'info', filename: '2' }],
+    },
+  });
+});
+
+test('Helper Configs', async () => {
+  const nico = new Nico();
+  nico.init({
+    routes: {
+      'GET /users': {
+        controller: (ctx) => {
+          return (ctx.body = { data: ctx.helper.test() });
+        },
+      },
+    },
+    helpers: {
+      test: function test() {
+        return 'test';
+      },
+    },
+  });
+
+  const req = request(nico.callback());
+  const result = await req.get('/users');
+
+  expect(result.body.data).toEqual('test');
+});

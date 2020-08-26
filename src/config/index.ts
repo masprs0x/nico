@@ -14,6 +14,7 @@ const config: Config = {
   logger,
   serve: {},
   advancedConfigs: {},
+  helpers: {},
 };
 
 export default config;
