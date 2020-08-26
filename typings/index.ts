@@ -133,14 +133,16 @@ export interface DefaultState extends Koa.DefaultState {
   requestStartTime?: [number, number];
 }
 
+export type DefaultHelper = {
+  getExecuteTime: () => number;
+}
+
 export interface DefaultCustom extends Koa.DefaultContext {
   config: Config;
   logger: Logger;
   helper: {
     [key: string]: Helper;
-  } & {
-    getExecuteTime: () => number;
-  };
+  } & DefaultHelper;
 }
 
 export type Context<
