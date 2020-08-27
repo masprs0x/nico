@@ -135,7 +135,7 @@ export interface DefaultState extends Koa.DefaultState {
 
 export type DefaultHelper = {
   getExecuteTime: () => number;
-}
+};
 
 export interface DefaultCustom extends Koa.DefaultContext {
   config: Config;

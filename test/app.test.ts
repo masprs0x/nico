@@ -225,5 +225,5 @@ test('Private Attributes', () => {
   );
 
   // @ts-ignore
-  expect(() => nico.config.custom = {}).toThrowError();
+  expect(() => (nico.config.custom = {})).toThrowError();
 });
