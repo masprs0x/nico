@@ -224,9 +224,6 @@ test('Private Attributes', () => {
     'mongodb://root:admin123@localhost:27017/test?authSource=admin',
   );
 
-  nico.config.custom = {};
-
-  expect(nico.config.custom.datastores.default.url).toEqual(
-    'mongodb://root:admin123@localhost:27017/test?authSource=admin',
-  );
+  // @ts-ignore
+  expect(() => nico.config.custom = {}).toThrowError();
 });

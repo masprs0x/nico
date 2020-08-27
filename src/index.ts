@@ -52,7 +52,7 @@ export class Nico extends Koa {
   }
 
   get config() {
-    return { ...this.#config };
+    return Object.freeze(this.#config);
   }
 
   constructor() {
