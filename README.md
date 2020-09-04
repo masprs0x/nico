@@ -245,6 +245,7 @@ type Config<TState, TCustom> = {
         query?: Joi.ObjectSchema | Validator;
         body?: Joi.ObjectSchema | Validator;
       };
+      timeout?: number;
       cors?: CorsOptions | boolean;
       xframes?: XFrameOptions | true;
       csp?: CSPOptions | true;

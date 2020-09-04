@@ -2,6 +2,7 @@ import request from 'supertest';
 import Joi from '@hapi/joi';
 
 import { Nico } from '../src/index';
+import sleep from './utils/sleep';
 
 test('Merge configs', async () => {
   const nico = new Nico();
@@ -299,4 +300,45 @@ test('Helper Configs', async () => {
   const result = await req.get('/users');
 
   expect(result.body.data).toEqual('test');
+});
+
+test('Timeout Configs', async () => {
+  const nico = new Nico();
+  nico.init({
+    routes: {
+      'GET /test': {
+        controller: async (ctx) => {
+          await sleep(800);
+          return (ctx.body = { data: ctx.helper.test() });
+        },
+        timeout: 500,
+      },
+      'GET /test2': {
+        controller: async (ctx) => {
+          return (ctx.body = { data: 'test2' });
+        },
+        timeout: 500,
+      },
+      'GET /test3': {
+        controller: async (ctx) => {
+          // @ts-ignore
+          ttt = 2;
+          await sleep(800);
+          return (ctx.body = { data: 'test2' });
+        },
+        timeout: 500,
+      },
+    },
+  });
+
+  const req = request(nico.callback());
+  const result = await req.get('/test');
+  expect(result.status).toEqual(408);
+
+  const result2 = await req.get('/test2');
+  expect(result2.status).toEqual(200);
+  expect(result2.body.data).toEqual('test2');
+
+  const result3 = await req.get('/test3');
+  expect(result3.status).toEqual(500);
 });

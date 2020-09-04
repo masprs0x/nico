@@ -37,6 +37,7 @@ export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
       };
     };
   };
+  timeout?: number;
   cors?: CorsOptions | boolean;
   xframes?: XFrameOptions | true;
   csp?: CSPOptions | true;

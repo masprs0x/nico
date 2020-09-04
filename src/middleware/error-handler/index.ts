@@ -12,8 +12,13 @@ export default function getErrorMiddleware() {
         return ctx.onError(err);
       }
 
-      ctx.status = 500;
-      ctx.body = 'Server Error';
+      if (err.message === 'Request timeout') {
+        ctx.status = 408;
+        ctx.body = 'Request timeout';
+      } else {
+        ctx.status = 500;
+        ctx.body = 'Server Error';
+      }
     }
   };
 }

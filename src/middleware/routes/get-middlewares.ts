@@ -18,6 +18,7 @@ import csp from '../csp';
 import defaultLogger from '../../utils/logger';
 import getBodyParserHandleMiddleware from './get-body-parser-handle';
 import getPolicyHandleMiddleware from './get-policy-handle';
+import getControllerHandleMiddleware from './get-controller-handle';
 
 async function defaultController(ctx: Context, next: Next) {
   await next();
@@ -56,6 +57,7 @@ export default function getMiddlewares(
     cors: corsOptions,
     xframes: xframesOptions,
     csp: cspOptions,
+    timeout,
   } = routeConfig;
 
   routeMiddlewares.forEach((name) => {
@@ -232,16 +234,7 @@ export default function getMiddlewares(
     } else if (name === 'controller') {
       const controllers = Array.isArray(controller) ? controller : [controller];
       const controllerMiddlewares = controllers.map((o) => {
-        const stage = `controller-${o.name}`;
-
-        return async (ctx: Context, next: Next) => {
-          ctx.logger = ctx.logger.child({ stage });
-          ctx.logger
-            .child({ executeTime: ctx.helper.getExecuteTime() })
-            .debug(`hit controller ${o.name}`);
-
-          await o(ctx, next);
-        };
+        return getControllerHandleMiddleware(o, { timeout });
       });
 
       middlewares.push(...controllerMiddlewares);
