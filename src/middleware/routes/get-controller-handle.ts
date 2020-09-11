@@ -13,7 +13,7 @@ export default function getControllerHandleMiddleware(
   const stage = `controller-${name}`;
 
   return async function controllerHandleMiddleware(ctx: NicoContext, next: NicoNext) {
-    ctx.logger = ctx.logger.child({ stage, timeout });
+    ctx.logger = timeout ? ctx.logger.child({ stage, timeout }) : ctx.logger.child({ stage });
 
     let timeoutFunc: (() => Promise<any>) | undefined;
     let timer: NodeJS.Timeout | undefined;
