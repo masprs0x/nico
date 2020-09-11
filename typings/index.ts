@@ -116,6 +116,7 @@ export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {
   helpers?: ConfigHelpers;
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
+    forceExitTime?: number;
   };
   logger?: ConfigLogger;
 };

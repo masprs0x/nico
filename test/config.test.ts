@@ -201,12 +201,12 @@ test('Nested Routes', async () => {
 test('Custom App Middlewares', async () => {
   const nico = new Nico();
 
-  nico.useCustomAppMiddleware(() => async (ctx, next) => {
+  nico.useAppMiddleware(() => async (ctx, next) => {
     await next();
     ctx.set('custom', 'custom');
   });
 
-  nico.useCustomAppMiddleware(
+  nico.useAppMiddleware(
     () => async (ctx, next) => {
       await next();
       ctx.set('custom2', 'custom2');
@@ -237,12 +237,12 @@ test('Custom App Middlewares', async () => {
 test('Custom Route Middlewares', async () => {
   const nico = new Nico();
 
-  nico.useCustomRouteMiddleware(() => async (ctx, next) => {
+  nico.useRouteMiddleware(() => async (ctx, next) => {
     await next();
     ctx.set('custom', 'custom');
   });
 
-  nico.useCustomRouteMiddleware(
+  nico.useRouteMiddleware(
     () => async (ctx, next) => {
       await next();
       ctx.set('custom2', 'custom2');
@@ -341,4 +341,14 @@ test('Timeout Configs', async () => {
 
   const result3 = await req.get('/test3');
   expect(result3.status).toEqual(500);
+});
+
+test('Signal Handler', () => {
+  const nico = new Nico();
+
+  nico.useSignalHandler('SIGINT', () => {
+    console.log('close db');
+  });
+
+  // TODO test signal handler
 });

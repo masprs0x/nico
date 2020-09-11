@@ -23,10 +23,14 @@ import {
 
 export * from '../typings';
 
+type SignalHandler = (this: Nico, error?: Error) => void;
+
 export class Nico extends Koa {
   logger: Logger;
 
-  #initialed: Boolean;
+  #initialed = false;
+
+  #started = false;
 
   #config: Config<any, any>;
 
@@ -47,8 +51,17 @@ export class Nico extends Koa {
     'controller',
   ];
 
+  #signalHandlers: { [key: string]: SignalHandler } = {
+    SIGINT: () => {},
+    SIGTERM: () => {},
+  };
+
   get initialed() {
     return this.#initialed;
+  }
+
+  get started() {
+    return this.#started;
   }
 
   get config() {
@@ -58,7 +71,6 @@ export class Nico extends Koa {
   constructor() {
     super();
 
-    this.#initialed = false;
     this.#config = defaultConfig;
     this.logger = initLogger(logger, defaultConfig.logger);
 
@@ -97,7 +109,7 @@ export class Nico extends Koa {
     return result;
   }
 
-  useCustomAppMiddleware(getMiddleware: GetMiddlewareFunc, after = 'global-cors') {
+  useAppMiddleware(getMiddleware: GetMiddlewareFunc, after = 'global-cors') {
     if (this.#initialed) {
       this.logger.warn('custom app middleware should mount before init');
     }
@@ -105,12 +117,21 @@ export class Nico extends Koa {
     this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, getMiddleware, after);
   }
 
-  useCustomRouteMiddleware(getMiddleware: GetMiddlewareFunc, after = 'controller-cors') {
+  useRouteMiddleware(getMiddleware: GetMiddlewareFunc, after = 'controller-cors') {
     if (this.#initialed) {
       this.logger.warn('custom route middleware should mount before init');
     }
 
     this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
+  }
+
+  useSignalHandler(signal: NodeJS.Signals, signalHandler: SignalHandler) {
+    if (this.#started) {
+      this.logger.warn('signal handler should be mounted before start');
+      return;
+    }
+
+    this.#signalHandlers[signal.toUpperCase()] = signalHandler;
   }
 
   init<TState = DefaultState, TCustom = DefaultCustom>(
@@ -175,7 +196,12 @@ export class Nico extends Koa {
     this.#initialed = true;
   }
 
-  start(port = 1314, messageOrListener?: string | (() => void)) {
+  start(port = 1314, messageOrListener?: string | ((this: Nico) => void)) {
+    if (this.#started) {
+      this.logger.error('nico already started');
+      return undefined;
+    }
+
     if (!this.#initialed) {
       this.init();
       this.logger.warn('nico need init before start, auto init fired');
@@ -193,7 +219,36 @@ export class Nico extends Koa {
       listener = messageOrListener.bind(this);
     }
 
-    this.listen(port, listener);
+    const server = this.listen(port, listener);
+
+    const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener = (handler) => (
+      signal,
+    ) => {
+      this.logger.trace(`${signal} signal received`);
+      server.close(async (err) => {
+        setTimeout(() => {
+          this.logger.error(`${signal} handler execute too long, force exit fired`);
+          process.exit(1);
+        }, this.config.advancedConfigs.forceExitTime ?? 10 * 1000);
+
+        if (err) {
+          this.logger.error(err);
+
+          handler && (await handler.call(this, err));
+          process.exit(1);
+        }
+
+        handler && (await handler.call(this));
+        process.exit(0);
+      });
+    };
+
+    Object.entries(this.#signalHandlers).map(([signal, handler]) => {
+      process.on(signal as NodeJS.Signals, getSignalListener(handler));
+      return undefined;
+    });
+
+    return server;
   }
 
   mergeConfigs = mergeConfigs;
