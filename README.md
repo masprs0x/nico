@@ -208,12 +208,12 @@ nico.routeMiddlewares = ['controller'];
 Define custom middlewares:
 
 ```js
-nico.useCustomAppMiddleware(() => async (ctx, next) => {
+nico.useAppMiddleware(() => async (ctx, next) => {
   await next();
   ctx.set('custom', 'custom');
 });
 
-nico.useCustomRouteMiddleware(
+nico.useRouteMiddleware(
   () => async (ctx, next) => {
     await next();
     ctx.set('custom', 'custom');
@@ -227,9 +227,23 @@ nico.init();
 The second argument is middleware name, if it's `debug` that's mean custom middleware will execute after `debug` middleware.
 Custom middleware will be added to the middlewares after use middleware function, the name in the middlewares is the name of the function.
 
-The default second argument of `useCustomAppMiddleware` is `global-cors` and `useCustomRouteMiddleware` is `controller-cors`.
+The default second argument of `useAppMiddleware` is `global-cors` and `useRouteMiddleware` is `controller-cors`.
 
 If the second argument is `null` or not found in middlewares, the custom middleware will be execute before all middlewares.
+
+## Graceful Shutdown
+
+Nico will handle `SIGINT` and `SIGTERM` by default, you can add custom signal handler like this:
+
+```js
+nico.useSignalHandler('SIGINT', () => {
+  closeDB();
+});
+```
+
+Nico will automatically await all requests end and close the server, you only need to add some side effects.
+
+The process will force exit after 10 seconds, you can change it in `nico.config.advancedConfigs.forceExitTime`.
 
 ## Full Config Type
 
@@ -282,15 +296,16 @@ type Config<TState, TCustom> = {
   };
   advancedConfigs?: {
     routerOptions?: Router.RouterOptions;
+    forceExitTime?: number;
   };
 };
 ```
 
 ## Plugins
 
+- [nico-build](https://github.com/blastZ/nico-build) bundle project build on nico.
 - [nico-mongo](https://github.com/blastZ/nico-mongo) (⚠️building) use mongo with nico.
 - [nico-redis](https://github.com/blastZ/nico-redis) (⚠️building) use ioredis with nico.
-- [nico-build](https://github.com/blastZ/nico-build) (⚠️building) bundle project build on nico.
 
 ## License
 
