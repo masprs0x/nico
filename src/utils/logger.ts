@@ -51,7 +51,11 @@ const outputFormat = format.printf((info) => {
   delete message.level;
   delete message.timestamp;
 
-  return `${info.timestamp} ${info.level}\n${util.inspect(message, { colors: true, depth: 8 })}`;
+  return `${info.timestamp} ${info.level}\n${util.inspect(message, {
+    colors: true,
+    depth: 8,
+    breakLength: 1,
+  })}`;
 });
 
 const defaultLogger = createLogger({

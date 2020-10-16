@@ -159,7 +159,7 @@ nico.init({
 
 ## Debug
 
-Nico use [winston](https://github.com/winstonjs/winston) underhood, nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
+nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
 Default console level is `info`, file level is `none`.
 

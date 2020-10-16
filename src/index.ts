@@ -196,29 +196,7 @@ export class Nico extends Koa {
     this.#initialed = true;
   }
 
-  start(port = 1314, messageOrListener?: string | ((this: Nico) => void)) {
-    if (this.#started) {
-      this.logger.error('nico already started');
-      return undefined;
-    }
-
-    if (!this.#initialed) {
-      this.init();
-      this.logger.warn('nico need init before start, auto init fired');
-    }
-
-    let listener = () => {
-      if (typeof messageOrListener === 'string') {
-        this.logger.info(messageOrListener);
-      } else {
-        this.logger.info(`app is on ${port}`);
-      }
-    };
-
-    if (typeof messageOrListener === 'function') {
-      listener = messageOrListener.bind(this);
-    }
-
+  private createServer(port = 1314, listener: (this: Nico) => void) {
     const server = this.listen(port, listener);
 
     const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener = (handler) => (
@@ -227,7 +205,10 @@ export class Nico extends Koa {
       this.logger.trace(`${signal} signal received`);
       server.close(async (err) => {
         setTimeout(() => {
-          this.logger.error(`${signal} handler execute too long, force exit fired`);
+          this.logger.error({
+            forceExitTime: this.config.advancedConfigs.forceExitTime,
+            message: `${signal} handler execute too long, force exit fired`,
+          });
           process.exit(1);
         }, this.config.advancedConfigs.forceExitTime ?? 10 * 1000);
 
@@ -249,6 +230,32 @@ export class Nico extends Koa {
     });
 
     return server;
+  }
+
+  start(port = 1314, messageOrListener?: string | ((this: Nico) => void)) {
+    if (this.#started) {
+      this.logger.error('nico already started');
+      return undefined;
+    }
+
+    if (!this.#initialed) {
+      this.init();
+      this.logger.warn('nico need init before start, auto init fired');
+    }
+
+    let listener = () => {
+      if (typeof messageOrListener === 'string') {
+        this.logger.info({ port, pid: process.pid, message: messageOrListener });
+      } else {
+        this.logger.info({ port, pid: process.pid, message: `app started` });
+      }
+    };
+
+    if (typeof messageOrListener === 'function') {
+      listener = messageOrListener.bind(this);
+    }
+
+    return this.createServer(port, listener);
   }
 
   mergeConfigs = mergeConfigs;
