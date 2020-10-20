@@ -1,5 +1,7 @@
 import Koa from 'koa';
 import Router from '@koa/router';
+import cluster from 'cluster';
+import os from 'os';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
@@ -8,7 +10,7 @@ import defaultConfig from './config';
 import { mergeConfigs, createUid } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
-import logger, { initLogger } from './utils/logger';
+import logger, { initLogger } from './lib/logger';
 import getHelperMiddleware from './middleware/helper';
 
 import {
@@ -22,8 +24,6 @@ import {
 } from '../typings';
 
 export * from '../typings';
-
-type SignalHandler = (this: Nico, error?: Error) => void;
 
 export class Nico extends Koa {
   logger: Logger;
@@ -125,13 +125,16 @@ export class Nico extends Koa {
     this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
   }
 
-  useSignalHandler(signal: NodeJS.Signals, signalHandler: SignalHandler) {
+  useSignalHandler(signalOrSignals: NodeJS.Signals | NodeJS.Signals[], handler: SignalHandler) {
     if (this.#started) {
-      this.logger.warn('signal handler should be mounted before start');
+      this.logger.warn('You must call useSignal before start');
       return;
     }
 
-    this.#signalHandlers[signal.toUpperCase()] = signalHandler;
+    const signals = Array.isArray(signalOrSignals) ? signalOrSignals : [signalOrSignals];
+    signals.forEach((signal) => {
+      this.#signalHandlers[signal.toUpperCase()] = handler;
+    });
   }
 
   init<TState = DefaultState, TCustom = DefaultCustom>(
@@ -196,31 +199,37 @@ export class Nico extends Koa {
     this.#initialed = true;
   }
 
-  private createServer(port = 1314, listener: (this: Nico) => void) {
+  private createServer(port = 1314, listener?: (this: Nico) => void) {
     const server = this.listen(port, listener);
 
     const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener = (handler) => (
       signal,
     ) => {
-      this.logger.trace(`${signal} signal received`);
+      this.logger.trace({
+        ...(cluster.worker ? { pid: cluster.worker.process.pid, workerId: cluster.worker.id } : {}),
+        message: `${signal} signal received`,
+      });
+
+      const timeout = setTimeout(() => {
+        this.logger.error({
+          forceExitTime: this.config.advancedConfigs.forceExitTime,
+          message: `${signal} handler execute too long, force exit fired`,
+        });
+        process.exit(1);
+      }, this.config.advancedConfigs.forceExitTime ?? 10 * 1000);
+
       server.close(async (err) => {
-        setTimeout(() => {
-          this.logger.error({
-            forceExitTime: this.config.advancedConfigs.forceExitTime,
-            message: `${signal} handler execute too long, force exit fired`,
-          });
-          process.exit(1);
-        }, this.config.advancedConfigs.forceExitTime ?? 10 * 1000);
-
+        let code = 0;
         if (err) {
+          code = 1;
           this.logger.error(err);
-
           handler && (await handler.call(this, err));
-          process.exit(1);
+        } else {
+          handler && (await handler.call(this));
         }
 
-        handler && (await handler.call(this));
-        process.exit(0);
+        clearTimeout(timeout);
+        process.exit(code);
       });
     };
 
@@ -229,10 +238,14 @@ export class Nico extends Koa {
       return undefined;
     });
 
+    process.on('uncaughtException', (err) => {
+      this.logger.fatal({ message: err.message, stack: err.stack });
+    });
+
     return server;
   }
 
-  start(port = 1314, messageOrListener?: string | ((this: Nico) => void)) {
+  start(port = 1314, listener?: (this: Nico) => void) {
     if (this.#started) {
       this.logger.error('nico already started');
       return undefined;
@@ -243,19 +256,50 @@ export class Nico extends Koa {
       this.logger.warn('nico need init before start, auto init fired');
     }
 
-    let listener = () => {
-      if (typeof messageOrListener === 'string') {
-        this.logger.info({ port, pid: process.pid, message: messageOrListener });
-      } else {
-        this.logger.info({ port, pid: process.pid, message: `app started` });
+    this.logger.info({ port, pid: process.pid, message: `app started` });
+
+    return this.createServer(port, listener?.bind(this));
+  }
+
+  startCluster(port = 1314, instances = os.cpus().length) {
+    let closing = false;
+
+    cluster.on('online', (worker) => {
+      this.logger.trace({ pid: worker.process.pid, workerId: worker.id, message: 'worker start' });
+    });
+
+    cluster.on('exit', (worker, code) => {
+      this.logger.trace({
+        pid: worker.process.pid,
+        workerId: worker.id,
+        code,
+        message: `worker exit`,
+      });
+
+      !closing && cluster.fork();
+    });
+
+    if (cluster.isMaster) {
+      this.logger.info({
+        port,
+        pid: process.pid,
+        instances,
+        message: 'app started with cluster mode',
+      });
+
+      for (let i = 0; i < instances; i += 1) {
+        cluster.fork();
       }
-    };
 
-    if (typeof messageOrListener === 'function') {
-      listener = messageOrListener.bind(this);
+      Object.keys(this.#signalHandlers).map((signal) =>
+        process.on(signal as NodeJS.Signals, () => {
+          closing = true;
+          Object.values(cluster.workers).map((work) => work?.kill(signal));
+        }),
+      );
+    } else {
+      this.createServer(port);
     }
-
-    return this.createServer(port, listener);
   }
 
   mergeConfigs = mergeConfigs;
@@ -270,3 +314,5 @@ export function getNico() {
 }
 
 export default getNico();
+
+export type SignalHandler = (this: Nico, error?: Error) => void;

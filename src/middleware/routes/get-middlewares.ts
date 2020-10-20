@@ -15,7 +15,7 @@ import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
-import defaultLogger from '../../utils/logger';
+import defaultLogger from '../../lib/logger';
 import getBodyParserHandleMiddleware from './get-body-parser-handle';
 import getPolicyHandleMiddleware from './get-policy-handle';
 import getControllerHandleMiddleware from './get-controller-handle';

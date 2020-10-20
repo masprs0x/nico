@@ -14,6 +14,7 @@ npm install @blastz/nico
 
 ```js
 import nico from '@blastz/nico';
+// const nico = require('@blastz/nico').default
 
 nico.init({
   routes: {
@@ -244,6 +245,11 @@ nico.useSignalHandler('SIGINT', () => {
 Nico will automatically await all requests end and close the server, you only need to add some side effects.
 
 The process will force exit after 10 seconds, you can change it in `nico.config.advancedConfigs.forceExitTime`.
+
+## Cluster Mode
+
+Nico support cluster mode internal, use `nico.startCluster(port: number, instances?: number)` to start nico with cluster mode.
+The default instances will be cpu numbers.
 
 ## Full Config Type
 

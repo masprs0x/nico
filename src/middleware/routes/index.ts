@@ -13,7 +13,7 @@ import {
   DefaultCustom,
 } from '../../../typings';
 
-import logger from '../../utils/logger';
+import logger from '../../lib/logger';
 import getMiddlewares from './get-middlewares';
 
 export default function getRouterMiddleware(
