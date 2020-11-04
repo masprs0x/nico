@@ -21,6 +21,8 @@ import {
   InputConfig,
   DefaultState,
   DefaultCustom,
+  InnerAppMiddleware,
+  InnerRouteMiddleware,
 } from '../typings';
 
 export * from '../typings';
@@ -36,19 +38,24 @@ export class Nico extends Koa {
 
   customMiddlewares: CustomMiddlewares = {};
 
-  /** ['error-handler', 'global-cors', 'responses', 'serve', 'routes'] */
-  appMiddlewares: string[] = ['error-handler', 'global-cors', 'responses', 'serve', 'routes'];
+  appMiddlewares: (InnerAppMiddleware | string)[] = [
+    InnerAppMiddleware.ERROR_HANDLER,
+    InnerAppMiddleware.GLOBAL_CORS,
+    InnerAppMiddleware.RESPONSES,
+    InnerAppMiddleware.SERVE,
+    InnerAppMiddleware.ROUTES,
+  ];
 
   /** ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'] */
-  routeMiddlewares: string[] = [
-    'debug',
-    'controller-cors',
-    'csp',
-    'xframes',
-    'policies',
-    'body-parser',
-    'validate',
-    'controller',
+  routeMiddlewares: (InnerRouteMiddleware | string)[] = [
+    InnerRouteMiddleware.DEBUG,
+    InnerRouteMiddleware.CONTROLLER_CORS,
+    InnerRouteMiddleware.CSP,
+    InnerRouteMiddleware.XFRAMES,
+    InnerRouteMiddleware.POLICIES,
+    InnerRouteMiddleware.BODY_PARSER,
+    InnerRouteMiddleware.VALIDATE,
+    InnerRouteMiddleware.CONTROLLER,
   ];
 
   #signalHandlers: { [key: string]: SignalHandler } = {
@@ -109,7 +116,16 @@ export class Nico extends Koa {
     return result;
   }
 
-  useAppMiddleware(getMiddleware: GetMiddlewareFunc, after = 'global-cors') {
+  /**
+   *
+   * @param getMiddleware Function that is used to get custom middleware
+   * @param after The middleware name that mount before custom, inner middlewares are `ERROR_HANDLER`, `GLOBAL_CORS`, `RESPONSES`, `SERVE`, `ROUTES`
+   *
+   */
+  useAppMiddleware(
+    getMiddleware: GetMiddlewareFunc,
+    after: InnerAppMiddleware | string = InnerAppMiddleware.GLOBAL_CORS,
+  ) {
     if (this.#initialed) {
       this.logger.warn('custom app middleware should mount before init');
     }
@@ -117,7 +133,15 @@ export class Nico extends Koa {
     this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, getMiddleware, after);
   }
 
-  useRouteMiddleware(getMiddleware: GetMiddlewareFunc, after = 'controller-cors') {
+  /**
+   *
+   * @param getMiddleware Function that is used to get custom middleware
+   * @param after The middleware name that mount before custom, inner middlewares are `DEBUG`, `CONTROLLER_CORS`, `CSP`, `XFRAMES`, `POLICIES`, `BODY_PARSER`, `VALIDATE`, `CONTROLLER`
+   */
+  useRouteMiddleware(
+    getMiddleware: GetMiddlewareFunc,
+    after: InnerRouteMiddleware | string = InnerRouteMiddleware.CONTROLLER_CORS,
+  ) {
     if (this.#initialed) {
       this.logger.warn('custom route middleware should mount before init');
     }
