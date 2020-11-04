@@ -5,7 +5,7 @@ export default function getPolicyHandleMiddleware(policyMiddleware: Middleware<a
 
   return async function policyHandleMiddleware(ctx: Context, next: Next) {
     ctx.logger = ctx.logger.child({ stage: `policy-${policyName}` });
-    ctx.logger.debug(`hit policy ${policyName}`);
+    ctx.logger.trace(`hit policy ${policyName}`);
 
     await policyMiddleware(ctx, next);
   };

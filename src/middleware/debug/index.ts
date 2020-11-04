@@ -25,10 +25,10 @@ export default function getDebugMiddleware() {
       label: 'request',
       stage,
     });
-    ctx.logger.child({ executeTime: 0 }).debug('request in');
+    ctx.logger.child({ executeTime: 0 }).trace('request in');
 
     await next();
 
-    ctx.logger.child({ stage, executeTime: ctx.helper.getExecuteTime() }).debug('request out');
+    ctx.logger.child({ stage, executeTime: ctx.helper.getExecuteTime() }).trace('request out');
   };
 }

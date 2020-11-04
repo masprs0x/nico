@@ -12,7 +12,7 @@ export default function getServeMiddleware(router: Router, config?: ConfigServe)
       `${route}/(.+)`,
       async (ctx: Context, next: Next) => {
         ctx.path = ctx.path.slice(route.length);
-        ctx.logger.child({ stage: 'serve' }).debug('serve static assets');
+        ctx.logger.child({ stage: 'serve' }).trace('serve static assets');
         await next();
       },
       serve(path.resolve(process.cwd(), root), {

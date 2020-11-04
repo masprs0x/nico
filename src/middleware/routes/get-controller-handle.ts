@@ -30,7 +30,7 @@ export default function getControllerHandleMiddleware(
       }
     }
 
-    ctx.logger.debug({
+    ctx.logger.trace({
       executeTime: ctx.helper.getExecuteTime(),
       message: `hit controller ${name}`,
     });

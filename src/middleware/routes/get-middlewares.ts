@@ -120,7 +120,7 @@ export default function getMiddlewares(
           ctx.logger = ctx.logger.child({ stage });
 
           if (key !== 'params' && key !== 'query' && key !== 'body' && key !== 'files') {
-            ctx.logger.debug(`${key} is not allowed in validate`);
+            ctx.logger.trace(`${key} is not allowed in validate`);
             return next();
           }
 
@@ -141,7 +141,7 @@ export default function getMiddlewares(
                   );
                 } else {
                   value = await validator.validateAsync(data);
-                  ctx.logger.debug({ origin: data, parsed: value });
+                  ctx.logger.trace({ origin: data, parsed: value });
                 }
               }
 
@@ -208,7 +208,7 @@ export default function getMiddlewares(
                     }),
                   );
 
-                  ctx.logger.debug({ [fileKey]: file });
+                  ctx.logger.trace({ [fileKey]: file });
                 }),
               );
 

@@ -6,7 +6,7 @@ export default function getBodyParserHandleMiddleware(koaOptions?: KoaBody.IKoaB
   return async function bodyParserHandleMiddleware(ctx: Context, next: Next) {
     ctx.logger = ctx.logger.child({ stage: 'middleware-bodyParser' });
     try {
-      ctx.logger.debug('hit bodyParser middleware');
+      ctx.logger.trace('hit bodyParser middleware');
       await KoaBody(koaOptions)(ctx, next);
     } catch (err) {
       ctx.logger.error(`hit bodyParser middleware catch: ${err.message}`);
