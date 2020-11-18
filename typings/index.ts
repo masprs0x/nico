@@ -1,7 +1,7 @@
 import Koa from 'koa';
 import koaBody from 'koa-body';
 import serve from 'koa-static';
-import Joi from '@hapi/joi';
+import Joi from 'joi';
 import Router from '@koa/router';
 import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';

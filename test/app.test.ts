@@ -2,7 +2,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import path from 'path';
 
-import Joi from '@hapi/joi';
+import Joi from 'joi';
 import Mongo from '@blastz/nico-mongo';
 import nico from '../src/index';
 
@@ -156,7 +156,7 @@ test('Validate', async () => {
   const testValidator3 = await request(nico.callback())
     .post('/users/122?limit=-1')
     .send({ name: '  1' });
-  expect(testValidator3.body.message).toEqual('"limit" must be larger than or equal to 0');
+  expect(testValidator3.body.message).toEqual('"limit" must be greater than or equal to 0');
   const testValidator4 = await request(nico.callback())
     .post('/users/122?limit=100')
     .send({ name: '  1' });

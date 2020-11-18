@@ -1,5 +1,5 @@
 import request from 'supertest';
-import Joi from '@hapi/joi';
+import Joi from 'joi';
 
 import { Nico } from '../src/index';
 import sleep from './utils/sleep';
