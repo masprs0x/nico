@@ -13,7 +13,7 @@ beforeAll(() => {
           const start = ctx.helper.getExecuteTime();
           await new Promise((resolve) => {
             setTimeout(() => {
-              resolve();
+              resolve(1);
             }, 600);
           });
           const end = ctx.helper.getExecuteTime();
