@@ -198,7 +198,9 @@ export class Nico extends Koa {
         this.use(serve(serveRouter, config.serve));
         this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
       } else if (name === 'routes') {
-        const router = new Router(config.advancedConfigs?.routerOptions);
+        const router = new Router<DefaultState, DefaultCustom>(
+          config.advancedConfigs?.routerOptions,
+        );
         this.use(
           routes(router, config, {
             routeMiddlewares: this.routeMiddlewares,

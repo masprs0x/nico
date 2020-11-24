@@ -78,7 +78,13 @@ export type ConfigSecurity = {
 
 export type Response = (this: Context, ...args: any) => void;
 
+type DefaultErrorResponse = (this: Context, err: Error) => void;
+
 export type ConfigResponses = {
+  onError?: DefaultErrorResponse;
+  onBodyParserError?: DefaultErrorResponse;
+  onValidateError?: DefaultErrorResponse;
+} & {
   [key: string]: Response;
 };
 
