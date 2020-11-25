@@ -2,13 +2,13 @@ import request from 'supertest';
 
 import { Nico } from '../src';
 
-test('Cluster Mode', () => {
+test('startCluster', () => {
   const nico = new Nico();
 
   expect(typeof nico.startCluster).toEqual('function'); // TODO test cluster mode
 });
 
-test('Custom App Middlewares', async () => {
+test('useAppMiddleware', async () => {
   const nico = new Nico();
 
   nico.useAppMiddleware(() => async (ctx, next) => {
@@ -44,7 +44,7 @@ test('Custom App Middlewares', async () => {
   expect(result.header.custom2).toEqual('custom2');
 });
 
-test('Custom Route Middlewares', async () => {
+test('useRouteMiddleware', async () => {
   const nico = new Nico();
 
   nico.useRouteMiddleware(() => async (ctx, next) => {
@@ -77,4 +77,35 @@ test('Custom Route Middlewares', async () => {
 
   expect(result.header.custom).toEqual('custom');
   expect(result.header.custom2).toEqual('custom2');
+});
+
+test('setCustom', async () => {
+  const nico = new Nico();
+
+  const dbUrl = 'mysql://root:admin123@localhost:3306/test';
+  const cacheUrl = 'redis://localhost:6379';
+
+  nico.setCustom({
+    datastores: {
+      default: {
+        url: dbUrl,
+      },
+    },
+  });
+
+  expect(nico.custom.datastores.default.url).toEqual(dbUrl);
+
+  nico.setCustom({
+    datastores: {
+      cache: {
+        url: cacheUrl,
+      },
+    },
+  });
+
+  expect(nico.custom.datastores.default.url).toEqual(dbUrl);
+  expect(nico.custom.datastores.cache.url).toEqual(cacheUrl);
+
+  nico.custom.datastores.default = {};
+  expect(nico.custom.datastores.default.url).toEqual(dbUrl);
 });

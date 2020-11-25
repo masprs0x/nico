@@ -12,6 +12,7 @@ import serve from './middleware/serve';
 import cors from './middleware/cors';
 import logger, { initLogger } from './lib/logger';
 import getHelperMiddleware from './middleware/helper';
+import deepmerge from './utils/deepmerge';
 
 import {
   Logger,
@@ -27,6 +28,10 @@ import {
 
 export * from '../typings';
 
+export type NicoCustom = {
+  [key: string]: any;
+};
+
 export class Nico extends Koa {
   logger: Logger;
 
@@ -35,6 +40,8 @@ export class Nico extends Koa {
   #started = false;
 
   #config: Config<any, any>;
+
+  #custom: NicoCustom = {};
 
   customMiddlewares: CustomMiddlewares = {};
 
@@ -73,6 +80,10 @@ export class Nico extends Koa {
 
   get config() {
     return Object.freeze(this.#config);
+  }
+
+  get custom() {
+    return JSON.parse(JSON.stringify(this.#custom));
   }
 
   constructor() {
@@ -159,6 +170,10 @@ export class Nico extends Koa {
     signals.forEach((signal) => {
       this.#signalHandlers[signal.toUpperCase()] = handler;
     });
+  }
+
+  setCustom(custom: { [key: string]: any }) {
+    this.#custom = deepmerge(this.#custom, custom);
   }
 
   init<TState = DefaultState, TCustom = DefaultCustom>(
