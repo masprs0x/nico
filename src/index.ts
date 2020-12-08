@@ -17,13 +17,13 @@ import deepmerge from './utils/deepmerge';
 import {
   Logger,
   Config,
-  GetMiddlewareFunc,
   CustomMiddlewares,
   InputConfig,
   DefaultState,
   DefaultCustom,
   InnerAppMiddleware,
   InnerRouteMiddleware,
+  Middleware,
 } from '../typings';
 
 export * from '../typings';
@@ -95,12 +95,8 @@ export class Nico extends Koa {
     this.context.helper = {};
   }
 
-  private getCustomMiddlewares(
-    middlewares: string[],
-    getMiddleware: GetMiddlewareFunc,
-    after: string,
-  ) {
-    let name = getMiddleware.name.trim();
+  private getCustomMiddlewares(middlewares: string[], middleware: Middleware, after: string) {
+    let name = middleware.name.trim();
     if (!name) {
       name = createUid();
       this.logger.warn(`custom middleware need a name, use uuid ${name} instead`);
@@ -109,7 +105,7 @@ export class Nico extends Koa {
     if (this.customMiddlewares[name]) {
       this.logger.warn(`custom middleware ${name} already exist, previous one will be used`);
     } else {
-      this.customMiddlewares[name] = getMiddleware;
+      this.customMiddlewares[name] = middleware;
     }
 
     let result = middlewares;
@@ -127,37 +123,28 @@ export class Nico extends Koa {
     return result;
   }
 
-  /**
-   *
-   * @param getMiddleware Function that is used to get custom middleware
-   * @param after The middleware name that mount before custom, inner middlewares are `ERROR_HANDLER`, `GLOBAL_CORS`, `RESPONSES`, `SERVE`, `ROUTES`
-   *
-   */
   useAppMiddleware(
-    getMiddleware: GetMiddlewareFunc,
+    middleware: Middleware,
     after: InnerAppMiddleware | string = InnerAppMiddleware.GLOBAL_CORS,
   ) {
     if (this.#initialed) {
-      this.logger.warn('custom app middleware should mount before init');
+      throw new Error('ERR_USE_APP_MIDDLEWARE: custom app middleware should be used before init');
     }
 
-    this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, getMiddleware, after);
+    this.appMiddlewares = this.getCustomMiddlewares(this.appMiddlewares, middleware, after);
   }
 
-  /**
-   *
-   * @param getMiddleware Function that is used to get custom middleware
-   * @param after The middleware name that mount before custom, inner middlewares are `DEBUG`, `CONTROLLER_CORS`, `CSP`, `XFRAMES`, `POLICIES`, `BODY_PARSER`, `VALIDATE`, `CONTROLLER`
-   */
   useRouteMiddleware(
-    getMiddleware: GetMiddlewareFunc,
+    middleware: Middleware,
     after: InnerRouteMiddleware | string = InnerRouteMiddleware.CONTROLLER_CORS,
   ) {
     if (this.#initialed) {
-      this.logger.warn('custom route middleware should mount before init');
+      throw new Error(
+        'ERR_USE_ROUTE_MIDDLEWARE: custom route middleware should be used before init',
+      );
     }
 
-    this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, getMiddleware, after);
+    this.routeMiddlewares = this.getCustomMiddlewares(this.routeMiddlewares, middleware, after);
   }
 
   useSignalHandler(signalOrSignals: NodeJS.Signals | NodeJS.Signals[], handler: SignalHandler) {
@@ -228,7 +215,7 @@ export class Nico extends Koa {
         const middleware = this.customMiddlewares[name];
 
         if (middleware) {
-          this.use(middleware());
+          this.use(middleware);
         } else {
           this.logger.warn(
             `${name} is defined in nico.appMiddlewares but doesn't be implemented in config.middlewares`,

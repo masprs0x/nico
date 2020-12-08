@@ -109,10 +109,8 @@ export interface ConfigLogger {
   consoleLevel?: LoggerLevel | 'none';
 }
 
-export type GetMiddlewareFunc = (...args: any) => Middleware;
-
 export type CustomMiddlewares = {
-  [key: string]: GetMiddlewareFunc;
+  [key: string]: Middleware;
 };
 
 export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {

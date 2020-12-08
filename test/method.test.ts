@@ -11,18 +11,15 @@ test('startCluster', () => {
 test('useAppMiddleware', async () => {
   const nico = new Nico();
 
-  nico.useAppMiddleware(() => async (ctx, next) => {
+  nico.useAppMiddleware(async (ctx, next) => {
     await next();
     ctx.set('custom', 'custom');
   });
 
-  nico.useAppMiddleware(
-    () => async (ctx, next) => {
-      await next();
-      ctx.set('custom2', 'custom2');
-    },
-    'custom',
-  );
+  nico.useAppMiddleware(async (ctx, next) => {
+    await next();
+    ctx.set('custom2', 'custom2');
+  }, 'custom');
 
   nico.init({
     routes: {
@@ -47,18 +44,15 @@ test('useAppMiddleware', async () => {
 test('useRouteMiddleware', async () => {
   const nico = new Nico();
 
-  nico.useRouteMiddleware(() => async (ctx, next) => {
+  nico.useRouteMiddleware(async (ctx, next) => {
     await next();
     ctx.set('custom', 'custom');
   });
 
-  nico.useRouteMiddleware(
-    () => async (ctx, next) => {
-      await next();
-      ctx.set('custom2', 'custom2');
-    },
-    'custom',
-  );
+  nico.useRouteMiddleware(async (ctx, next) => {
+    await next();
+    ctx.set('custom2', 'custom2');
+  }, 'custom');
 
   nico.init({
     routes: {

@@ -239,7 +239,7 @@ export default function getMiddlewares(
 
       middlewares.push(...controllerMiddlewares);
     } else if (customMiddlewares[name]) {
-      middlewares.push(customMiddlewares[name]());
+      middlewares.push(customMiddlewares[name]);
     } else {
       logger.warn(
         `${name} is defined in nico.routeMiddlewares but doesn't be implemented in config.middlewares`,

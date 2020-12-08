@@ -209,18 +209,15 @@ nico.routeMiddlewares = ['controller'];
 Define custom middlewares:
 
 ```js
-nico.useAppMiddleware(() => async (ctx, next) => {
+nico.useAppMiddleware(async (ctx, next) => {
   await next();
   ctx.set('custom', 'custom');
 });
 
-nico.useRouteMiddleware(
-  () => async (ctx, next) => {
-    await next();
-    ctx.set('custom', 'custom');
-  },
-  'debug',
-);
+nico.useRouteMiddleware(async (ctx, next) => {
+  await next();
+  ctx.set('custom', 'custom');
+}, 'debug');
 
 nico.init();
 ```
