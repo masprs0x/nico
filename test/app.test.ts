@@ -116,7 +116,7 @@ beforeAll(async () => {
     host: 'localhost',
     user: 'root',
     password: 'admin123',
-    port: 3318,
+    port: 3306,
   });
   await mysql.init();
 });
