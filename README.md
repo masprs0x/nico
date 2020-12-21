@@ -158,6 +158,62 @@ nico.init({
 });
 ```
 
+## Static File Serve
+
+Serve `/assets` directory like this:
+
+```ts
+nico.init({
+  serve: {
+    root: path.resolve(process.cwd(), './assets'),
+  },
+});
+```
+
+### Change Route Path
+
+```ts
+nico.init({
+  serve: {
+    root: path.resolve(process.cwd(), './assets'),
+    route: '/static',
+  },
+});
+```
+
+Get `/assets/avatar.png` by route `{{serverUrl}}/static/avatar.png`.
+
+### Serve Multiple Directories
+
+Serve multiple directories also supported.
+
+```ts
+nico.init({
+  serve: [
+    {
+      root: path.resolve(process.cwd(), './assets'),
+      route: '/assets',
+    },
+    {
+      root: path.resolve(process.cwd(), './static'),
+      route: '/static',
+    },
+  ],
+});
+```
+
+### More Options
+
+Serve configs support [koa-static](https://github.com/koajs/static) options.
+
+```ts
+nico.init({
+  serve: {
+    opts, // from koa-static
+  },
+});
+```
+
 ## Debug
 
 nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.

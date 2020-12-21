@@ -117,7 +117,7 @@ export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {
   routes?: ConfigRoutes<TState, TCustom>;
   custom?: ConfigCustom;
   security?: ConfigSecurity;
-  serve?: ConfigServe;
+  serve?: ConfigServe | ConfigServe[];
   responses?: ConfigResponses;
   helpers?: ConfigHelpers;
   advancedConfigs?: {

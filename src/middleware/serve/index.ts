@@ -4,23 +4,37 @@ import path from 'path';
 
 import { ConfigServe, Context, Next } from '../../../typings';
 
-export default function getServeMiddleware(router: Router, config?: ConfigServe) {
-  const { root, route = '/assets', opts } = config || {};
+export default function getServeMiddleware(router: Router, config?: ConfigServe | ConfigServe[]) {
+  if (config) {
+    const configs: ConfigServe[] = Array.isArray(config) ? config : [config];
 
-  if (root) {
-    router.get(
-      `${route}/(.+)`,
-      async (ctx: Context, next: Next) => {
-        ctx.path = ctx.path.slice(route.length);
-        ctx.logger.child({ stage: 'serve' }).trace('serve static assets');
-        await next();
-      },
-      serve(path.resolve(process.cwd(), root), {
-        defer: false,
-        maxAge: 1 * 24 * 3600 * 1000,
-        ...opts,
-      }),
-    );
+    const mounted: string[] = [];
+
+    configs.forEach((o) => {
+      const { root, route = '/assets', opts } = o || {};
+
+      if (mounted.includes(route)) {
+        throw new Error(`ERR_SERVE_ROUTE: dumplicated serve route '${route}'`);
+      }
+
+      if (root) {
+        mounted.push(route);
+
+        router.get(
+          `${route}/(.+)`,
+          async (ctx: Context, next: Next) => {
+            ctx.path = ctx.path.slice(route.length);
+            ctx.logger.child({ stage: 'serve' }).trace('serve static files');
+            await next();
+          },
+          serve(path.resolve(process.cwd(), root), {
+            defer: false,
+            maxAge: 1 * 24 * 3600 * 1000,
+            ...opts,
+          }),
+        );
+      }
+    });
   }
 
   return async function serveMiddleware(ctx: Context, next: Next) {

@@ -1,5 +1,6 @@
 import request from 'supertest';
 import Joi from 'joi';
+import path from 'path';
 
 import { Nico } from '../src/index';
 import sleep from './utils/sleep';
@@ -280,4 +281,46 @@ test('Signal Handler', () => {
   });
 
   // TODO test signal handler
+});
+
+test('Serve Configs', async () => {
+  const nico = new Nico();
+
+  nico.init({
+    serve: [
+      {
+        root: path.resolve(process.cwd(), './test/assets'),
+        route: '/assets',
+      },
+      {
+        root: path.resolve(process.cwd(), './test/static'),
+        route: '/static',
+      },
+    ],
+  });
+
+  const res = await request(nico.callback()).get('/static/1/2');
+  expect(res.status).toEqual(404);
+
+  const assetsRes = await request(nico.callback()).get('/assets/avatar.jpg');
+  expect(assetsRes.status).toEqual(200);
+
+  const staticRes = await request(nico.callback()).get('/static/nico.png');
+  expect(staticRes.status).toEqual(200);
+
+  expect(() => {
+    const nico2 = new Nico();
+    nico2.init({
+      serve: [
+        {
+          root: path.resolve(process.cwd(), './test/assets'),
+          route: '/assets',
+        },
+        {
+          root: path.resolve(process.cwd(), './test/static'),
+          route: '/assets',
+        },
+      ],
+    });
+  }).toThrowError(/^ERR_SERVE_ROUTE/);
 });

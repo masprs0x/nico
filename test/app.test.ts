@@ -94,9 +94,6 @@ beforeAll(async () => {
         },
       },
     },
-    serve: {
-      root: 'assets',
-    },
     responses: {
       ok: function ok(data, message, success) {
         this.body = {
@@ -202,12 +199,6 @@ test('Validate Files', async () => {
     .attach('file', filePath)
     .attach('file6', filePath);
   expect(result6.body.message).toEqual('"value" must be less than or equal to 5120');
-});
-
-test('Serve', async () => {
-  const res = await request(nico.callback()).get('/assets/1/2');
-  expect(res.status).toEqual(404);
-  expect(res.body).toEqual({});
 });
 
 test('Private Attributes', () => {
