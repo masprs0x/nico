@@ -3,10 +3,9 @@ jobs:
   build:
     docker:
       - image: circleci/node:12.16
-      - image: circleci/mongo:latest
+      - image: circleci/mysql:latest
         environment:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: admin123
+          MYSQL_ROOT_PASSWORD: admin123
 
     steps:
       - checkout

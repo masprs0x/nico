@@ -1,8 +1,7 @@
 import { Context } from '../../../src';
-
-import User from '../models/User';
+import mysql from '../models/mysql';
 
 export default async function get(ctx: Context) {
-  const users = await User.find().select('_id name');
+  const users = await mysql.exec('select * from users');
   return ctx.ok(users);
 }

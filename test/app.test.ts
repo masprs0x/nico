@@ -1,11 +1,9 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
 import path from 'path';
-
 import Joi from 'joi';
-import Mongo from '@blastz/nico-mongo';
-import nico from '../src/index';
 
+import mysql from './api/models/mysql';
+import nico from '../src/index';
 import getController from './api/controllers/get';
 import createControler from './api/controllers/create';
 
@@ -112,21 +110,19 @@ beforeAll(async () => {
     logger: {
       consoleLevel: 'none',
     },
-    custom: {
-      datastores: {
-        default: {
-          url: 'mongodb://root:admin123@localhost:27017/test?authSource=admin',
-        },
-      },
-    },
   });
 
-  await Mongo.connect(mongoose, nico.config.custom.datastores.default.url);
-  await mongoose.connection.db.dropDatabase();
+  await mysql.connect({
+    host: 'localhost',
+    user: 'root',
+    password: 'admin123',
+    port: 3318,
+  });
+  await mysql.init();
 });
 
 afterAll(async () => {
-  await Mongo.disconnect(mongoose);
+  await mysql.disconnect();
 });
 
 test('Log', async () => {
@@ -210,10 +206,6 @@ test('Private Attributes', () => {
   }).toThrowError();
 
   expect(nico.initialed).toEqual(true);
-
-  expect(nico.config.custom.datastores.default.url).toEqual(
-    'mongodb://root:admin123@localhost:27017/test?authSource=admin',
-  );
 
   // @ts-ignore
   expect(() => (nico.config.custom = {})).toThrowError();
