@@ -95,6 +95,10 @@ export class Nico extends Koa {
     this.logger = initLogger(logger, defaultConfig.logger);
 
     this.context.helper = {};
+
+    if (!process.env.NODE_ENV) {
+      process.env.NODE_ENV = 'production';
+    }
   }
 
   private getCustomMiddlewares(middlewares: string[], middleware: Middleware, after: string) {
@@ -288,7 +292,15 @@ export class Nico extends Koa {
       this.logger.warn('nico need init before start, auto init fired');
     }
 
-    this.logger.info({ port, pid: process.pid, message: `app started` });
+    this.logger.info({
+      port,
+      pid: process.pid,
+      message: `app started`,
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        ...(process.env.APP_ENV ? { appEnv: process.env.APP_ENV } : {}),
+      },
+    });
 
     return this.createServer(port, listener?.bind(this));
   }
@@ -316,6 +328,10 @@ export class Nico extends Koa {
         port,
         pid: process.pid,
         instances,
+        env: {
+          NODE_ENV: process.env.NODE_ENV,
+          ...(process.env.APP_ENV ? { appEnv: process.env.APP_ENV } : {}),
+        },
         message: 'app started with cluster mode',
       });
 
