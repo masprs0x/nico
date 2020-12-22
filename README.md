@@ -251,7 +251,7 @@ ctx.logger.debug('debug');
 Nico use `appMiddlewares` and `routeMiddlewares` to store middleware informations, app middlewares will execute when `nico.init()` is called,
 route middlewares will execute when http request come.
 
-The default `appMiddleware` is `['error-handler', 'global-cors', 'responses', 'serve', 'routes']`.
+The default `appMiddleware` is `['error-handler', 'not-found-handler', 'global-cors', 'responses', 'serve', 'routes']`.
 
 The default `routeMiddleware` is `['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller']`.
 

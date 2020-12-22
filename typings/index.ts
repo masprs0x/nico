@@ -84,6 +84,7 @@ export type ConfigResponses = {
   onError?: DefaultErrorResponse;
   onBodyParserError?: DefaultErrorResponse;
   onValidateError?: DefaultErrorResponse;
+  onNotFound?: (this: Context) => void;
 } & {
   [key: string]: Response;
 };

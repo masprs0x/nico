@@ -5,6 +5,7 @@ import os from 'os';
 
 import routes from './middleware/routes';
 import errorHandler from './middleware/error-handler';
+import notFoundHandler from './middleware/not-found-handler';
 import responses from './middleware/responses';
 import defaultConfig from './config';
 import { mergeConfigs, createUid } from './utils/utility';
@@ -47,6 +48,7 @@ export class Nico extends Koa {
 
   appMiddlewares: (InnerAppMiddleware | string)[] = [
     InnerAppMiddleware.ERROR_HANDLER,
+    InnerAppMiddleware.NOT_FOUND_HANDLER,
     InnerAppMiddleware.GLOBAL_CORS,
     InnerAppMiddleware.RESPONSES,
     InnerAppMiddleware.SERVE,
@@ -191,6 +193,8 @@ export class Nico extends Koa {
     this.appMiddlewares.forEach((name) => {
       if (name === 'error-handler') {
         this.use(errorHandler());
+      } else if (name === 'not-found-handler') {
+        this.use(notFoundHandler());
       } else if (name === 'global-cors') {
         this.use(cors(config.security?.cors));
       } else if (name === 'responses') {

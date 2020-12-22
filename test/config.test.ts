@@ -324,3 +324,21 @@ test('Serve Configs', async () => {
     });
   }).toThrowError(/^ERR_SERVE_ROUTE/);
 });
+
+test('Response Configs', async () => {
+  const nico = new Nico();
+
+  nico.init({
+    responses: {
+      onNotFound: function onNotFound(this) {
+        this.body = {
+          message: 'not found',
+        };
+      },
+    },
+  });
+
+  const res = await request(nico.callback()).get('/test');
+
+  expect(res.body).toEqual({ message: 'not found' });
+});

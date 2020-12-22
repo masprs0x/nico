@@ -1,5 +1,6 @@
 export enum InnerAppMiddleware {
   ERROR_HANDLER = 'error-handler',
+  NOT_FOUND_HANDLER = 'not-found-handler',
   GLOBAL_CORS = 'global-cors',
   RESPONSES = 'responses',
   SERVE = 'serve',
