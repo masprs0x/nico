@@ -298,7 +298,7 @@ export class Nico extends Koa {
       message: `app started`,
       env: {
         NODE_ENV: process.env.NODE_ENV,
-        ...(process.env.APP_ENV ? { appEnv: process.env.APP_ENV } : {}),
+        ...(process.env.APP_ENV ? { APP_ENV: process.env.APP_ENV } : {}),
       },
     });
 
@@ -330,7 +330,7 @@ export class Nico extends Koa {
         instances,
         env: {
           NODE_ENV: process.env.NODE_ENV,
-          ...(process.env.APP_ENV ? { appEnv: process.env.APP_ENV } : {}),
+          ...(process.env.APP_ENV ? { APP_ENV: process.env.APP_ENV } : {}),
         },
         message: 'app started with cluster mode',
       });
