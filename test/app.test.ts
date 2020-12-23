@@ -2,7 +2,6 @@ import request from 'supertest';
 import path from 'path';
 import Joi from 'joi';
 
-import mysql from './api/models/mysql';
 import nico from '../src/index';
 import getController from './api/controllers/get';
 import createControler from './api/controllers/create';
@@ -111,18 +110,6 @@ beforeAll(async () => {
       consoleLevel: 'none',
     },
   });
-
-  await mysql.connect({
-    host: 'localhost',
-    user: 'root',
-    password: 'admin123',
-    port: 3306,
-  });
-  await mysql.init();
-});
-
-afterAll(async () => {
-  await mysql.disconnect();
 });
 
 test('Log', async () => {

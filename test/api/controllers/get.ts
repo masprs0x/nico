@@ -1,7 +1,8 @@
 import { Context } from '../../../src';
-import mysql from '../models/mysql';
+import db from '../models/db';
 
 export default async function get(ctx: Context) {
-  const users = await mysql.exec('select * from users');
+  const users = await db.getUsers();
+
   return ctx.ok(users);
 }

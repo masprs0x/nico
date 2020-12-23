@@ -3,9 +3,6 @@ jobs:
   build:
     docker:
       - image: circleci/node:12.16
-      - image: circleci/mysql:latest
-        environment:
-          MYSQL_ROOT_PASSWORD: admin123
 
     steps:
       - checkout
