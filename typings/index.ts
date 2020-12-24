@@ -7,8 +7,6 @@ import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { Files } from 'formidable';
 
-export * from './constant';
-
 export interface Logger extends WinstonLogger {
   fatal: LeveledLogMethod;
   trace: LeveledLogMethod;

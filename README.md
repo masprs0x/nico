@@ -258,8 +258,12 @@ The default `routeMiddleware` is `['debug', 'controller-cors', 'csp', 'xframes',
 Change default middlewares:
 
 ```js
-nico.appMiddlewares = ['error-handler', 'global-cors', 'routes'];
-nico.routeMiddlewares = ['controller'];
+nico.appMiddlewares = [
+  InnerAppMiddleware.ERROR_HANDLER,
+  InnerAppMiddleware.GLOBAL_CORS,
+  InnerAppMiddleware.ROUTES,
+];
+nico.routeMiddlewares = [InnerRouteMiddleware.CONTROLLER];
 ```
 
 Define custom middlewares:
@@ -273,12 +277,12 @@ nico.useAppMiddleware(async (ctx, next) => {
 nico.useRouteMiddleware(async (ctx, next) => {
   await next();
   ctx.set('custom', 'custom');
-}, 'debug');
+}, InnerRouteMiddleware.DEBUG);
 
 nico.init();
 ```
 
-The second argument is middleware name, if it's `debug` that's mean custom middleware will execute after `debug` middleware.
+The second argument is the middleware name, above example shows custom middleware will execute after `debug` middleware.
 Custom middleware will be added to the middlewares after use middleware function, the name in the middlewares is the name of the function.
 
 The default second argument of `useAppMiddleware` is `global-cors` and `useRouteMiddleware` is `controller-cors`.

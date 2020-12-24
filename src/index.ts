@@ -14,6 +14,12 @@ import cors from './middleware/cors';
 import logger, { initLogger } from './lib/logger';
 import getHelperMiddleware from './middleware/helper';
 import deepmerge from './utils/deepmerge';
+import {
+  APP_MIDDLEWARES,
+  InnerAppMiddleware,
+  InnerRouteMiddleware,
+  ROUTE_MIDDLEWARES,
+} from './constants';
 
 import {
   Logger,
@@ -22,12 +28,11 @@ import {
   InputConfig,
   DefaultState,
   DefaultCustom,
-  InnerAppMiddleware,
-  InnerRouteMiddleware,
   Middleware,
 } from '../typings';
 
 export * from '../typings';
+export { InnerAppMiddleware, InnerRouteMiddleware } from './constants';
 
 export type NicoCustom = {
   [key: string]: any;
@@ -46,26 +51,9 @@ export class Nico extends Koa {
 
   customMiddlewares: CustomMiddlewares = {};
 
-  appMiddlewares: (InnerAppMiddleware | string)[] = [
-    InnerAppMiddleware.ERROR_HANDLER,
-    InnerAppMiddleware.NOT_FOUND_HANDLER,
-    InnerAppMiddleware.GLOBAL_CORS,
-    InnerAppMiddleware.RESPONSES,
-    InnerAppMiddleware.SERVE,
-    InnerAppMiddleware.ROUTES,
-  ];
+  appMiddlewares: (InnerAppMiddleware | string)[] = APP_MIDDLEWARES;
 
-  /** ['debug', 'controller-cors', 'csp', 'xframes', 'policies', 'body-parser', 'validate', 'controller'] */
-  routeMiddlewares: (InnerRouteMiddleware | string)[] = [
-    InnerRouteMiddleware.DEBUG,
-    InnerRouteMiddleware.CONTROLLER_CORS,
-    InnerRouteMiddleware.CSP,
-    InnerRouteMiddleware.XFRAMES,
-    InnerRouteMiddleware.POLICIES,
-    InnerRouteMiddleware.BODY_PARSER,
-    InnerRouteMiddleware.VALIDATE,
-    InnerRouteMiddleware.CONTROLLER,
-  ];
+  routeMiddlewares: (InnerRouteMiddleware | string)[] = ROUTE_MIDDLEWARES;
 
   #signalHandlers: { [key: string]: SignalHandler } = {
     SIGINT: () => {},
@@ -195,19 +183,19 @@ export class Nico extends Koa {
     });
 
     this.appMiddlewares.forEach((name) => {
-      if (name === 'error-handler') {
+      if (name === InnerAppMiddleware.ERROR_HANDLER) {
         this.use(errorHandler());
-      } else if (name === 'not-found-handler') {
+      } else if (name === InnerAppMiddleware.NOT_FOUND_HANDLER) {
         this.use(notFoundHandler());
-      } else if (name === 'global-cors') {
+      } else if (name === InnerAppMiddleware.GLOBAL_CORS) {
         this.use(cors(config.security?.cors));
-      } else if (name === 'responses') {
+      } else if (name === InnerAppMiddleware.RESPONSES) {
         this.use(responses(config.responses));
-      } else if (name === 'serve') {
+      } else if (name === InnerAppMiddleware.SERVE) {
         const serveRouter = new Router();
         this.use(serve(serveRouter, config.serve));
         this.use(serveRouter.routes()).use(serveRouter.allowedMethods());
-      } else if (name === 'routes') {
+      } else if (name === InnerAppMiddleware.ROUTES) {
         const router = new Router<DefaultState, DefaultCustom>(
           config.advancedConfigs?.routerOptions,
         );
