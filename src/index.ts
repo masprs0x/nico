@@ -240,7 +240,7 @@ export class Nico extends Koa {
           message: `${signal} handler execute too long, force exit fired`,
         });
         process.exit(1);
-      }, this.config.advancedConfigs.forceExitTime ?? 10 * 1000);
+      }, this.config.advancedConfigs.forceExitTime);
 
       server.close(async (err) => {
         let code = 0;

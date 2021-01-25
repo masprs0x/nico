@@ -13,7 +13,9 @@ const config: Config = {
   responses,
   logger,
   serve: {},
-  advancedConfigs: {},
+  advancedConfigs: {
+    forceExitTime: 10 * 1000,
+  },
   helpers: {},
 };
 
