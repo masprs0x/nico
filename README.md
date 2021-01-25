@@ -1,5 +1,19 @@
 # Nico [![blastZ](https://circleci.com/gh/blastZ/nico.svg?style=svg)](https://circleci.com/gh/blastZ/nico)
 
+[![NPM version][npm-image]][npm-url]
+[![David deps][david-image]][david-url]
+[![node version][node-image]][node-url]
+[![npm download][download-image]][download-url]
+
+[npm-image]: https://img.shields.io/npm/v/@blastz/nico.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/@blastz/nico
+[david-image]: https://img.shields.io/david/blastZ/nico.svg?style=flat-square
+[david-url]: https://david-dm.org/blastZ/nico
+[node-image]: https://img.shields.io/badge/node.js-%3E=_8-green.svg?style=flat-square
+[node-url]: http://nodejs.org/download/
+[download-image]: https://img.shields.io/npm/dm/@blastz/nico.svg?style=flat-square
+[download-url]: https://npmjs.org/package/@blastz/nico
+
 **This package is still in development.**
 
 Nico is a modern backend framework build on [koa](https://github.com/koajs/koa), it's inspired by [sails](https://github.com/balderdashy/sails). Ultimately nico is an effort to provide a more clear way to build api services.
