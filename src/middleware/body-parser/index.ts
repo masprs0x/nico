@@ -22,6 +22,7 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
   const options: Options = {
     parsedMethods,
     encoding: opts.encoding ?? encoding,
+    includeRawBody: false,
     jsonOpts: {
       enable: true,
       limit: '1mb',
@@ -36,12 +37,12 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     },
     textOpts: {
       enable: false,
-      limit: '56kb',
+      limit: '1mb',
       ...opts.textOpts,
     },
     xmlOpts: {
       enable: false,
-      limit: '56kb',
+      limit: '1mb',
       ...opts.xmlOpts,
     },
   };
@@ -50,40 +51,35 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     options.parsedMethods = opts.parsedMethods.map((o) => o.toLowerCase() as HttpMethod);
   }
 
+  if (typeof opts.includeRawBody === 'boolean') {
+    options.includeRawBody = opts.includeRawBody;
+  }
+
   const { jsonOpts, formOpts, textOpts, xmlOpts } = options;
 
   return async function bodyParser(ctx: Context, next: Next) {
-    // ctx.logger = ctx.logger.child({ stage: 'body-parser' });
+    if (ctx.logger) {
+      ctx.logger = ctx.logger?.child({ stage: 'body-parser' });
+    }
+
+    ctx?.logger?.trace({
+      method: ctx.request.method,
+      contentType: ctx.get('content-type'),
+      message: 'hit body parser',
+    });
 
     if (options.parsedMethods.includes(ctx.method.toLowerCase() as HttpMethod)) {
       try {
-        if (jsonOpts.enable && ctx.is(jsonTypes)) {
-          const result = await parse.json(ctx, {
-            encoding: options.encoding,
-            limit: jsonOpts.limit,
-            strict: jsonOpts.strict,
-            returnRawBody: false,
-          });
+        const result = await parseBody(ctx);
 
-          // ctx.logger.debug({ result });
-
-          ctx.request.body = result;
-        } else if (formOpts.enable && ctx.is(formTypes)) {
-          const result = await parse.form(ctx, {
-            encoding: options.encoding,
-            limit: formOpts.limit,
-            queryString: formOpts.qsOpts,
-            returnRawBody: false,
-          });
-
-          ctx.request.body = result;
-        } else if (textOpts.enable && ctx.is(textTypes)) {
-          // parse text data
-        } else if (xmlOpts.enable && ctx.is(xmlTypes)) {
-          // parse xml data
+        if (options.includeRawBody) {
+          ctx.request.body = result?.parsed ?? {};
+          ctx.request.rawBody = result?.raw;
+        } else {
+          ctx.request.body = result ?? {};
         }
       } catch (err) {
-        ctx.logger.error(err);
+        ctx?.logger?.error(err);
         // TODO support custom error handler
         throw err;
       }
@@ -91,16 +87,56 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
 
     await next();
   };
+
+  async function parseBody(ctx: Context) {
+    if (jsonOpts.enable && ctx.is(jsonTypes)) {
+      return parse.json(ctx, {
+        encoding: options.encoding,
+        limit: jsonOpts.limit,
+        strict: jsonOpts.strict,
+        returnRawBody: options.includeRawBody,
+      });
+    }
+
+    if (formOpts.enable && ctx.is(formTypes)) {
+      return parse.form(ctx, {
+        encoding: options.encoding,
+        limit: formOpts.limit,
+        queryString: formOpts.qsOpts,
+        returnRawBody: options.includeRawBody,
+      });
+    }
+
+    if (textOpts.enable && ctx.is(textTypes)) {
+      return parse.text(ctx, {
+        encoding: options.encoding,
+        limit: options.textOpts.limit,
+        returnRawBody: options.includeRawBody,
+      });
+    }
+
+    if (xmlOpts.enable && ctx.is(xmlTypes)) {
+      return parse.text(ctx, {
+        encoding: options.encoding,
+        limit: options.xmlOpts.limit,
+        returnRawBody: options.includeRawBody,
+      });
+    }
+
+    return {};
+  }
 }
 
 declare module 'koa' {
   interface Request extends Koa.BaseRequest {
     body?: any;
+    rawBody?: string;
   }
 }
 
 export interface Options {
   parsedMethods: HttpMethod[];
+  includeRawBody: boolean;
   encoding: string;
   jsonOpts: JsonOpts;
   formOpts: FormOpts;

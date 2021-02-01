@@ -43,7 +43,6 @@
     "formidable": "^1.2.2",
     "joi": "^17.3.0",
     "koa": "^2.13.1",
-    "koa-body": "^4.2.0",
     "koa-static": "^5.0.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"
