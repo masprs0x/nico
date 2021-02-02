@@ -1,6 +1,6 @@
 import parse from 'co-body';
 import Koa from 'koa';
-import util from 'util';
+import { Fields, Files, IncomingForm } from 'formidable';
 
 import { Context, Next, HttpMethod } from '../../../typings';
 
@@ -13,6 +13,7 @@ const jsonTypes = [
 const formTypes = ['application/x-www-form-urlencoded'];
 const textTypes = ['text/plain'];
 const xmlTypes = ['text/xml', 'application/xml'];
+const multipartTypes = ['multipart/form-data'];
 
 export default function getBodyParser(opts: Partial<Options> = {}) {
   // encoding supported by iconv-lite
@@ -45,6 +46,11 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
       limit: '1mb',
       ...opts.xmlOpts,
     },
+    multipartOpts: {
+      enable: false,
+      multiples: false,
+      ...opts.multipartOpts,
+    },
   };
 
   if (opts.parsedMethods) {
@@ -55,7 +61,7 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     options.includeRawBody = opts.includeRawBody;
   }
 
-  const { jsonOpts, formOpts, textOpts, xmlOpts } = options;
+  const { jsonOpts, formOpts, textOpts, xmlOpts, multipartOpts } = options;
 
   return async function bodyParser(ctx: Context, next: Next) {
     if (ctx.logger) {
@@ -70,13 +76,20 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
 
     if (options.parsedMethods.includes(ctx.method.toLowerCase() as HttpMethod)) {
       try {
-        const result = await parseBody(ctx);
+        if (multipartOpts.enable && ctx.is(multipartTypes)) {
+          const result = await parseMultipart(ctx);
 
-        if (options.includeRawBody) {
-          ctx.request.body = result?.parsed ?? {};
-          ctx.request.rawBody = result?.raw;
+          ctx.request.body = result.fields;
+          ctx.request.files = result.files;
         } else {
-          ctx.request.body = result ?? {};
+          const result = await parseBody(ctx);
+
+          if (options.includeRawBody) {
+            ctx.request.body = result?.parsed ?? {};
+            ctx.request.rawBody = result?.raw;
+          } else {
+            ctx.request.body = result ?? {};
+          }
         }
       } catch (err) {
         ctx?.logger?.error(err);
@@ -125,12 +138,59 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
 
     return {};
   }
+
+  async function parseMultipart(ctx: Context): Promise<{ fields: Fields; files: Files }> {
+    return new Promise((resolve, reject) => {
+      const form = new IncomingForm();
+
+      const files: any = {};
+      const fields: any = {};
+
+      form
+        .on('end', function onEnd() {
+          return resolve({
+            files,
+            fields,
+          });
+        })
+        .on('error', function onError(err: Error) {
+          return reject(err);
+        })
+        .on('field', function onFields(field: string, value: any) {
+          // TODO check max fields
+          if (fields[field]) {
+            if (Array.isArray(fields[field])) {
+              fields[field].push(value);
+            } else {
+              fields[field] = [fields[field], value];
+            }
+          } else {
+            fields[field] = value;
+          }
+        })
+        .on('file', function onFile(field: string, file: any) {
+          // TODO check multiples
+          if (files[field]) {
+            if (Array.isArray(files[field])) {
+              files.push(file);
+            } else {
+              files[field] = [files[field], file];
+            }
+          } else {
+            files[field] = file;
+          }
+        });
+
+      form.parse(ctx.req);
+    });
+  }
 }
 
 declare module 'koa' {
   interface Request extends Koa.BaseRequest {
     body?: any;
     rawBody?: string;
+    files?: Files;
   }
 }
 
@@ -142,23 +202,27 @@ export interface Options {
   formOpts: FormOpts;
   textOpts: TextOpts;
   xmlOpts: XmlOpts;
+  multipartOpts: MultipartOpts;
 }
 
-export type EnabledTypes = ('json' | 'form' | 'text' | 'xml')[];
-
 interface BaseParseOptions {
-  enable: boolean;
-  limit: string; // '1mb' for json, '56kb' for form-urlencoded
+  enable?: boolean;
+  limit?: string; // '1mb' for json, '56kb' for form-urlencoded
+}
+
+export interface MultipartOpts {
+  enable?: boolean;
+  multiples?: boolean;
 }
 
 export interface JsonOpts extends BaseParseOptions {
-  strict: boolean; // only parse array and object, default is true
+  strict?: boolean; // only parse array and object, default is true
 }
 
 export interface TextOpts extends BaseParseOptions {}
 
 export interface FormOpts extends BaseParseOptions {
-  qsOpts: qs.IParseOptions; // qs module parse options
+  qsOpts?: qs.IParseOptions; // qs module parse options
 }
 
 export interface XmlOpts extends BaseParseOptions {}

@@ -35,7 +35,8 @@
   "dependencies": {
     "@koa/router": "^10.0.0",
     "@types/co-body": "^5.1.0",
-    "@types/koa": "^2.11.6",
+    "@types/formidable": "^1.0.32",
+    "@types/koa": "^2.11.7",
     "@types/koa-static": "^4.0.1",
     "@types/koa__router": "^8.0.4",
     "chalk": "^4.1.0",
@@ -51,10 +52,10 @@
     "@blastz/eslint-config-nico": "^0.1.1",
     "@types/jest": "^26.0.20",
     "@types/supertest": "^2.0.10",
-    "eslint": "^7.18.0",
+    "eslint": "^7.19.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
-    "supertest": "^6.1.2",
+    "supertest": "^6.1.3",
     "typescript": "^4.1.3"
   },
   "files": [
