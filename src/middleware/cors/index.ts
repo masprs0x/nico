@@ -29,7 +29,7 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
   const allowedOrigin = options.allowOrigins;
   const { allRoutes } = options;
 
-  const getOrigin = (requestOrigin: string) => {
+  const getOrigin = (requestOrigin?: string) => {
     let origin = '';
 
     if (Array.isArray(allowedOrigin)) {
@@ -77,7 +77,7 @@ export default function getCorsMiddleware(config?: CorsOptions, global = true) {
       setCredentials(ctx, options.allowCredentials);
 
       if (global) {
-        ctx.set('Access-Control-Allow-Origin', requestOrigin);
+        ctx.set('Access-Control-Allow-Origin', requestOrigin || '');
       } else {
         setOrigin(ctx, getOrigin(requestOrigin));
       }
