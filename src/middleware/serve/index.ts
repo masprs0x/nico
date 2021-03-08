@@ -2,7 +2,14 @@ import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
 
-import { ConfigServe, Context, Next } from '../../../typings';
+import { Context, Next } from '../../../typings';
+
+export interface ConfigServe {
+  root?: string;
+  route?: string;
+  traceLog?: boolean; // default is false
+  opts?: serve.Options;
+}
 
 export default function getServeMiddleware(router: Router, config?: ConfigServe | ConfigServe[]) {
   if (config) {
@@ -11,7 +18,7 @@ export default function getServeMiddleware(router: Router, config?: ConfigServe 
     const mounted: string[] = [];
 
     configs.forEach((o) => {
-      const { root, route = '/assets', opts } = o || {};
+      const { root, route = '/assets', traceLog = false, opts } = o || {};
 
       if (mounted.includes(route)) {
         throw new Error(`ERR_SERVE_ROUTE: dumplicated serve route '${route}'`);
@@ -24,7 +31,8 @@ export default function getServeMiddleware(router: Router, config?: ConfigServe 
           `${route}/(.+)`,
           async (ctx: Context, next: Next) => {
             ctx.path = ctx.path.slice(route.length);
-            ctx.logger.child({ stage: 'nico.appMiddleware.serve' }).trace('serve static files');
+            traceLog &&
+              ctx.logger.child({ stage: 'nico.appMiddleware.serve' }).trace('serve static files');
             await next();
           },
           serve(path.resolve(process.cwd(), root), {
