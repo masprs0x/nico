@@ -6,11 +6,11 @@ function getUrl(ctx: Context) {
   return `${ctx.method} ${ctx.url}`;
 }
 
-export default function getDebugMiddleware() {
+export default function getTraceMiddleware() {
   const HEADER_REQUEST_ID = 'X-Request-ID';
-  const stage = 'middleware-debug';
+  const stage = 'nico.appMiddleware.trace';
 
-  return async function debugMiddleware(ctx: Context, next: Next) {
+  return async function traceMiddleware(ctx: Context, next: Next) {
     ctx.state.requestStartTime = process.hrtime();
 
     const requestId = ctx.get(HEADER_REQUEST_ID) || createUid();
@@ -22,13 +22,13 @@ export default function getDebugMiddleware() {
     ctx.logger = ctx.logger.child({
       requestId,
       url: getUrl(ctx),
-      label: 'request',
       stage,
     });
-    ctx.logger.child({ executeTime: 0 }).trace('request in');
+
+    ctx.logger.trace({ executeTime: 0, message: 'request in' });
 
     await next();
 
-    ctx.logger.child({ stage, executeTime: ctx.helper.getExecuteTime() }).trace('request out');
+    ctx.logger.trace({ executeTime: ctx.helper.getExecuteTime(), message: 'request out' });
   };
 }

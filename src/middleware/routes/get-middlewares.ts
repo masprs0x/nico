@@ -10,7 +10,6 @@ import {
   NicoNext as Next,
 } from '../../../typings';
 
-import debug from '../debug';
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
@@ -62,9 +61,7 @@ export default function getMiddlewares(
   } = routeConfig;
 
   routeMiddlewares.forEach((name) => {
-    if (name === 'debug') {
-      middlewares.push(debug());
-    } else if (name === 'controller-cors') {
+    if (name === 'controller-cors') {
       const defaultCorsMiddleware = cors(securityConfig.cors, false);
       if (corsOptions || typeof corsOptions === 'boolean') {
         if (typeof corsOptions === 'boolean') {
@@ -115,7 +112,7 @@ export default function getMiddlewares(
       }
     } else if (name === 'validate') {
       Object.keys(validate).forEach((key) => {
-        const stage = `validate-${key}`;
+        const stage = `nico.routeMiddleware.validate.${key}`;
 
         const validateMiddleware = async (ctx: Context, next: Next) => {
           ctx.logger = ctx.logger.child({ stage });

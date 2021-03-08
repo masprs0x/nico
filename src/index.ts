@@ -11,6 +11,7 @@ import defaultConfig from './config';
 import { mergeConfigs, createUid } from './utils/utility';
 import serve from './middleware/serve';
 import cors from './middleware/cors';
+import trace from './middleware/trace';
 import logger, { initLogger } from './lib/logger';
 import getHelperMiddleware from './middleware/helper';
 import deepmerge from './utils/deepmerge';
@@ -185,6 +186,8 @@ export class Nico extends Koa {
     this.appMiddlewares.forEach((name) => {
       if (name === InnerAppMiddleware.ERROR_HANDLER) {
         this.use(errorHandler());
+      } else if (name === InnerAppMiddleware.TRACE) {
+        this.use(trace());
       } else if (name === InnerAppMiddleware.NOT_FOUND_HANDLER) {
         this.use(notFoundHandler());
       } else if (name === InnerAppMiddleware.GLOBAL_CORS) {
@@ -229,15 +232,16 @@ export class Nico extends Koa {
     const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener = (handler) => (
       signal,
     ) => {
-      this.logger.trace({
+      const selfLogger = this.logger.child({ stage: `process.on(${signal})` });
+      selfLogger.trace({
         ...(cluster.worker ? { pid: cluster.worker.process.pid, workerId: cluster.worker.id } : {}),
-        message: `${signal} signal received`,
+        message: `hit signal handler`,
       });
 
       const timeout = setTimeout(() => {
-        this.logger.error({
+        selfLogger.error({
           forceExitTime: this.config.advancedConfigs.forceExitTime,
-          message: `${signal} handler execute too long, force exit fired`,
+          message: `signal handler execute too long, force exit fired`,
         });
         process.exit(1);
       }, this.config.advancedConfigs.forceExitTime);
@@ -246,7 +250,7 @@ export class Nico extends Koa {
         let code = 0;
         if (err) {
           code = 1;
-          this.logger.error(err);
+          selfLogger.error(err);
           handler && (await handler.call(this, err));
         } else {
           handler && (await handler.call(this));
@@ -263,7 +267,11 @@ export class Nico extends Koa {
     });
 
     process.on('uncaughtException', (err) => {
-      this.logger.fatal({ message: err.message, stack: err.stack });
+      this.logger.fatal({
+        stage: 'process.on(uncaughtException)',
+        message: err.message,
+        stack: err.stack,
+      });
     });
 
     return server;

@@ -24,7 +24,7 @@ export default function getServeMiddleware(router: Router, config?: ConfigServe 
           `${route}/(.+)`,
           async (ctx: Context, next: Next) => {
             ctx.path = ctx.path.slice(route.length);
-            ctx.logger.child({ stage: 'serve' }).trace('serve static files');
+            ctx.logger.child({ stage: 'nico.appMiddleware.serve' }).trace('serve static files');
             await next();
           },
           serve(path.resolve(process.cwd(), root), {

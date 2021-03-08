@@ -65,7 +65,7 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
 
   return async function bodyParser(ctx: Context, next: Next) {
     if (ctx.logger) {
-      ctx.logger = ctx.logger?.child({ stage: 'body-parser' });
+      ctx.logger = ctx.logger?.child({ stage: 'nico.routeMiddleware.bodyParser' });
     }
 
     ctx?.logger?.trace({
