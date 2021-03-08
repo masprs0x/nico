@@ -1,5 +1,4 @@
 export enum InnerRouteMiddleware {
-  DEBUG = 'debug',
   CONTROLLER_CORS = 'controller-cors',
   CSP = 'csp',
   XFRAMES = 'xframes',
@@ -10,7 +9,6 @@ export enum InnerRouteMiddleware {
 }
 
 export const ROUTE_MIDDLEWARES = [
-  InnerRouteMiddleware.DEBUG,
   InnerRouteMiddleware.CONTROLLER_CORS,
   InnerRouteMiddleware.CSP,
   InnerRouteMiddleware.XFRAMES,

@@ -1,11 +1,12 @@
 import Koa from 'koa';
-import koaBody from 'koa-body';
-import serve from 'koa-static';
 import Joi from 'joi';
 import Router from '@koa/router';
 import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { Files } from 'formidable';
+
+import { Options as BodyParserOpts } from '../src/middleware/body-parser';
+import { ConfigServe } from '../src/middleware/serve';
 
 export interface Logger extends WinstonLogger {
   fatal: LeveledLogMethod;
@@ -20,7 +21,7 @@ type FilesValidator = Joi.Schema | Validator;
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
   policies?: Middleware<TState, TCustom>[] | boolean;
-  bodyParser?: boolean | koaBody.IKoaBodyOptions;
+  bodyParser?: boolean | Partial<BodyParserOpts>;
   validate?: {
     params?: Joi.ObjectSchema | Validator;
     query?: Joi.ObjectSchema | Validator;
@@ -92,12 +93,6 @@ export type Helper = (this: NicoContext<DefaultState, any>, ...args: any) => any
 export type ConfigHelpers = {
   [key: string]: Helper;
 };
-
-export interface ConfigServe {
-  root?: string;
-  route?: string;
-  opts?: serve.Options;
-}
 
 export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 

@@ -4,8 +4,8 @@ export default function getPolicyHandleMiddleware(policyMiddleware: Middleware<a
   const policyName = policyMiddleware.name;
 
   return async function policyHandleMiddleware(ctx: Context, next: Next) {
-    ctx.logger = ctx.logger.child({ stage: `policy-${policyName}` });
-    ctx.logger.trace(`hit policy ${policyName}`);
+    ctx.logger = ctx.logger.child({ stage: `nico.routeMiddleware.policies.${policyName}` });
+    ctx.logger.trace(`hit policy`);
 
     await policyMiddleware(ctx, next);
   };

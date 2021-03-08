@@ -5,7 +5,7 @@ export default function getErrorMiddleware() {
     try {
       await next();
     } catch (err) {
-      ctx.logger = ctx.logger.child({ stage: 'middleware-errorHandler' });
+      ctx.logger = ctx.logger.child({ stage: 'nico.appMiddleware.errorHandler' });
       ctx.logger.fatal(err);
 
       if (ctx.onError) {

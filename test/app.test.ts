@@ -65,7 +65,9 @@ beforeAll(async () => {
           return ctx.ok();
         },
         bodyParser: {
-          multipart: true,
+          multipartOpts: {
+            enable: true,
+          },
         },
         validate: {
           files: {

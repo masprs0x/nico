@@ -10,13 +10,13 @@ import {
   NicoNext as Next,
 } from '../../../typings';
 
-import debug from '../debug';
 import cors from '../cors';
 import removeCors from '../cors/remove';
 import xframes from '../xframes';
 import csp from '../csp';
 import defaultLogger from '../../lib/logger';
-import getBodyParserHandleMiddleware from './get-body-parser-handle';
+import bodyParser from '../body-parser';
+
 import getPolicyHandleMiddleware from './get-policy-handle';
 import getControllerHandleMiddleware from './get-controller-handle';
 
@@ -52,7 +52,7 @@ export default function getMiddlewares(
   const {
     controller = defaultController,
     policies = true,
-    bodyParser = false,
+    bodyParser: bodyParserOpts = false,
     validate = {},
     cors: corsOptions,
     xframes: xframesOptions,
@@ -61,9 +61,7 @@ export default function getMiddlewares(
   } = routeConfig;
 
   routeMiddlewares.forEach((name) => {
-    if (name === 'debug') {
-      middlewares.push(debug());
-    } else if (name === 'controller-cors') {
+    if (name === 'controller-cors') {
       const defaultCorsMiddleware = cors(securityConfig.cors, false);
       if (corsOptions || typeof corsOptions === 'boolean') {
         if (typeof corsOptions === 'boolean') {
@@ -105,16 +103,16 @@ export default function getMiddlewares(
         });
       }
     } else if (name === 'body-parser') {
-      if (bodyParser) {
-        if (typeof bodyParser === 'boolean' && bodyParser) {
-          middlewares.push(getBodyParserHandleMiddleware());
-        } else if (typeof bodyParser === 'object') {
-          middlewares.push(getBodyParserHandleMiddleware(bodyParser));
+      if (bodyParserOpts) {
+        if (typeof bodyParserOpts === 'boolean' && bodyParserOpts) {
+          middlewares.push(bodyParser());
+        } else if (typeof bodyParserOpts === 'object') {
+          middlewares.push(bodyParser(bodyParserOpts));
         }
       }
     } else if (name === 'validate') {
       Object.keys(validate).forEach((key) => {
-        const stage = `validate-${key}`;
+        const stage = `nico.routeMiddleware.validate.${key}`;
 
         const validateMiddleware = async (ctx: Context, next: Next) => {
           ctx.logger = ctx.logger.child({ stage });
@@ -164,6 +162,10 @@ export default function getMiddlewares(
                   if (!file) {
                     if (allowNull) return;
                     throw new Error(`${fileKey} is required`);
+                  }
+
+                  if (Array.isArray(file)) {
+                    throw new Error(`file validate don't support multiple files`);
                   }
 
                   const fileValidateSchema = files[optionalFileKey];

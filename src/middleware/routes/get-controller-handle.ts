@@ -10,7 +10,7 @@ export default function getControllerHandleMiddleware(
 ) {
   const { timeout } = options || {};
   const { name } = controller;
-  const stage = `controller-${name}`;
+  const stage = `controller.${name}`;
 
   return async function controllerHandleMiddleware(ctx: NicoContext, next: NicoNext) {
     ctx.logger = timeout ? ctx.logger.child({ stage, timeout }) : ctx.logger.child({ stage });
@@ -32,7 +32,7 @@ export default function getControllerHandleMiddleware(
 
     ctx.logger.trace({
       executeTime: ctx.helper.getExecuteTime(),
-      message: `hit controller ${name}`,
+      message: `hit controller`,
     });
 
     if (timeoutFunc) {

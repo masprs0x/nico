@@ -7,7 +7,7 @@ export default function getNotFoundMiddleware() {
     if (ctx.status === 404) {
       ctx.logger.trace({
         url: `${ctx.method} ${ctx.url}`,
-        stage: 'not-found-handler',
+        stage: 'nico.appMiddleware.notFoundHandler',
         message: 'not found',
       });
 
