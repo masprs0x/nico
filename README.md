@@ -93,6 +93,56 @@ This config will register three routes
 - `POST /api/v3/users`
 - `DELETE /api/v3/users/:id`
 
+## Body Parser
+
+By default, body parser only works when request method is `POST`, `PUT` or `PATCH`, change it by `parsedMethods` config.
+
+You need to manually enable body parser on specific route, otherwise it won't work.
+
+```js
+nico.init({
+  routes: {
+    '/api/v3': {
+      '/users': {
+        POST: {
+          bodyParser: true,
+          // ...
+        },
+      },
+    },
+  },
+});
+```
+
+By default It will only parse `json` and `form` types.
+
+### Multipart
+
+To support multipart form data, you need to enable it.
+
+```js
+nico.init({
+  //...
+  POST: {
+    bodyParser: {
+      multipartOpts: {
+        enable: true,
+      },
+    },
+    // ...
+  },
+  //...
+});
+```
+
+### XML And Text
+
+Same as multipart, you need to enable them by `xmlOpts` and `textOpts` configs.
+
+### More options
+
+Check more options in config types.
+
 ## Responses
 
 Use responses to change response format.
@@ -321,62 +371,6 @@ The process will force exit after 10 seconds, you can change it in `nico.config.
 
 Nico support cluster mode internal, use `nico.startCluster(port: number, instances?: number)` to start nico with cluster mode.
 The default instances will be cpu numbers.
-
-## Full Config Type
-
-```ts
-type Config<TState, TCustom> = {
-  routes?: {
-    [method_route: string]: {
-      controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
-      policies?: Middleware<TState, TCustom>[] | boolean;
-      bodyParser?: boolean | koaBody.IKoaBodyOptions;
-      validate?: {
-        params?: Joi.ObjectSchema | Validator;
-        query?: Joi.ObjectSchema | Validator;
-        body?: Joi.ObjectSchema | Validator;
-      };
-      timeout?: number;
-      cors?: CorsOptions | boolean;
-      xframes?: XFrameOptions | true;
-      csp?: CSPOptions | true;
-    };
-  };
-  custom?: {
-    [key: string]: any;
-  };
-  security?: {
-    cors?: {
-      allowOrigins: string[] | string;
-      allRoutes?: boolean;
-      allowMethods?: string[] | string;
-      allowHeaders?: string[] | string;
-      allowCredentials?: boolean;
-    };
-    xframes?: XFrameOptions;
-    csp?: CSPOptions;
-  };
-  serve?: {
-    root?: string;
-    opts?: serve.Options;
-  };
-  responses?: {
-    [key: string]: (this: Koa.Context, ...args: any) => void;
-  };
-  helpers?: ConfigHelpers;
-  logger?: {
-    fileLevel?: LoggerLevel | 'none';
-    consoleLevel?: LoggerLevel | 'none';
-  };
-  middlewares?: {
-    [key: string]: (...args: any) => Middleware<any, any>;
-  };
-  advancedConfigs?: {
-    routerOptions?: Router.RouterOptions;
-    forceExitTime?: number;
-  };
-};
-```
 
 ## Plugins
 
