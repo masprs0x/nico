@@ -191,6 +191,13 @@ nico.init({
 });
 ```
 
+---
+**NOTE**
+
+Above validate will allow `body` to be `undefined`, use `Joi.object().requried()` to block it.
+
+---
+
 Nico will throw validate error by default, the error will be cached by global error handler.
 You can add `onError`, `onBodyParserError`, `onValidateError` in `responses` config to change default behavior.
 
