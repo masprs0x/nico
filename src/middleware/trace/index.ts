@@ -22,13 +22,14 @@ export default function getTraceMiddleware() {
     ctx.logger = ctx.logger.child({
       requestId,
       url: getUrl(ctx),
-      stage,
     });
 
-    ctx.logger.trace({ executeTime: 0, message: 'request in' });
+    const logger = ctx.logger.child({ stage });
+
+    logger.trace({ executeTime: 0, message: 'request in' });
 
     await next();
 
-    ctx.logger.trace({ executeTime: ctx.helper.getExecuteTime(), message: 'request out' });
+    logger.trace({ executeTime: ctx.helper.getExecuteTime(), message: 'request out' });
   };
 }

@@ -69,7 +69,6 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     }
 
     ctx?.logger?.trace({
-      method: ctx.request.method,
       contentType: ctx.get('content-type'),
       message: 'hit body parser',
     });
