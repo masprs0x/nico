@@ -1,5 +1,4 @@
 import request from 'supertest';
-import path from 'path';
 import Joi from 'joi';
 
 import nico from '../src/index';
@@ -22,33 +21,7 @@ beforeAll(async () => {
           }),
         },
       },
-      'POST /users/:id': {
-        controller: async (ctx) => {
-          return ctx.ok({
-            params: ctx.state.params,
-            body: ctx.state.body,
-            query: ctx.state.query,
-          });
-        },
-        bodyParser: true,
-        validate: {
-          params: Joi.object({
-            id: Joi.number().required().min(1),
-          }),
-          body: (data) => {
-            if (!data.name) {
-              throw new Error('Need name');
-            }
 
-            return {
-              name: String(data.name).trim(),
-            };
-          },
-          query: Joi.object({
-            limit: Joi.number().min(0),
-          }),
-        },
-      },
       'GET /controllers': {
         controller: [
           async (ctx, next) => {
@@ -59,38 +32,6 @@ beforeAll(async () => {
             ctx.state.name = 'test-controllers';
           },
         ],
-      },
-      'POST /test-validate-files': {
-        controller: async (ctx) => {
-          return ctx.ok();
-        },
-        bodyParser: {
-          multipartOpts: {
-            enable: true,
-          },
-        },
-        validate: {
-          files: {
-            file: {
-              type: Joi.string().valid('image/jpeg'),
-            },
-            'file2?': {
-              type: Joi.string().valid('image/png'),
-            },
-            'file3?': {
-              name: Joi.string().valid('avatar2.jpg'),
-            },
-            'file4?': {
-              extname: Joi.string().valid('.jpeg'),
-            },
-            'file5?': {
-              basename: Joi.string().valid('avatar2'),
-            },
-            'file6?': {
-              size: Joi.number().max(5 * 1024),
-            },
-          },
-        },
       },
     },
     responses: {
@@ -128,62 +69,6 @@ test('App', async () => {
   expect(createUser.body.data.name).toEqual('nico nico ni');
   expect(getUsers.body.data[0].name).toEqual('nico nico ni');
   expect(testControllers.body.data).toEqual('test-controllers');
-});
-
-test('Validate', async () => {
-  const testValidator = await request(nico.callback()).post('/users/122');
-  expect(testValidator.body.message).toEqual('Need name');
-  const testValidator2 = await request(nico.callback()).post('/users/122').send({ name: '  1' });
-  expect(testValidator2.body.data).toEqual({ params: { id: 122 }, body: { name: '1' }, query: {} });
-  const testValidator3 = await request(nico.callback())
-    .post('/users/122?limit=-1')
-    .send({ name: '  1' });
-  expect(testValidator3.body.message).toEqual('"limit" must be greater than or equal to 0');
-  const testValidator4 = await request(nico.callback())
-    .post('/users/122?limit=100')
-    .send({ name: '  1' });
-  expect(testValidator4.body.data).toEqual({
-    params: { id: 122 },
-    body: { name: '1' },
-    query: { limit: 100 },
-  });
-});
-
-test('Validate Files', async () => {
-  const filePath = path.resolve(__dirname, '../../test/assets/avatar.jpg');
-
-  const result = await request(nico.callback()).post('/test-validate-files');
-  expect(result.body.message).toEqual('file is required');
-
-  const result2 = await request(nico.callback())
-    .post('/test-validate-files')
-    .attach('file', filePath)
-    .attach('file2', filePath);
-  expect(result2.body.message).toEqual('"value" must be [image/png]');
-
-  const result3 = await request(nico.callback())
-    .post('/test-validate-files')
-    .attach('file', filePath)
-    .attach('file3', filePath);
-  expect(result3.body.message).toEqual('"value" must be [avatar2.jpg]');
-
-  const result4 = await request(nico.callback())
-    .post('/test-validate-files')
-    .attach('file', filePath)
-    .attach('file4', filePath);
-  expect(result4.body.message).toEqual('"value" must be [.jpeg]');
-
-  const result5 = await request(nico.callback())
-    .post('/test-validate-files')
-    .attach('file', filePath)
-    .attach('file5', filePath);
-  expect(result5.body.message).toEqual('"value" must be [avatar2]');
-
-  const result6 = await request(nico.callback())
-    .post('/test-validate-files')
-    .attach('file', filePath)
-    .attach('file6', filePath);
-  expect(result6.body.message).toEqual('"value" must be less than or equal to 5120');
 });
 
 test('Private Attributes', () => {
