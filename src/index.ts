@@ -3,7 +3,7 @@ import Router from '@koa/router';
 import cluster from 'cluster';
 import os from 'os';
 
-import routes from './middleware/routes';
+import nicoRouter from './middleware/router';
 import errorHandler from './middleware/error-handler';
 import notFoundHandler from './middleware/not-found-handler';
 import responses from './middleware/responses';
@@ -203,7 +203,7 @@ export class Nico extends Koa {
           config.advancedConfigs?.routerOptions,
         );
         this.use(
-          routes(router, config, {
+          nicoRouter(router, config, {
             routeMiddlewares: this.routeMiddlewares,
             customMiddlewares: this.customMiddlewares,
             logger: this.logger,

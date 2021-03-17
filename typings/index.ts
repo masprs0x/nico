@@ -1,5 +1,4 @@
 import Koa from 'koa';
-import Joi from 'joi';
 import Router from '@koa/router';
 import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
@@ -7,6 +6,7 @@ import { Files } from 'formidable';
 
 import { Options as BodyParserOpts } from '../src/middleware/body-parser';
 import { ConfigServe } from '../src/middleware/serve';
+import { Validate } from '../src/middleware/router/middleware/validator';
 
 export interface Logger extends WinstonLogger {
   fatal: LeveledLogMethod;
@@ -14,30 +14,11 @@ export interface Logger extends WinstonLogger {
   child(options: Object): Logger;
 }
 
-export type Validator = (data: any) => { [key: string]: any };
-
-type FilesValidator = Joi.Schema | Validator;
-
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
   policies?: Middleware<TState, TCustom>[] | boolean;
   bodyParser?: boolean | Partial<BodyParserOpts>;
-  validate?: {
-    params?: Joi.ObjectSchema | Validator;
-    query?: Joi.ObjectSchema | Validator;
-    body?: Joi.ObjectSchema | Validator;
-    files?: {
-      [key: string]: {
-        size?: FilesValidator;
-        name?: FilesValidator;
-        basename?: FilesValidator;
-        extname?: FilesValidator;
-        type?: FilesValidator;
-      } & {
-        [key: string]: FilesValidator;
-      };
-    };
-  };
+  validate?: Validate;
   timeout?: number;
   cors?: CorsOptions | boolean;
   xframes?: XFrameOptions | true;
