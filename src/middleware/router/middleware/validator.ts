@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import path from 'path';
+import { File } from 'formidable';
 
 import { Context, Next } from '../../../../typings';
 
@@ -97,6 +98,12 @@ export default function getValidatorMiddleware(validate: Validate) {
                 return;
               }
 
+              logger.trace({
+                files: {
+                  [fileKey]: filterFileData(file),
+                },
+              });
+
               const fileValidateSchema = files[optionalFileKey];
 
               await Promise.all(
@@ -153,5 +160,15 @@ export default function getValidatorMiddleware(validate: Validate) {
     }
 
     await next();
+  };
+}
+
+function filterFileData(file: File) {
+  return {
+    name: file.name,
+    path: file.path,
+    size: file.size,
+    type: file.type,
+    lastModifiedDate: file.lastModifiedDate,
   };
 }
