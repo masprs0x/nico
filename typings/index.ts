@@ -1,18 +1,13 @@
 import Koa from 'koa';
 import Router from '@koa/router';
-import { Logger as WinstonLogger, LeveledLogMethod } from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
 import { Files } from 'formidable';
 
 import { Options as BodyParserOpts } from '../src/middleware/body-parser';
 import { ConfigServe } from '../src/middleware/serve';
 import { Validate } from '../src/middleware/router/middleware/validator';
+import { Logger, ConfigLogger } from '../src/lib/logger';
 
-export interface Logger extends WinstonLogger {
-  fatal: LeveledLogMethod;
-  trace: LeveledLogMethod;
-  child(options: Object): Logger;
-}
+export * from '../src/lib/logger';
 
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
@@ -74,15 +69,6 @@ export type Helper = (this: NicoContext<DefaultState, any>, ...args: any) => any
 export type ConfigHelpers = {
   [key: string]: Helper;
 };
-
-export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-
-export type FileLevel = LoggerLevel | DailyRotateFile.DailyRotateFileTransportOptions;
-
-export interface ConfigLogger {
-  fileLevel?: FileLevel | FileLevel[] | 'none';
-  consoleLevel?: LoggerLevel | 'none';
-}
 
 export type CustomMiddlewares = {
   [key: string]: Middleware;

@@ -1,9 +1,46 @@
-import { createLogger, format, transports } from 'winston';
+import {
+  createLogger,
+  format,
+  transports,
+  Logger as WinstonLogger,
+  LeveledLogMethod,
+} from 'winston';
 import 'winston-daily-rotate-file';
 import os from 'os';
 import util from 'util';
 import chalk from 'chalk';
-import { ConfigLogger, Logger, FileLevel } from '../../typings';
+
+export type LoggerLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
+
+export type DailyRotateFileTransportOptions = {
+  level?: LoggerLevel;
+  datePattern?: string;
+  zippedArchive?: boolean;
+  filename?: string;
+  dirname?: string;
+  stream?: NodeJS.WritableStream;
+  maxSize?: string | number;
+  maxFiles?: string | number;
+  options?: string | object;
+  auditFile?: string;
+  frequency?: string;
+  utc?: boolean;
+  extension?: string;
+  createSymlink?: boolean;
+  symlinkName?: string;
+};
+
+export type FileLevel = LoggerLevel | DailyRotateFileTransportOptions;
+export interface ConfigLogger {
+  fileLevel?: FileLevel | FileLevel[] | 'none';
+  consoleLevel?: LoggerLevel | 'none';
+}
+
+export interface Logger extends WinstonLogger {
+  fatal: LeveledLogMethod;
+  trace: LeveledLogMethod;
+  child(options: Object): Logger;
+}
 
 const levels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
 
@@ -77,10 +114,10 @@ const defaultLogger = createLogger({
 const mountFileTransport = (logger: Logger, fileLevel: FileLevel) => {
   const defaultFileTransportOptions = {
     level: 'trace',
-    frequency: '1h',
+    frequency: '24h',
     dirname: './log/trace',
     datePattern: 'YYYY-MM-DD-HH',
-    maxSize: '20m',
+    maxSize: undefined,
     maxFiles: '30d',
   };
 
@@ -100,10 +137,11 @@ const mountFileTransport = (logger: Logger, fileLevel: FileLevel) => {
       fileLevel.filename = '%DATE%.log';
     }
 
-    if (fileLevel.level) {
-      defaultFileTransportOptions.dirname = `./log/${fileLevel.level}`;
+    if (fileLevel.level && !fileLevel.dirname) {
+      fileLevel.dirname = `./log/${fileLevel.level}`;
     }
 
+    // @ts-ignore
     logger.add(new transports.DailyRotateFile({ ...defaultFileTransportOptions, ...fileLevel }));
   }
 };

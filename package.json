@@ -46,13 +46,13 @@
     "koa": "^2.13.1",
     "koa-static": "^5.0.0",
     "winston": "^3.3.3",
-    "winston-daily-rotate-file": "^4.5.0"
+    "winston-daily-rotate-file": "^4.5.1"
   },
   "devDependencies": {
     "@blastz/eslint-config-nico": "^0.1.1",
-    "@types/jest": "^26.0.20",
+    "@types/jest": "^26.0.21",
     "@types/supertest": "^2.0.10",
-    "eslint": "^7.21.0",
+    "eslint": "^7.22.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "supertest": "^6.1.3",
