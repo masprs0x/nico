@@ -135,6 +135,26 @@ nico.init({
 });
 ```
 
+You can pass [formidable](https://github.com/node-formidable/formidable) options directly in `multipartOpts` like this:
+
+```js
+nico.init({
+  //...
+  POST: {
+    bodyParser: {
+      multipartOpts: {
+        enable: true,
+        formidable: {
+          maxFileSize: 10 * 1024 * 1024,
+        },
+      },
+    },
+    // ...
+  },
+  //...
+});
+```
+
 ### XML And Text
 
 Same as multipart, you need to enable them by `xmlOpts` and `textOpts` configs.
@@ -192,6 +212,7 @@ nico.init({
 ```
 
 ---
+
 **NOTE**
 
 Above validate will allow `body` to be `undefined`, use `Joi.object().requried()` to block it.
