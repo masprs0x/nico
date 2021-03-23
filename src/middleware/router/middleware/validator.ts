@@ -132,9 +132,11 @@ export default function getValidatorMiddleware(validate: Validate) {
                   }
 
                   if (fileValidateKey === 'basename') {
-                    await validateFile(path.basename(file.name, path.extname(file.name)));
+                    await validateFile(
+                      path.basename(file.name ?? '', path.extname(file.name ?? '')),
+                    );
                   } else if (fileValidateKey === 'extname') {
-                    await validateFile(path.extname(file.name));
+                    await validateFile(path.extname(file.name ?? ''));
                   } else {
                     // @ts-ignore
                     await validateFile(file[fileValidateKey]);

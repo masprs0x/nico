@@ -1,6 +1,6 @@
 import parse from 'co-body';
 import Koa from 'koa';
-import { Fields, Files, IncomingForm } from 'formidable';
+import IncomingForm, { Fields, Files } from 'formidable';
 
 import { Context, Next, HttpMethod } from '../../../typings';
 
@@ -76,7 +76,7 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     if (options.parsedMethods.includes(ctx.method.toLowerCase() as HttpMethod)) {
       try {
         if (multipartOpts.enable && ctx.is(multipartTypes)) {
-          const result = await parseMultipart(ctx);
+          const result = await parseMultipart(ctx, multipartOpts.formidable);
 
           ctx.request.body = result.fields;
           ctx.request.files = result.files;
@@ -92,7 +92,11 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
         }
       } catch (err) {
         ctx?.logger?.error(err);
-        // TODO support custom error handler
+
+        if (ctx.onBodyParserError) {
+          return ctx.onBodyParserError(err);
+        }
+
         throw err;
       }
     }
@@ -138,49 +142,56 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     return {};
   }
 
-  async function parseMultipart(ctx: Context): Promise<{ fields: Fields; files: Files }> {
+  async function parseMultipart(
+    ctx: Context,
+    formidableOpts: Partial<IncomingForm.Options> = {},
+  ): Promise<{ fields: Fields; files: Files }> {
     return new Promise((resolve, reject) => {
-      const form = new IncomingForm();
+      const form = new IncomingForm(formidableOpts);
 
       const files: any = {};
       const fields: any = {};
 
-      form
-        .on('end', function onEnd() {
-          return resolve({
-            files,
-            fields,
-          });
-        })
-        .on('error', function onError(err: Error) {
-          return reject(err);
-        })
-        .on('field', function onFields(field: string, value: any) {
-          // TODO check max fields
-          if (fields[field]) {
-            if (Array.isArray(fields[field])) {
-              fields[field].push(value);
-            } else {
-              fields[field] = [fields[field], value];
-            }
-          } else {
-            fields[field] = value;
-          }
-        })
-        .on('file', function onFile(field: string, file: any) {
-          // TODO check multiples
-          if (files[field]) {
-            if (Array.isArray(files[field])) {
-              files.push(file);
-            } else {
-              files[field] = [files[field], file];
-            }
-          } else {
-            files[field] = file;
-          }
+      form.on('end', function onEnd() {
+        return resolve({
+          files,
+          fields,
         });
+      });
 
-      form.parse(ctx.req);
+      form.on('error', function onError(err: Error) {
+        return reject(err);
+      });
+
+      form.on('field', function onFields(field: string, value: any) {
+        // TODO check max fields
+        if (fields[field]) {
+          if (Array.isArray(fields[field])) {
+            fields[field].push(value);
+          } else {
+            fields[field] = [fields[field], value];
+          }
+        } else {
+          fields[field] = value;
+        }
+      });
+
+      form.on('file', function onFile(field: string, file: any) {
+        // TODO check multiples
+        if (files[field]) {
+          if (Array.isArray(files[field])) {
+            files.push(file);
+          } else {
+            files[field] = [files[field], file];
+          }
+        } else {
+          files[field] = file;
+        }
+      });
+
+      form.parse(ctx.req, () => {
+        // do noting;
+      });
     });
   }
 }
@@ -212,6 +223,7 @@ interface BaseParseOptions {
 export interface MultipartOpts {
   enable?: boolean;
   multiples?: boolean;
+  formidable?: Partial<IncomingForm.Options>;
 }
 
 export interface JsonOpts extends BaseParseOptions {
