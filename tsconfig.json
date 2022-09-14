@@ -12,16 +12,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
-    "typeRoots": [
-      "typings",
-      "node_modules/@types"
-    ],
+    "typeRoots": ["typings", "node_modules/@types"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

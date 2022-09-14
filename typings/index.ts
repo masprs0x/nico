@@ -1,3 +1,4 @@
+import { Logger } from '@blastz/logger';
 import Router from '@koa/router';
 import { Files } from 'formidable';
 import Koa from 'koa';
@@ -104,6 +105,7 @@ export type DefaultHelper = {
 
 export interface DefaultCustom extends Koa.DefaultContext {
   config: Config;
+  logger: Logger;
   helper: {
     [key: string]: Helper;
   } & DefaultHelper;
