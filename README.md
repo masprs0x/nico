@@ -312,30 +312,21 @@ nico has five log levels: `fatal`, `error`, `warn`, `info`, `debug` and `trace`.
 
 Default console level is `info`, file level is `none`.
 
-### Default Logger Config
+### Logger
+
+Check usage detail in [@blastz/logger](https://github.com/blastZ/logger#readme).
+
+Change console level to trace:
 
 ```ts
-const loggerConfig: ConfigLogger = {
-  fileLevel: 'none',
-  consoleLevel: 'info',
-};
-```
+import { logger, createConsoleTransport, LoggerLevel } from '@blastz/nico';
 
-### Mutiple File Logger
+// Reset logger before nico init
+logger.clear().add(createConsoleTransport({ level: LoggerLevel.Trace }));
 
-```ts
-const loggerConfig: ConfigLogger = {
-  fileLevel: ['trace', 'error'],
-};
-```
-
-Default Output directories are `log/trace` and `log/error`.
-
-### Usage Example
-
-```js
-ctx.logger.fatal('fatal');
-ctx.logger.debug('debug');
+nico.init({
+  // ...
+});
 ```
 
 ## Custom Middlewares

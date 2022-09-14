@@ -1,9 +1,9 @@
-import request from 'supertest';
 import Joi from 'joi';
+import request from 'supertest';
 
 import nico from '../src/index';
-import getController from './api/controllers/get';
 import createControler from './api/controllers/create';
+import getController from './api/controllers/get';
 
 beforeAll(async () => {
   nico.init({
@@ -49,16 +49,7 @@ beforeAll(async () => {
         };
       },
     },
-    logger: {
-      consoleLevel: 'none',
-    },
   });
-});
-
-test('Log', async () => {
-  expect(() => {
-    nico.logger.error('error');
-  }).not.toThrowError();
 });
 
 test('App', async () => {

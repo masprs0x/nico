@@ -21,10 +21,6 @@ beforeAll(() => {
         },
       },
     },
-    logger: {
-      consoleLevel: 'none',
-      fileLevel: 'none',
-    },
   });
 });
 

@@ -1,13 +1,10 @@
-import Koa from 'koa';
 import Router from '@koa/router';
 import { Files } from 'formidable';
+import Koa from 'koa';
 
 import { Options as BodyParserOpts } from '../src/middleware/body-parser';
-import { ConfigServe } from '../src/middleware/serve';
 import { Validate } from '../src/middleware/router/middleware/validator';
-import { Logger, ConfigLogger } from '../src/lib/logger';
-
-export * from '../src/lib/logger';
+import { ConfigServe } from '../src/middleware/serve';
 
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];
@@ -85,7 +82,6 @@ export type InputConfig<TState = DefaultState, TCustom = DefaultCustom> = {
     routerOptions?: Router.RouterOptions;
     forceExitTime?: number;
   };
-  logger?: ConfigLogger;
 };
 
 export type Config<TState = DefaultState, TCustom = DefaultCustom> = Required<
@@ -108,7 +104,6 @@ export type DefaultHelper = {
 
 export interface DefaultCustom extends Koa.DefaultContext {
   config: Config;
-  logger: Logger;
   helper: {
     [key: string]: Helper;
   } & DefaultHelper;
@@ -116,7 +111,7 @@ export interface DefaultCustom extends Koa.DefaultContext {
 
 export type Context<
   TState = Koa.DefaultState,
-  TCustom = Koa.DefaultContext
+  TCustom = Koa.DefaultContext,
 > = Koa.ParameterizedContext<TState, TCustom>;
 
 export type Next = Koa.Next;

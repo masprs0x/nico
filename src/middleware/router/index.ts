@@ -1,19 +1,18 @@
+import { logger } from '@blastz/logger';
 import Router from '@koa/router';
 
 import {
-  Logger,
-  Context,
-  Next,
-  HttpMethod,
-  ConfigRoutes,
   ConfigRoute,
+  ConfigRoutes,
+  Context,
   CustomMiddlewares,
-  InputConfig,
-  DefaultState,
   DefaultCustom,
+  DefaultState,
+  HttpMethod,
+  InputConfig,
+  Next,
 } from '../../../typings';
 
-import logger from '../../lib/logger';
 import getMiddlewares from './get-middlewares';
 
 export default function getRouterMiddleware(
@@ -22,7 +21,6 @@ export default function getRouterMiddleware(
   options: {
     routeMiddlewares: string[];
     customMiddlewares: CustomMiddlewares;
-    logger: Logger;
   },
 ) {
   const routesConfig = config.routes || {};
@@ -45,7 +43,6 @@ export default function getRouterMiddleware(
         const middlewares = getMiddlewares(value as ConfigRoute, {
           securityConfig: config.security,
           routeMiddlewares: options.routeMiddlewares,
-          logger: options.logger,
           customMiddlewares: options.customMiddlewares,
         });
 

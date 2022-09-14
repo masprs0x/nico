@@ -1,8 +1,11 @@
-import request from 'supertest';
+import { logger } from '@blastz/logger';
 import Joi from 'joi';
 import path from 'path';
+import request from 'supertest';
 
 import { Nico } from '../src';
+
+logger.silent = true;
 
 test('query', async () => {
   const nico = new Nico();
@@ -20,7 +23,6 @@ test('query', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -51,7 +53,6 @@ test('params', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -81,7 +82,6 @@ test('body', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const TEST_URL = '/users';
@@ -140,9 +140,6 @@ test('files', async () => {
           },
         },
       },
-    },
-    logger: {
-      consoleLevel: 'none',
     },
   });
 

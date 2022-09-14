@@ -1,5 +1,5 @@
-import request from 'supertest';
 import path from 'path';
+import request from 'supertest';
 
 import { Nico } from '../src';
 
@@ -14,7 +14,6 @@ test('application/json', async () => {
         bodyParser: true,
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -36,7 +35,6 @@ test('application/x-www-form-urlencoded', async () => {
         bodyParser: true,
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -62,7 +60,6 @@ test('text/plain', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -91,7 +88,6 @@ test('text/xml', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());
@@ -124,7 +120,6 @@ test('multipart/form-data', async () => {
         },
       },
     },
-    logger: { consoleLevel: 'none' },
   });
 
   const agent = request(nico.callback());

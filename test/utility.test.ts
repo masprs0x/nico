@@ -28,18 +28,3 @@ test('Merge Configs', () => {
 
   expect(configs).toEqual({ custom: { name: 'cool', age: 12 } });
 });
-
-test('Logger level', () => {
-  const levelFuncs = [
-    nico.logger.fatal,
-    nico.logger.error,
-    nico.logger.warn,
-    nico.logger.info,
-    nico.logger.debug,
-    nico.logger.trace,
-  ];
-
-  levelFuncs.forEach((o) => {
-    expect(typeof o).toEqual('function');
-  });
-});

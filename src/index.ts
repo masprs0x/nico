@@ -1,37 +1,39 @@
-import Koa from 'koa';
+import { createConsoleTransport, logger, LoggerLevel } from '@blastz/logger';
 import Router from '@koa/router';
 import cluster from 'cluster';
+import Koa from 'koa';
 import os from 'os';
 
-import nicoRouter from './middleware/router';
-import errorHandler from './middleware/error-handler';
-import notFoundHandler from './middleware/not-found-handler';
-import responses from './middleware/responses';
 import defaultConfig from './config';
-import { mergeConfigs, createUid } from './utils/utility';
-import serve from './middleware/serve';
-import cors from './middleware/cors';
-import trace from './middleware/trace';
-import logger, { initLogger } from './lib/logger';
-import getHelperMiddleware from './middleware/helper';
-import deepmerge from './utils/deepmerge';
 import {
   APP_MIDDLEWARES,
   InnerAppMiddleware,
   InnerRouteMiddleware,
   ROUTE_MIDDLEWARES,
 } from './constants';
+import cors from './middleware/cors';
+import errorHandler from './middleware/error-handler';
+import getHelperMiddleware from './middleware/helper';
+import notFoundHandler from './middleware/not-found-handler';
+import responses from './middleware/responses';
+import nicoRouter from './middleware/router';
+import serve from './middleware/serve';
+import trace from './middleware/trace';
+import deepmerge from './utils/deepmerge';
+import { createUid, mergeConfigs } from './utils/utility';
 
 import {
-  Logger,
   Config,
   CustomMiddlewares,
-  InputConfig,
-  DefaultState,
   DefaultCustom,
+  DefaultState,
+  InputConfig,
   Middleware,
 } from '../typings';
 
+logger.clear().add(createConsoleTransport({ level: LoggerLevel.Info }));
+
+export * from '@blastz/logger';
 export * from '../typings';
 export { InnerAppMiddleware, InnerRouteMiddleware } from './constants';
 
@@ -40,8 +42,6 @@ export type NicoCustom = {
 };
 
 export class Nico extends Koa {
-  logger: Logger;
-
   #initialed = false;
 
   #started = false;
@@ -81,7 +81,6 @@ export class Nico extends Koa {
     super();
 
     this.#config = defaultConfig;
-    this.logger = initLogger(logger, defaultConfig.logger);
 
     this.context.helper = {};
 
@@ -94,11 +93,11 @@ export class Nico extends Koa {
     let name = middleware.name.trim();
     if (!name) {
       name = createUid();
-      this.logger.warn(`custom middleware need a name, use uuid ${name} instead`);
+      logger.warn(`custom middleware need a name, use uuid ${name} instead`);
     }
 
     if (this.customMiddlewares[name]) {
-      this.logger.warn(`custom middleware ${name} already exist, previous one will be used`);
+      logger.warn(`custom middleware ${name} already exist, previous one will be used`);
     } else {
       this.customMiddlewares[name] = middleware;
     }
@@ -144,7 +143,7 @@ export class Nico extends Koa {
 
   useSignalHandler(signalOrSignals: NodeJS.Signals | NodeJS.Signals[], handler: SignalHandler) {
     if (this.#started) {
-      this.logger.warn('You must call useSignal before start');
+      logger.warn('You must call useSignal before start');
       return;
     }
 
@@ -162,7 +161,7 @@ export class Nico extends Koa {
     ...inputConfigs: InputConfig<TState, TCustom>[]
   ) {
     if (this.#initialed) {
-      this.logger.warn('nico can only be initialized once');
+      logger.warn('nico can only be initialized once');
       return;
     }
 
@@ -172,10 +171,8 @@ export class Nico extends Koa {
     >;
     const config = { ...this.#config };
 
-    this.logger = initLogger(this.logger, config.logger);
-
     this.context.config = config;
-    this.context.logger = this.logger;
+    this.context.logger = logger;
 
     this.use(getHelperMiddleware(config.helpers));
     Object.keys(config.helpers).map((key) => {
@@ -206,7 +203,6 @@ export class Nico extends Koa {
           nicoRouter(router, config, {
             routeMiddlewares: this.routeMiddlewares,
             customMiddlewares: this.customMiddlewares,
-            logger: this.logger,
           }),
         );
         this.use(router.routes()).use(router.allowedMethods());
@@ -216,7 +212,7 @@ export class Nico extends Koa {
         if (middleware) {
           this.use(middleware);
         } else {
-          this.logger.warn(
+          logger.warn(
             `${name} is defined in nico.appMiddlewares but doesn't be implemented in config.middlewares`,
           );
         }
@@ -229,37 +225,38 @@ export class Nico extends Koa {
   private createServer(port = 1314, listener?: (this: Nico) => void) {
     const server = this.listen(port, listener);
 
-    const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener = (handler) => (
-      signal,
-    ) => {
-      const selfLogger = this.logger.child({ stage: `process.on(${signal})` });
-      selfLogger.trace({
-        ...(cluster.worker ? { pid: cluster.worker.process.pid, workerId: cluster.worker.id } : {}),
-        message: `hit signal handler`,
-      });
-
-      const timeout = setTimeout(() => {
-        selfLogger.error({
-          forceExitTime: this.config.advancedConfigs.forceExitTime,
-          message: `signal handler execute too long, force exit fired`,
+    const getSignalListener: (handler: SignalHandler) => NodeJS.SignalsListener =
+      (handler) => (signal) => {
+        const selfLogger = logger.child({ stage: `process.on(${signal})` });
+        selfLogger.trace({
+          ...(cluster.worker
+            ? { pid: cluster.worker.process.pid, workerId: cluster.worker.id }
+            : {}),
+          message: `hit signal handler`,
         });
-        process.exit(1);
-      }, this.config.advancedConfigs.forceExitTime);
 
-      server.close(async (err) => {
-        let code = 0;
-        if (err) {
-          code = 1;
-          selfLogger.error(err);
-          handler && (await handler.call(this, err));
-        } else {
-          handler && (await handler.call(this));
-        }
+        const timeout = setTimeout(() => {
+          selfLogger.error({
+            forceExitTime: this.config.advancedConfigs.forceExitTime,
+            message: `signal handler execute too long, force exit fired`,
+          });
+          process.exit(1);
+        }, this.config.advancedConfigs.forceExitTime);
 
-        clearTimeout(timeout);
-        process.exit(code);
-      });
-    };
+        server.close(async (err) => {
+          let code = 0;
+          if (err) {
+            code = 1;
+            selfLogger.error(err);
+            handler && (await handler.call(this, err));
+          } else {
+            handler && (await handler.call(this));
+          }
+
+          clearTimeout(timeout);
+          process.exit(code);
+        });
+      };
 
     Object.entries(this.#signalHandlers).map(([signal, handler]) => {
       process.on(signal as NodeJS.Signals, getSignalListener(handler));
@@ -267,7 +264,7 @@ export class Nico extends Koa {
     });
 
     process.on('uncaughtException', (err) => {
-      this.logger.fatal({
+      logger.fatal({
         stage: 'process.on(uncaughtException)',
         message: err.message,
         stack: err.stack,
@@ -279,16 +276,16 @@ export class Nico extends Koa {
 
   start(port = 1314, listener?: (this: Nico) => void) {
     if (this.#started) {
-      this.logger.error('nico already started');
+      logger.error('nico already started');
       return undefined;
     }
 
     if (!this.#initialed) {
       this.init();
-      this.logger.warn('nico need init before start, auto init fired');
+      logger.warn('nico need init before start, auto init fired');
     }
 
-    this.logger.info({
+    logger.info({
       port,
       pid: process.pid,
       message: `app started`,
@@ -305,11 +302,11 @@ export class Nico extends Koa {
     let closing = false;
 
     cluster.on('online', (worker) => {
-      this.logger.trace({ pid: worker.process.pid, workerId: worker.id, message: 'worker start' });
+      logger.trace({ pid: worker.process.pid, workerId: worker.id, message: 'worker start' });
     });
 
     cluster.on('exit', (worker, code) => {
-      this.logger.trace({
+      logger.trace({
         pid: worker.process.pid,
         workerId: worker.id,
         code,
@@ -320,7 +317,7 @@ export class Nico extends Koa {
     });
 
     if (cluster.isMaster) {
-      this.logger.info({
+      logger.info({
         port,
         pid: process.pid,
         instances,
@@ -338,7 +335,7 @@ export class Nico extends Koa {
       Object.keys(this.#signalHandlers).map((signal) =>
         process.on(signal as NodeJS.Signals, () => {
           closing = true;
-          Object.values(cluster.workers).map((work) => work?.kill(signal));
+          Object.values(cluster.workers || []).map((work) => work?.kill(signal));
         }),
       );
     } else {

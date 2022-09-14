@@ -1,9 +1,12 @@
-import request from 'supertest';
+import { logger } from '@blastz/logger';
 import Joi from 'joi';
 import path from 'path';
+import request from 'supertest';
 
 import { Nico } from '../src/index';
 import sleep from './utils/sleep';
+
+logger.silent = true;
 
 test('Merge configs', async () => {
   const nico = new Nico();
@@ -24,9 +27,6 @@ test('Merge configs', async () => {
             message,
           };
         },
-      },
-      logger: {
-        consoleLevel: 'none',
       },
     },
     {
@@ -197,16 +197,6 @@ test('Nested Routes', async () => {
   const { body: body2 } = await req.get('/api/v2/posts/3/authors');
   expect(body1.data).toEqual('category2');
   expect(body2.data).toEqual('author3');
-});
-
-test('Logger Configs', async () => {
-  const nico = new Nico();
-  nico.init({
-    logger: {
-      consoleLevel: 'info',
-      fileLevel: ['trace', { level: 'info', filename: '2' }],
-    },
-  });
 });
 
 test('Helper Configs', async () => {

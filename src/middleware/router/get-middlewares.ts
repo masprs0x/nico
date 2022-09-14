@@ -1,25 +1,25 @@
+import { logger } from '@blastz/logger';
+
 import {
-  Logger,
-  ConfigSecurity,
   ConfigRoute,
+  ConfigSecurity,
   CustomMiddlewares,
-  NicoMiddleware as Middleware,
   NicoContext as Context,
+  NicoMiddleware as Middleware,
   NicoNext as Next,
 } from '../../../typings';
 
 import { InnerRouteMiddleware } from '../../constants';
 
+import bodyParser from '../body-parser';
 import cors from '../cors';
 import removeCors from '../cors/remove';
-import xframes from '../xframes';
 import csp from '../csp';
-import defaultLogger from '../../lib/logger';
-import bodyParser from '../body-parser';
+import xframes from '../xframes';
 
-import validator from './middleware/validator';
-import getPolicyHandleMiddleware from './get-policy-handle';
 import getControllerHandleMiddleware from './get-controller-handle';
+import getPolicyHandleMiddleware from './get-policy-handle';
+import validator from './middleware/validator';
 
 async function defaultController(ctx: Context, next: Next) {
   await next();
@@ -38,16 +38,10 @@ export default function getMiddlewares(
   options?: {
     securityConfig?: ConfigSecurity;
     routeMiddlewares?: string[];
-    logger?: Logger;
     customMiddlewares?: CustomMiddlewares;
   },
 ) {
-  const {
-    securityConfig = {},
-    routeMiddlewares = [],
-    logger = defaultLogger,
-    customMiddlewares = {},
-  } = options ?? {};
+  const { securityConfig = {}, routeMiddlewares = [], customMiddlewares = {} } = options ?? {};
   const middlewares: Middleware[] = [];
 
   const {

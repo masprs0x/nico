@@ -1,8 +1,7 @@
 import custom from './custom';
-import security from './security';
 import responses from './responses';
 import routes from './routes';
-import logger from './logger';
+import security from './security';
 
 import { Config } from '../../typings';
 
@@ -11,7 +10,6 @@ const config: Config = {
   routes,
   security,
   responses,
-  logger,
   serve: {},
   advancedConfigs: {
     forceExitTime: 10 * 1000,
