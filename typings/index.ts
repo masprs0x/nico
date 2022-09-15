@@ -2,10 +2,17 @@ import { Logger } from '@blastz/logger';
 import Router from '@koa/router';
 import { Files } from 'formidable';
 import Koa from 'koa';
+import serve from 'koa-static';
 
 import { Options as BodyParserOpts } from '../src/middleware/body-parser';
 import { Validate } from '../src/middleware/router/middleware/validator';
-import { ConfigServe } from '../src/middleware/serve';
+
+export interface ConfigServe {
+  root?: string;
+  route?: string;
+  traceLog?: boolean; // default is false
+  opts?: serve.Options;
+}
 
 export type ConfigRoute<TState = DefaultState, TCustom = DefaultCustom> = {
   controller: Middleware<TState, TCustom> | Middleware<TState, TCustom>[];

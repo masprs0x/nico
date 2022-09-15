@@ -2,14 +2,7 @@ import Router from '@koa/router';
 import serve from 'koa-static';
 import path from 'path';
 
-import { Context, Next } from '../../../typings';
-
-export interface ConfigServe {
-  root?: string;
-  route?: string;
-  traceLog?: boolean; // default is false
-  opts?: serve.Options;
-}
+import { ConfigServe, Context, Next } from '../../../typings';
 
 export default function getServeMiddleware(router: Router, config?: ConfigServe | ConfigServe[]) {
   if (config) {
