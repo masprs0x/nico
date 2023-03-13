@@ -1,6 +1,6 @@
 {
   "name": "@blastz/nico",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "Backend framework build on koa",
   "main": "src/index.js",
   "repository": {
@@ -33,7 +33,7 @@
   "author": "blastz",
   "license": "MIT",
   "dependencies": {
-    "@blastz/logger": "^0.6.2",
+    "@blastz/logger": "^0.8.0",
     "@koa/router": "^10.0.0",
     "@types/co-body": "^5.1.0",
     "@types/formidable": "^1.2.0",

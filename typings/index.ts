@@ -1,4 +1,4 @@
-import { Logger } from '@blastz/logger';
+import { Logger, LoggerLevel, SlsLogTransportOptions } from '@blastz/logger';
 import Router from '@koa/router';
 import { Files } from 'formidable';
 import Koa from 'koa';
@@ -41,6 +41,19 @@ export type CorsOptions = { allRoutes?: boolean } & {
   allowCredentials?: boolean;
   maxAge?: number;
 };
+
+export interface ConfigLogger {
+  console: {
+    enabled: boolean;
+    options: {
+      level: LoggerLevel;
+    };
+  };
+  sls?: {
+    enabled: boolean;
+    options: SlsLogTransportOptions;
+  };
+}
 
 export type CSPOptions = {
   policy: { [key: string]: string };

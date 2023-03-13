@@ -1,4 +1,4 @@
-import { createConsoleTransport, logger, LoggerLevel } from '@blastz/logger';
+import { createConsoleTransport, createSlsLogTransport, logger, LoggerLevel } from '@blastz/logger';
 import Router from '@koa/router';
 import cluster from 'cluster';
 import Koa from 'koa';
@@ -24,6 +24,7 @@ import { createUid, mergeConfigs } from './utils/utility';
 
 import {
   Config,
+  ConfigLogger,
   CustomMiddlewares,
   DefaultCustom,
   DefaultState,
@@ -355,5 +356,17 @@ export function getNico() {
 }
 
 export default getNico();
+
+export function initLogger(config: ConfigLogger) {
+  logger.clear();
+
+  if (config.console.enabled) {
+    logger.add(createConsoleTransport(config.console.options));
+  }
+
+  if (config.sls?.enabled) {
+    logger.add(createSlsLogTransport(config.sls.options));
+  }
+}
 
 export type SignalHandler = (this: Nico, error?: Error) => void;
