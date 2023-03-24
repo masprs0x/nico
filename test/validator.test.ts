@@ -146,7 +146,7 @@ test('files', async () => {
   const TEST_URL = '/assets';
   const agent = request(nico.callback());
 
-  const filePath = path.resolve(__dirname, '../../test/assets/avatar.jpg');
+  const filePath = path.resolve(__dirname, './assets/avatar.jpg');
 
   const result = await agent.post(TEST_URL);
   expect(result.status).toEqual(400);

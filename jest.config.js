@@ -1,7 +1,6 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  clearMocks: true,
-  coverageDirectory: 'coverage',
-  moduleFileExtensions: ['js'],
-  roots: ['<rootDir>/dist'],
+  rootDir: 'test',
+  preset: 'ts-jest',
   testEnvironment: 'node',
 };

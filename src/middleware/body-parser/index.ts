@@ -1,8 +1,8 @@
 import parse from 'co-body';
-import Koa from 'koa';
 import IncomingForm, { Fields, Files } from 'formidable';
+import Koa from 'koa';
 
-import { Context, Next, HttpMethod } from '../../../typings';
+import { Context, HttpMethod, Next } from '../../../typings';
 
 const jsonTypes = [
   'application/json',
@@ -147,6 +147,7 @@ export default function getBodyParser(opts: Partial<Options> = {}) {
     formidableOpts: Partial<IncomingForm.Options> = {},
   ): Promise<{ fields: Fields; files: Files }> {
     return new Promise((resolve, reject) => {
+      // @ts-ignore
       const form = new IncomingForm(formidableOpts);
 
       const files: any = {};

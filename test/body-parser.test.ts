@@ -127,7 +127,7 @@ test('multipart/form-data', async () => {
   const result = await agent
     .post('/users')
     .field('name', 'blastz')
-    .attach('avatar', path.resolve(__dirname, '../../test/assets/avatar.jpg'));
+    .attach('avatar', path.resolve(__dirname, './assets/avatar.jpg'));
 
   expect(result.status).toEqual(200);
   expect(result.body.name).toEqual('blastz');
